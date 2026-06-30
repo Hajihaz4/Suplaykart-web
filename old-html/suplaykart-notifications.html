@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --blue:#1565C0;--blue-lt:#E3F2FD;
+  --yellow:#F9A825;--yellow-lt:#FFF8E1;
+  --purple:#8E24AA;--purple-lt:#F3E5F5;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--light);box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+.hdr{
+  flex-shrink:0;background:white;
+  padding:44px 14px 0;
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:5;
+}
+.hdr-row{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:12px;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:transform .15s;
+}
+.hdr-back:active{transform:scale(.92)}
+.hdr-back svg{width:18px;height:18px;fill:var(--dark)}
+.hdr-info{flex:1;min-width:0}
+.hdr-title{font-size:16px;font-weight:800;color:var(--dark);letter-spacing:-.2px;line-height:1.1}
+.hdr-sub{font-size:11px;color:var(--gray);margin-top:2px;font-weight:600}
+.hdr-sub strong{color:var(--green);font-weight:800}
+.hdr-action{
+  font-size:11px;font-weight:700;color:var(--green);
+  background:var(--green-lt);padding:7px 11px;border-radius:18px;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+}
+.hdr-action svg{width:12px;height:12px;fill:currentColor}
+
+.tabs{
+  display:flex;gap:8px;
+  overflow-x:auto;scrollbar-width:none;
+  padding:0 14px 12px;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex-shrink:0;
+  background:white;border:1.5px solid var(--border);
+  padding:7px 13px;border-radius:18px;
+  font-family:var(--font);font-size:11px;font-weight:700;color:var(--gray);
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:5px;
+  white-space:nowrap;
+}
+.tab.active{background:var(--dark);border-color:var(--dark);color:white}
+.tab-count{
+  background:var(--green-lt);color:var(--green);
+  font-size:9px;font-weight:800;
+  padding:1px 6px;border-radius:8px;
+  min-width:16px;text-align:center;
+}
+.tab.unread .tab-count{background:var(--red);color:white}
+.tab.active .tab-count{background:rgba(255,255,255,.25);color:white}
+
+.main{flex:1;overflow-y:auto;scrollbar-width:none;background:var(--light)}
+.main::-webkit-scrollbar{display:none}
+
+.pinned{
+  background:linear-gradient(135deg,var(--orange) 0%,#FF8E3C 100%);
+  margin:12px;border-radius:14px;
+  padding:14px;color:white;
+  position:relative;overflow:hidden;
+  cursor:pointer;
+}
+.pinned::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:130px;height:130px;
+  background:radial-gradient(circle,rgba(255,255,255,.13) 0%,transparent 70%);
+  pointer-events:none;
+}
+.pinned-row{display:flex;align-items:flex-start;gap:11px;position:relative;z-index:2}
+.pinned-em{font-size:24px;line-height:1;flex-shrink:0;margin-top:2px}
+.pinned-info{flex:1;min-width:0}
+.pinned-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.22);
+  font-size:9px;font-weight:800;letter-spacing:.4px;
+  padding:2px 7px;border-radius:8px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.pinned-tag svg{width:9px;height:9px;fill:currentColor}
+.pinned-title{font-size:14px;font-weight:800;letter-spacing:-.2px;line-height:1.25}
+.pinned-sub{font-size:11px;color:rgba(255,255,255,.9);margin-top:3px;line-height:1.5;font-weight:500}
+.pinned-arr{font-size:18px;color:rgba(255,255,255,.7);align-self:center;flex-shrink:0}
+
+.sec-title{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:14px 18px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-title-l{display:flex;align-items:center;gap:6px}
+.sec-title .clear{
+  font-size:10px;font-weight:700;color:var(--green);
+  text-transform:none;letter-spacing:0;cursor:pointer;
+}
+
+.nfeed{margin:0 12px 8px}
+
+.ncard-wrap{
+  position:relative;overflow:hidden;border-radius:13px;
+  margin-bottom:6px;
+  animation:fadeIn .3s ease-out both;
+}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.ncard-wrap:nth-child(2){animation-delay:.05s}
+.ncard-wrap:nth-child(3){animation-delay:.1s}
+.ncard-wrap:nth-child(4){animation-delay:.15s}
+.ncard-wrap:nth-child(5){animation-delay:.2s}
+
+.swipe-bg{
+  position:absolute;inset:0;
+  background:var(--red);
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:18px;color:white;
+  font-size:13px;font-weight:800;
+  z-index:0;
+}
+.swipe-bg svg{width:18px;height:18px;fill:white;margin-right:6px}
+
+.ncard{
+  background:white;border-radius:13px;
+  padding:13px 14px;cursor:pointer;
+  display:flex;gap:11px;
+  position:relative;z-index:1;
+  transition:transform .15s, background .15s;
+}
+.ncard:active{transform:scale(.99)}
+.ncard.unread::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--green);
+}
+.ncard.read{opacity:.78}
+
+.nicon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:18px;
+  position:relative;
+}
+.nicon svg{width:18px;height:18px}
+.nicon.order{background:var(--green-lt);color:var(--green)}
+.nicon.order svg{fill:var(--green)}
+.nicon.delivery{background:var(--orange-lt);color:var(--orange)}
+.nicon.delivery svg{fill:var(--orange)}
+.nicon.offer{background:var(--yellow-lt);color:var(--yellow)}
+.nicon.offer svg{fill:var(--yellow)}
+.nicon.holiday{background:var(--red-lt);color:var(--red)}
+.nicon.holiday svg{fill:var(--red)}
+.nicon.refund{background:var(--blue-lt);color:var(--blue)}
+.nicon.refund svg{fill:var(--blue)}
+.nicon.account{background:var(--purple-lt);color:var(--purple)}
+.nicon.account svg{fill:var(--purple)}
+.nicon.weather{background:#E0F7FA;color:#00838F}
+.nicon.weather svg{fill:#00838F}
+
+.unread-dot{
+  position:absolute;top:-2px;right:-2px;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--red);border:2px solid white;
+}
+
+.nbody{flex:1;min-width:0}
+.nrow1{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:8px;margin-bottom:2px;
+}
+.ntitle{
+  font-size:13px;font-weight:700;color:var(--dark);
+  letter-spacing:-.1px;line-height:1.3;
+}
+.ncard.unread .ntitle{font-weight:800}
+.ntime{
+  font-size:9.5px;color:var(--gray-lt);font-weight:600;
+  flex-shrink:0;white-space:nowrap;
+}
+.ncard.unread .ntime{color:var(--green);font-weight:700}
+.nmsg{
+  font-size:11.5px;color:var(--gray);
+  line-height:1.5;font-weight:500;
+}
+.nmsg strong{color:var(--dark);font-weight:700}
+
+.nactions{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.nbtn{
+  background:var(--green);color:white;border:none;
+  padding:6px 11px;border-radius:8px;
+  font-family:var(--font);font-size:10.5px;font-weight:800;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  transition:transform .15s;
+}
+.nbtn:active{transform:scale(.95)}
+.nbtn svg{width:11px;height:11px;fill:white}
+.nbtn.outline{background:white;color:var(--green);border:1.5px solid var(--green)}
+.nbtn.outline svg{fill:var(--green)}
+.nbtn.orange{background:var(--orange)}
+.nbtn.dark{background:var(--dark);color:white}
+
+.npreview{
+  display:flex;gap:6px;margin-top:9px;align-items:center;
+  background:var(--light);border-radius:9px;padding:8px 10px;
+}
+.npreview-imgs{display:flex;gap:4px}
+.npreview-img{
+  width:32px;height:32px;border-radius:7px;
+  background:white;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.npreview-info{flex:1;min-width:0}
+.npreview-l1{font-size:10px;color:var(--gray);font-weight:600}
+.npreview-l2{font-size:11px;color:var(--dark);font-weight:800;margin-top:1px}
+
+.ncoupon{
+  margin-top:9px;
+  background:linear-gradient(90deg,#FFF8E1 0%,#FFFEF5 100%);
+  border:1.5px dashed var(--yellow);
+  border-radius:10px;padding:10px 12px;
+  display:flex;align-items:center;gap:11px;
+}
+.ncoupon-em{font-size:20px;flex-shrink:0}
+.ncoupon-info{flex:1;min-width:0}
+.ncoupon-code{
+  font-family:'Courier New',monospace;
+  font-size:13px;font-weight:800;color:var(--dark);
+  letter-spacing:.3px;line-height:1;
+}
+.ncoupon-sub{font-size:10px;color:var(--gray);margin-top:3px;font-weight:600}
+
+.empty{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px 30px;text-align:center;
+}
+.empty.show{display:flex}
+.empty-art{
+  width:100px;height:100px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;margin-bottom:18px;
+  position:relative;
+}
+.empty-art .bell{animation:bellSwing 2.5s ease-in-out infinite;transform-origin:top center;display:inline-block}
+@keyframes bellSwing{
+  0%,100%{transform:rotate(0)}
+  20%{transform:rotate(15deg)}
+  40%{transform:rotate(-13deg)}
+  60%{transform:rotate(8deg)}
+  80%{transform:rotate(-5deg)}
+}
+.empty-title{font-size:17px;font-weight:900;color:var(--dark);margin-bottom:6px;letter-spacing:-.2px}
+.empty-sub{font-size:12px;color:var(--gray);line-height:1.6;max-width:230px}
+
+.settings-hint{
+  background:white;margin:12px 12px 24px;border-radius:14px;
+  padding:14px;display:flex;align-items:center;gap:11px;
+  cursor:pointer;
+}
+.settings-hint-em{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.settings-hint-em svg{width:18px;height:18px;fill:var(--green)}
+.settings-hint-info{flex:1;min-width:0}
+.settings-hint-title{font-size:12px;font-weight:800;color:var(--dark)}
+.settings-hint-sub{font-size:10px;color:var(--gray);margin-top:2px;line-height:1.4}
+.settings-hint-arr{font-size:16px;color:var(--gray-lt)}
+
+.toast{
+  position:absolute;bottom:30px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:60;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+      <div class="hdr-info">
+        <div class="hdr-title">Notifications</div>
+        <div class="hdr-sub"><strong id="unreadCount">3 new</strong> · 9 total</div>
+      </div>
+      <div class="hdr-action" id="markAll" onclick="markAllRead()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Mark all read
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-cat="all" onclick="filterCat('all',this)">
+        All <span class="tab-count" id="cnt-all">9</span>
+      </button>
+      <button class="tab unread" data-cat="unread" onclick="filterCat('unread',this)">
+        🔴 Unread <span class="tab-count" id="cnt-unread">3</span>
+      </button>
+      <button class="tab" data-cat="orders" onclick="filterCat('orders',this)">
+        📦 Orders <span class="tab-count" id="cnt-orders">4</span>
+      </button>
+      <button class="tab" data-cat="offers" onclick="filterCat('offers',this)">
+        🎟️ Offers <span class="tab-count" id="cnt-offers">2</span>
+      </button>
+      <button class="tab" data-cat="store" onclick="filterCat('store',this)">
+        🏪 Store <span class="tab-count" id="cnt-store">2</span>
+      </button>
+      <button class="tab" data-cat="account" onclick="filterCat('account',this)">
+        👤 Account <span class="tab-count" id="cnt-account">1</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main" id="main">
+
+    <!-- PINNED -->
+    <div class="pinned" data-cat="store" id="pinnedCard" onclick="openItem(this,'pinned')">
+      <div class="pinned-row">
+        <div class="pinned-em">🏪</div>
+        <div class="pinned-info">
+          <span class="pinned-tag">
+            <svg viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+            Pinned · Important
+          </span>
+          <div class="pinned-title">Store closed tomorrow (Friday) — Bakrid holiday</div>
+          <div class="pinned-sub">We'll be back Saturday at 10 AM. Schedule your orders or stock up today!</div>
+        </div>
+        <div class="pinned-arr">›</div>
+      </div>
+    </div>
+
+    <!-- TODAY -->
+    <div class="sec-title" data-section="today">
+      <div class="sec-title-l">Today</div>
+    </div>
+
+    <div class="nfeed" data-section="today">
+
+      <div class="ncard-wrap" data-cat="orders">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Delete</div>
+        <div class="ncard unread" onclick="openItem(this,'order')">
+          <div class="nicon order">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            <span class="unread-dot"></span>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Order delivered 🎉</div>
+              <div class="ntime">2 min ago</div>
+            </div>
+            <div class="nmsg">Your order <strong>#SP-845721</strong> has been delivered. Hope you enjoy!</div>
+            <div class="npreview">
+              <div class="npreview-imgs">
+                <div class="npreview-img">🥛</div>
+                <div class="npreview-img">🍞</div>
+                <div class="npreview-img">🥚</div>
+              </div>
+              <div class="npreview-info">
+                <div class="npreview-l1">5 items · Delivered at 4:23 PM</div>
+                <div class="npreview-l2">Total ₹487</div>
+              </div>
+            </div>
+            <div class="nactions">
+              <button class="nbtn" onclick="event.stopPropagation();showToast('Opening rate screen')">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                Rate order
+              </button>
+              <button class="nbtn outline" onclick="event.stopPropagation();showToast('Items added to cart')">Order again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="orders">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard unread" onclick="openItem(this,'ofd')">
+          <div class="nicon delivery">
+            <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+            <span class="unread-dot"></span>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Murugan is on the way 🛵</div>
+              <div class="ntime">12 min ago</div>
+            </div>
+            <div class="nmsg">Your order <strong>#SP-845889</strong> is out for delivery. Arriving in <strong>8 mins</strong>.</div>
+            <div class="nactions">
+              <button class="nbtn orange" onclick="event.stopPropagation();showToast('Opening live tracking')">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                Track live
+              </button>
+              <button class="nbtn outline" onclick="event.stopPropagation();showToast('Calling rider...')">Call rider</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="offers">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard unread" onclick="openItem(this,'coupon')">
+          <div class="nicon offer">
+            <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42z"/></svg>
+            <span class="unread-dot"></span>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">New coupon for you 🎟️</div>
+              <div class="ntime">3 hr ago</div>
+            </div>
+            <div class="nmsg">Save ₹40 on your next order above ₹299. Valid for 7 days only.</div>
+            <div class="ncoupon">
+              <div class="ncoupon-em">🎟️</div>
+              <div class="ncoupon-info">
+                <div class="ncoupon-code">NAGORE40</div>
+                <div class="ncoupon-sub">Flat ₹40 off · Min ₹299 · Expires 6 May</div>
+              </div>
+              <button class="nbtn" onclick="event.stopPropagation();showToast('Coupon copied!')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="orders">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'placed')">
+          <div class="nicon order">
+            <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Order placed successfully</div>
+              <div class="ntime">4 hr ago</div>
+            </div>
+            <div class="nmsg">Order <strong>#SP-845721</strong> received. Suplaykart Store will confirm shortly.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- YESTERDAY -->
+    <div class="sec-title" data-section="yesterday">
+      <div class="sec-title-l">Yesterday</div>
+      <div class="clear" onclick="showToast('Cleared yesterday')">Clear</div>
+    </div>
+
+    <div class="nfeed" data-section="yesterday">
+
+      <div class="ncard-wrap" data-cat="store">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'rain')">
+          <div class="nicon weather">
+            <svg viewBox="0 0 24 24"><path d="M17.66 5.84C17.43 5.31 16.95 5 16.4 5H7.6c-.55 0-1.03.31-1.26.84L4 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h10v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.34-6.16zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Heavy rain in Nagore 🌧️</div>
+              <div class="ntime">Yesterday, 6:14 PM</div>
+            </div>
+            <div class="nmsg">Deliveries may take longer than usual. <strong>Rain fee of ₹10</strong> applies on orders for the next 2 hours.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="orders">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'refund')">
+          <div class="nicon refund">
+            <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Refund processed ✓</div>
+              <div class="ntime">Yesterday, 2:30 PM</div>
+            </div>
+            <div class="nmsg">₹299 has been refunded to your original payment method for cancelled order <strong>#SP-844112</strong>. May take 24 hours to reflect.</div>
+            <div class="nactions">
+              <button class="nbtn outline" onclick="event.stopPropagation();showToast('Opening refund details')">View details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="offers">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'promo')">
+          <div class="nicon offer">
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">Buy 2 Aavin milk, get 1 free 🥛</div>
+              <div class="ntime">Yesterday, 11:00 AM</div>
+            </div>
+            <div class="nmsg">Limited time offer on Aavin Full Cream Milk 1L. Add 3 to cart, pay for 2.</div>
+            <div class="nactions">
+              <button class="nbtn outline" onclick="event.stopPropagation();showToast('Opening offer page')">Shop offer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EARLIER -->
+    <div class="sec-title" data-section="earlier">
+      <div class="sec-title-l">Earlier this week</div>
+    </div>
+
+    <div class="nfeed" data-section="earlier">
+
+      <div class="ncard-wrap" data-cat="store">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'reopen')">
+          <div class="nicon holiday">
+            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">We're back! 🎉</div>
+              <div class="ntime">Mon, 10:00 AM</div>
+            </div>
+            <div class="nmsg">Suplaykart is open again after a short break. Use code <strong>WELCOMEBACK</strong> for 15% off your next order.</div>
+            <div class="nactions">
+              <button class="nbtn dark" onclick="event.stopPropagation();showToast('Going to home')">Start shopping</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ncard-wrap" data-cat="account">
+        <div class="swipe-bg"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg> Delete</div>
+        <div class="ncard read" onclick="openItem(this,'login')">
+          <div class="nicon account">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+          <div class="nbody">
+            <div class="nrow1">
+              <div class="ntitle">New login from your account</div>
+              <div class="ntime">Sun, 7:42 PM</div>
+            </div>
+            <div class="nmsg">Account signed in on a new device · Chennai, Tamil Nadu. If this wasn't you, secure your account immediately.</div>
+            <div class="nactions">
+              <button class="nbtn outline" onclick="event.stopPropagation();showToast('Opening security')">Review activity</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty" id="emptyState">
+      <div class="empty-art">
+        <span class="bell">🔔</span>
+      </div>
+      <div class="empty-title">All caught up!</div>
+      <div class="empty-sub">No notifications in this category. We'll let you know when something new arrives.</div>
+    </div>
+
+    <!-- SETTINGS HINT -->
+    <div class="settings-hint" onclick="showToast('Opening notification settings')">
+      <div class="settings-hint-em">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </div>
+      <div class="settings-hint-info">
+        <div class="settings-hint-title">Notification preferences</div>
+        <div class="settings-hint-sub">Choose what alerts to receive</div>
+      </div>
+      <div class="settings-hint-arr">›</div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast">Done</div>
+
+</div>
+
+<script>
+function filterCat(cat, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const wraps = document.querySelectorAll('.ncard-wrap');
+  const pinned = document.getElementById('pinnedCard');
+
+  let visible = 0;
+  wraps.forEach(w => {
+    const wcat = w.dataset.cat;
+    let show = false;
+    if (cat === 'all') show = true;
+    else if (cat === 'unread') show = w.querySelector('.ncard.unread') !== null;
+    else show = wcat === cat;
+    w.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  pinned.style.display = (cat === 'all' || cat === 'store') ? '' : 'none';
+  if (pinned.style.display !== 'none') visible++;
+
+  document.querySelectorAll('.sec-title').forEach(t => {
+    const sib = t.nextElementSibling;
+    if (sib && sib.classList.contains('nfeed')) {
+      const visibleCards = Array.from(sib.querySelectorAll('.ncard-wrap')).filter(c => c.style.display !== 'none').length;
+      t.style.display = visibleCards > 0 ? '' : 'none';
+      sib.style.display = visibleCards > 0 ? '' : 'none';
+    }
+  });
+
+  document.getElementById('emptyState').classList.toggle('show', visible === 0);
+}
+
+function markAllRead() {
+  const unreads = document.querySelectorAll('.ncard.unread');
+  if (unreads.length === 0) {
+    showToast('No unread notifications');
+    return;
+  }
+  unreads.forEach(u => {
+    u.classList.remove('unread');
+    u.classList.add('read');
+    const dot = u.querySelector('.unread-dot');
+    if (dot) dot.style.display = 'none';
+  });
+  document.getElementById('unreadCount').textContent = '0 new';
+  document.getElementById('cnt-unread').textContent = '0';
+  showToast('✓ All marked as read');
+}
+
+function openItem(el, type) {
+  const card = el.classList.contains('ncard') ? el : el.querySelector('.ncard');
+  if (card && card.classList.contains('unread')) {
+    card.classList.remove('unread');
+    card.classList.add('read');
+    const dot = card.querySelector('.unread-dot');
+    if (dot) dot.style.display = 'none';
+    updateUnreadCount();
+  }
+  const messages = {
+    pinned:'Opening holiday details',order:'Opening order #SP-845721',
+    ofd:'Opening live tracking',coupon:'Opening coupon',placed:'Opening order',
+    rain:'Opening weather alert',refund:'Opening refund details',
+    promo:'Opening offer page',reopen:'Going to home',login:'Opening security'
+  };
+  showToast(messages[type] || 'Opening...');
+}
+
+function updateUnreadCount() {
+  const count = document.querySelectorAll('.ncard.unread').length;
+  document.getElementById('unreadCount').textContent = count + ' new';
+  document.getElementById('cnt-unread').textContent = count;
+}
+
+// SWIPE TO DELETE
+let touchStart = 0, touchCard = null, touchMoved = 0, touchWrap = null;
+document.querySelectorAll('.ncard-wrap').forEach(wrap => {
+  const card = wrap.querySelector('.ncard');
+  wrap.addEventListener('touchstart', e => {
+    touchStart = e.touches[0].clientX;
+    touchCard = card; touchWrap = wrap; touchMoved = 0;
+    card.style.transition = 'none';
+  });
+  wrap.addEventListener('touchmove', e => {
+    if (!touchCard) return;
+    touchMoved = e.touches[0].clientX - touchStart;
+    if (touchMoved < 0) {
+      touchCard.style.transform = `translateX(${Math.max(touchMoved, -100)}px)`;
+    }
+  });
+  wrap.addEventListener('touchend', () => {
+    if (!touchCard) return;
+    touchCard.style.transition = 'transform .25s';
+    if (touchMoved < -70) {
+      touchWrap.style.transition = 'opacity .3s, max-height .3s, margin .3s';
+      touchWrap.style.maxHeight = touchWrap.offsetHeight + 'px';
+      requestAnimationFrame(() => {
+        touchWrap.style.maxHeight = '0';
+        touchWrap.style.opacity = '0';
+        touchWrap.style.marginBottom = '0';
+      });
+      const w = touchWrap;
+      setTimeout(() => {
+        w.remove();
+        showToast('Notification deleted');
+        updateUnreadCount();
+      }, 300);
+    } else {
+      touchCard.style.transform = '';
+    }
+    touchCard = null; touchWrap = null;
+  });
+});
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+</script>
+</body>
+</html>

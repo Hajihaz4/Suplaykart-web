@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Product</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-lt:#E8F5E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;
+  --light:#F2F2F2;--border:#EBEBEB;
+  --white:#fff;--red:#E23744;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+/* ── SHELL ───────────────────────────────────── */
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--white);box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+  animation: pageEnter .45s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes pageEnter{
+  from{transform:scale(.93);opacity:0;filter:blur(6px)}
+  to{transform:scale(1);opacity:1;filter:blur(0)}
+}
+
+/* ── FLOATING TOP ICONS ──────────────────────── */
+.top-icons{
+  position:absolute;top:44px;left:0;right:0;
+  z-index:50;padding:0 14px;
+  display:flex;align-items:center;
+}
+.tic-back{margin-right:auto}
+.tic-right{display:flex;gap:8px}
+.tic-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:white;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .15s, background .2s;
+}
+.tic-btn:active{transform:scale(.92)}
+.tic-btn svg{width:18px;height:18px;fill:var(--dark)}
+.tic-btn.wished svg{fill:var(--red)}
+
+/* ── HORIZONTAL PRODUCT PAGER ───────────────── */
+.pager{
+  flex:1;display:flex;
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.pager::-webkit-scrollbar{display:none}
+
+.product-page{
+  min-width:100%;height:100%;
+  scroll-snap-align:start;flex-shrink:0;
+  overflow-y:auto;scrollbar-width:none;
+  background:white;
+  -webkit-overflow-scrolling:touch;
+}
+.product-page::-webkit-scrollbar{display:none}
+
+/* ── IMAGE GALLERY ───────────────────────────── */
+.gallery{
+  position:relative;background:#F4F4F4;
+  padding:90px 0 30px;
+  display:flex;align-items:center;justify-content:center;
+}
+.gallery-track{
+  display:flex;width:100%;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.gallery-track::-webkit-scrollbar{display:none}
+.gimg{
+  min-width:100%;height:240px;
+  display:flex;align-items:center;justify-content:center;
+  scroll-snap-align:start;flex-shrink:0;
+  font-size:140px;line-height:1;
+  cursor:zoom-in;
+  animation: imgFloat 4s ease-in-out infinite;
+}
+@keyframes imgFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+
+.gallery-dots{
+  position:absolute;bottom:18px;left:50%;
+  transform:translateX(-50%);
+  display:flex;gap:5px;
+}
+.gd{
+  width:5px;height:5px;border-radius:3px;
+  background:rgba(0,0,0,.18);transition:all .25s;
+}
+.gd.on{width:18px;background:var(--green)}
+
+.veg-corner{
+  position:absolute;bottom:14px;right:14px;
+  width:20px;height:20px;border-radius:3px;
+  border:2px solid var(--green);
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+}
+.veg-corner::after{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+}
+
+/* ── HIGHLIGHTS ROW ──────────────────────────── */
+.hl-row{
+  display:flex;gap:8px;padding:14px 14px 0;
+  align-items:stretch;
+}
+.hl-pill{
+  flex:1;background:var(--light);
+  border-radius:10px;padding:9px 12px;
+  min-width:0;
+}
+.hl-pill-label{font-size:10px;color:var(--gray);font-weight:500;line-height:1.2}
+.hl-pill-val{font-size:13px;color:var(--dark);font-weight:700;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-details{
+  background:var(--green-lt);border:1.5px solid #C9E8CD;
+  border-radius:10px;padding:7px 12px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:11px;font-weight:700;color:var(--green);
+  cursor:pointer;line-height:1.25;
+  font-family:var(--font);
+  min-width:74px;
+  transition:transform .15s;
+}
+.hl-details:active{transform:scale(.95)}
+
+/* ── BOUGHT EARLIER + RATING ─────────────────── */
+.be-row{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 14px 6px;
+}
+.be-tag{
+  font-size:10px;font-weight:700;color:#1565C0;
+  background:#E3F2FD;padding:3px 8px;border-radius:4px;
+}
+.be-stars{display:flex;align-items:center;gap:4px}
+.be-stars-svg{display:flex;color:#FFA000;font-size:12px;letter-spacing:.5px}
+.be-rev{font-size:11px;font-weight:600;color:var(--dark)}
+
+/* ── PRODUCT NAME ────────────────────────────── */
+.prod-name{
+  font-size:18px;font-weight:800;color:var(--dark);
+  padding:0 14px 14px;line-height:1.3;letter-spacing:-.3px;
+}
+
+/* ── DIVIDER ─────────────────────────────────── */
+.divider{height:6px;background:var(--light)}
+
+/* ── VARIANT SELECTOR ────────────────────────── */
+.variant-block{padding:14px}
+.variant-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:10px}
+.variant-row{display:flex;gap:8px;flex-wrap:wrap}
+.variant-card{
+  flex:0 0 auto;min-width:88px;
+  border:1.5px solid var(--border);
+  border-radius:10px;padding:9px 14px;
+  cursor:pointer;background:white;
+  transition:all .2s;
+}
+.variant-card.active{
+  border-color:var(--green);background:var(--green-lt);
+  border-width:2px;padding:8px 13px;
+}
+.variant-wt{font-size:13px;font-weight:700;color:var(--dark)}
+.variant-price{font-size:14px;font-weight:800;color:var(--dark);margin-top:2px}
+.variant-card.active .variant-wt,
+.variant-card.active .variant-price{color:var(--green)}
+
+/* ── BRAND ROW ───────────────────────────────── */
+.brand-row{
+  display:flex;align-items:center;gap:12px;
+  margin:0 14px 12px;padding:12px;
+  border:1px solid var(--border);border-radius:12px;cursor:pointer;
+  transition:transform .15s;
+}
+.brand-row:active{transform:scale(.98)}
+.brand-logo{
+  width:42px;height:42px;border-radius:9px;
+  background:#FFEB3B;display:flex;align-items:center;justify-content:center;
+  font-weight:900;color:var(--red);font-size:14px;flex-shrink:0;
+  font-style:italic;
+}
+.brand-info{flex:1;min-width:0}
+.brand-name{font-size:14px;font-weight:800;color:var(--dark)}
+.brand-sub{font-size:11px;color:var(--gray);margin-top:1px}
+.brand-arr{font-size:18px;color:var(--gray);flex-shrink:0}
+
+/* ── TRUST BADGE ─────────────────────────────── */
+.trust-row{
+  display:flex;align-items:center;gap:12px;
+  margin:0 14px 18px;padding:12px;
+  border:1px solid var(--border);border-radius:12px;
+}
+.trust-ic{
+  width:38px;height:38px;border-radius:50%;
+  background:#FFF3E0;display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.trust-txt{flex:1;font-size:13px;font-weight:600;color:var(--dark)}
+.trust-arr{font-size:18px;color:var(--gray)}
+
+/* ── SIMILAR PRODUCTS ────────────────────────── */
+.sim-block{padding:18px 0 100px}
+.sim-title{font-size:16px;font-weight:800;color:var(--dark);padding:0 14px 12px;letter-spacing:-.2px}
+.sim-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:9px;
+  padding:0 14px;
+}
+.sim-card{
+  background:white;border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:transform .12s;
+}
+.sim-card:active{transform:scale(.97)}
+.sim-img{
+  position:relative;aspect-ratio:1;background:#F4F4F4;
+  display:flex;align-items:center;justify-content:center;
+  font-size:55px;
+}
+.sim-veg{
+  position:absolute;bottom:5px;right:5px;
+  width:14px;height:14px;border-radius:2px;
+  border:1.5px solid var(--green);background:white;
+  display:flex;align-items:center;justify-content:center;
+}
+.sim-veg::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--green)}
+.sim-add{
+  position:absolute;bottom:6px;right:6px;
+  background:white;border:1.5px solid var(--green);color:var(--green);
+  font-family:var(--font);font-size:10px;font-weight:800;
+  padding:5px 11px;border-radius:7px;cursor:pointer;
+}
+.sim-add.added{background:var(--green);color:white}
+.sim-body{padding:6px 8px 10px}
+.sim-wt{font-size:9px;color:var(--gray);font-weight:600}
+.sim-price-row{display:flex;align-items:baseline;gap:5px;margin-top:2px}
+.sim-price{font-size:14px;font-weight:800;color:var(--dark)}
+.sim-og{font-size:10px;color:var(--gray);text-decoration:line-through}
+.sim-name{font-size:11px;color:var(--dark);font-weight:500;line-height:1.4;margin-top:3px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sim-rating{display:flex;align-items:center;gap:4px;margin-top:4px}
+.sim-stars{font-size:9px;color:#FFA000}
+.sim-rcount{font-size:9px;color:var(--gray);font-weight:500}
+
+/* ── STICKY FOOTER ───────────────────────────── */
+.sticky-foot{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;
+  padding:12px 14px 24px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  z-index:40;
+  box-shadow:0 -4px 20px rgba(0,0,0,.06);
+}
+.sf-info{flex:0 0 auto}
+.sf-wt{font-size:12px;color:var(--gray);font-weight:600}
+.sf-price{font-size:18px;font-weight:800;color:var(--dark);line-height:1.1}
+.sf-tax{font-size:9px;color:var(--gray);margin-top:1px}
+.sf-cta{
+  flex:1;background:var(--green);color:white;
+  border:none;padding:13px 16px;border-radius:10px;
+  font-family:var(--font);font-size:14px;font-weight:800;
+  cursor:pointer;letter-spacing:.3px;
+  transition:transform .15s, background .2s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.sf-cta:active{transform:scale(.97)}
+.sf-cta.in-cart{
+  background:white;color:var(--green);border:2px solid var(--green);
+  padding:11px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.qty-btn{
+  width:30px;height:30px;border-radius:6px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;color:var(--green);font-size:18px;cursor:pointer;
+  border:none;font-family:var(--font);
+  transition:transform .1s;
+}
+.qty-btn:active{transform:scale(.85)}
+.qty-num{font-size:15px;font-weight:800;color:var(--green)}
+
+/* ── PAGER INDICATOR ─────────────────────────── */
+.page-ind{
+  position:absolute;top:96px;left:50%;
+  transform:translateX(-50%);
+  z-index:45;
+  background:rgba(0,0,0,.6);
+  color:white;font-size:10px;font-weight:700;
+  padding:4px 10px;border-radius:20px;
+  font-family:var(--font);
+  pointer-events:none;
+  opacity:0;transition:opacity .3s;
+}
+.page-ind.show{opacity:1}
+
+/* swipe hint */
+.swipe-hint{
+  position:absolute;bottom:120px;left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.7);color:white;
+  font-size:11px;font-weight:600;
+  padding:7px 14px;border-radius:20px;
+  display:flex;align-items:center;gap:6px;z-index:45;
+  pointer-events:none;
+  animation: hintFade 4s ease forwards;
+}
+@keyframes hintFade{
+  0%,60%{opacity:0}
+  10%,40%{opacity:1;transform:translateX(-50%) translateY(0)}
+  60%,100%{opacity:0;transform:translateX(-50%) translateY(8px)}
+}
+
+/* ── VIEW DETAILS SHEET ──────────────────────── */
+.sheet-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.sheet-bg.show{opacity:1;pointer-events:all}
+.vd-sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;border-radius:18px 18px 0 0;
+  max-height:88%;overflow:hidden;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+  display:flex;flex-direction:column;
+}
+.vd-sheet.open{transform:translateY(0)}
+.vd-close{
+  position:absolute;top:-50px;left:50%;transform:translateX(-50%);
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(0,0,0,.7);color:white;
+  border:none;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font);font-weight:300;
+}
+.vd-head{
+  padding:20px 18px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;gap:12px;align-items:center;
+  flex-shrink:0;
+}
+.vd-img{
+  width:54px;height:54px;border-radius:10px;background:#F4F4F4;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;flex-shrink:0;
+}
+.vd-name{font-size:15px;font-weight:800;color:var(--dark);line-height:1.3}
+.vd-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
+.vd-body::-webkit-scrollbar{display:none}
+
+.vd-section-title{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:12px;letter-spacing:-.1px}
+.vd-pills{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.vd-pill{
+  flex:1;min-width:88px;
+  background:var(--light);border-radius:10px;padding:9px 12px;
+}
+.vd-pill-lbl{font-size:10px;color:var(--gray);font-weight:500}
+.vd-pill-val{font-size:12px;color:var(--dark);font-weight:700;margin-top:2px}
+
+.acc{
+  border:1px solid var(--border);border-radius:12px;
+  margin-bottom:10px;overflow:hidden;
+}
+.acc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 14px;cursor:pointer;background:white;
+}
+.acc-title{font-size:13px;font-weight:700;color:var(--dark)}
+.acc-arr{font-size:14px;color:var(--gray);transition:transform .25s}
+.acc.open .acc-arr{transform:rotate(180deg)}
+.acc-body{
+  padding:0 14px;
+  max-height:0;overflow:hidden;
+  transition:max-height .3s, padding .3s;
+}
+.acc.open .acc-body{padding:0 14px 14px;max-height:600px}
+.acc-row{
+  display:flex;justify-content:space-between;
+  padding:9px 0;border-top:1px solid var(--border);
+  font-size:12px;
+}
+.acc-row:first-child{border-top:none}
+.acc-key{color:var(--gray);font-weight:500;flex:0 0 45%}
+.acc-val{color:var(--dark);font-weight:600;text-align:right;flex:1}
+
+/* ── FULLSCREEN IMAGE VIEWER ─────────────────── */
+.fs-viewer{
+  position:fixed;inset:0;background:black;z-index:500;
+  display:none;flex-direction:column;
+  animation: fadeIn .25s;
+}
+.fs-viewer.open{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.fs-close{
+  position:absolute;top:50px;right:14px;z-index:10;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;
+  font-size:20px;color:white;font-family:var(--font);
+}
+.fs-img-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  font-size:280px;color:white;
+}
+.fs-thumbs{
+  display:flex;gap:8px;padding:14px 14px 30px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.fs-thumb{
+  width:60px;height:60px;border-radius:10px;
+  background:rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;flex-shrink:0;cursor:pointer;
+  border:2px solid transparent;
+}
+.fs-thumb.on{border-color:var(--green);background:rgba(255,255,255,.2)}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:absolute;bottom:120px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:60;opacity:0;
+  transition:opacity .25s, transform .25s;
+  pointer-events:none;
+  display:flex;align-items:center;gap:6px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- FLOATING TOP ICONS -->
+  <div class="top-icons">
+    <div class="tic-back tic-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+    </div>
+    <div class="tic-right">
+      <div class="tic-btn" id="wishBtn" onclick="toggleWish()">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="#1C1C1C" stroke-width="2"/></svg>
+      </div>
+      <div class="tic-btn" onclick="showToast('Search opens')">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </div>
+      <div class="tic-btn" onclick="showToast('Sharing product...')">
+        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE INDICATOR -->
+  <div class="page-ind" id="pageInd">1 of 3</div>
+
+  <!-- HORIZONTAL PRODUCT PAGER -->
+  <div class="pager" id="pager"></div>
+
+  <!-- SWIPE HINT (auto fades) -->
+  <div class="swipe-hint">← Swipe for next product →</div>
+
+  <!-- STICKY FOOTER -->
+  <div class="sticky-foot">
+    <div class="sf-info">
+      <div class="sf-wt" id="sfWt">52.9 g</div>
+      <div class="sf-price" id="sfPrice">₹25</div>
+      <div class="sf-tax">Inclusive of all taxes</div>
+    </div>
+    <button class="sf-cta" id="sfCta" onclick="handleAdd()">Add to cart</button>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">✓ Added to cart</div>
+
+  <!-- VIEW DETAILS SHEET -->
+  <div class="sheet-bg" id="sheetBg" onclick="closeDetails()">
+    <div class="vd-sheet" id="vdSheet" onclick="event.stopPropagation()">
+      <button class="vd-close" onclick="closeDetails()">✕</button>
+      <div class="vd-head">
+        <div class="vd-img" id="vdImg">🥔</div>
+        <div class="vd-name" id="vdName">Product</div>
+      </div>
+      <div class="vd-body" id="vdBody"></div>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN IMAGE VIEWER -->
+  <div class="fs-viewer" id="fsViewer">
+    <button class="fs-close" onclick="closeFs()">✕</button>
+    <div class="fs-img-wrap" id="fsImg">🥔</div>
+    <div class="fs-thumbs" id="fsThumbs"></div>
+  </div>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// PRODUCT DATA
+// ══════════════════════════════════════════════
+const PRODUCTS = [
+  {
+    id: 1,
+    em: '🥔',
+    images: ['🥔','🍟','🌶️','🥔','🥬'],
+    name: "Lay's India's Magic Masala Potato Chips",
+    brand: "Lay's", brandLogo: "L", brandColor: '#FFEB3B',
+    boughtEarlier: true,
+    rating: 4.4, reviews: '4.3 lac',
+    veg: true,
+    highlights: { 'Shelf Life': '150 days', 'Flavour': 'Magic Masala' },
+    variants: [
+      { wt:'73.7 g', price:35 },
+      { wt:'52.9 g', price:25, default:true },
+    ],
+    keyInfo: {
+      'Type': 'Chips & Crisps',
+      'Diet Preference': 'Plant-Based',
+      'Flavour': 'Magic Masala',
+      'Flavour Family': 'Masala',
+      'Country of Origin': 'India',
+      'Manufacturer': 'PepsiCo India Holdings'
+    },
+    nutrition: {
+      'Energy (kcal)': '545',
+      'Protein per 100g': '6 g',
+      'Total Carbohydrates per 100g': '53 g',
+      'Total Fat per 100g': '34 g',
+      'Total Sugars per 100g': '2.5 g',
+      'Sodium per 100g': '700 mg'
+    },
+    similar: [
+      { em:'🌽', name:"Yellow Diamond Sizzling Cheese Potato Chips", wt:'85 g', price:27, og:50, rating:4.4, reviews:'5.7k' },
+      { em:'🌶️', name:"Lay's West Indies Hot n Sweet Chilli", wt:'52.9 g', price:25, og:0, rating:4.3, reviews:'2.7 lac' },
+      { em:'🍋', name:"Lay's Chile Limon Flavour Potato Chips", wt:'52.9 g', price:25, og:0, rating:4.2, reviews:'1.9 lac' },
+      { em:'🌶️', name:"Bingo Hashtags Spicy Masala Potato Chips", wt:'56.6 g', price:27, og:30, rating:4.1, reviews:'14k' },
+    ]
+  },
+  {
+    id: 2,
+    em: '🌶️',
+    images: ['🌶️','🥔','🌽','🍟','🥩'],
+    name: "Lay's West Indies Hot n Sweet Chilli Flavour Potato Chips",
+    brand: "Lay's", brandLogo: "L", brandColor: '#FFEB3B',
+    boughtEarlier: false,
+    rating: 4.3, reviews: '2.7 lac',
+    veg: true,
+    highlights: { 'Shelf Life': '150 days', 'Flavour': 'Hot n Sweet' },
+    variants: [
+      { wt:'52.9 g', price:25, default:true },
+      { wt:'100 g', price:40 },
+    ],
+    keyInfo: {
+      'Type': 'Chips & Crisps',
+      'Diet Preference': 'Plant-Based',
+      'Flavour': 'Hot n Sweet Chilli',
+      'Flavour Family': 'Spicy',
+      'Country of Origin': 'India',
+      'Manufacturer': 'PepsiCo India Holdings'
+    },
+    nutrition: {
+      'Energy (kcal)': '545',
+      'Protein per 100g': '6 g',
+      'Total Carbohydrates per 100g': '53 g',
+      'Total Fat per 100g': '34 g',
+      'Total Sugars per 100g': '3 g',
+      'Sodium per 100g': '720 mg'
+    },
+    similar: [
+      { em:'🥔', name:"Lay's India's Magic Masala Potato Chips", wt:'52.9 g', price:25, og:0, rating:4.4, reviews:'4.3 lac' },
+      { em:'🍋', name:"Lay's Chile Limon Potato Chips", wt:'52.9 g', price:25, og:0, rating:4.2, reviews:'1.9 lac' },
+      { em:'🌶️', name:"Kurkure Masala Munch Crisps", wt:'75 g', price:20, og:25, rating:4.5, reviews:'5.3 lac' },
+      { em:'🌶️', name:"Bingo Mad Angles Achari Masti", wt:'64 g', price:20, og:22, rating:4.2, reviews:'1.1 lac' },
+    ]
+  },
+  {
+    id: 3,
+    em: '🌽',
+    images: ['🌽','🍿','🌶️','🌽','🧀'],
+    name: "Kurkure Masala Munch Crisps",
+    brand: "Kurkure", brandLogo: "K", brandColor: '#E91E63',
+    boughtEarlier: true,
+    rating: 4.5, reviews: '5.3 lac',
+    veg: true,
+    highlights: { 'Shelf Life': '120 days', 'Flavour': 'Masala' },
+    variants: [
+      { wt:'30 g', price:10 },
+      { wt:'75 g', price:20, default:true },
+      { wt:'114 g', price:35 },
+    ],
+    keyInfo: {
+      'Type': 'Namkeen / Crisps',
+      'Diet Preference': 'Plant-Based',
+      'Flavour': 'Masala Munch',
+      'Flavour Family': 'Masala',
+      'Country of Origin': 'India',
+      'Manufacturer': 'PepsiCo India Holdings'
+    },
+    nutrition: {
+      'Energy (kcal)': '510',
+      'Protein per 100g': '5 g',
+      'Total Carbohydrates per 100g': '60 g',
+      'Total Fat per 100g': '28 g',
+      'Total Sugars per 100g': '4 g',
+      'Sodium per 100g': '850 mg'
+    },
+    similar: [
+      { em:'🌽', name:"Kurkure Puffcorn Yummy Cheese Puffs", wt:'58 g', price:20, og:25, rating:4.3, reviews:'2.5 lac' },
+      { em:'🌽', name:"Kurkure Triangles Chilli Chatka", wt:'65 g', price:20, og:0, rating:4.1, reviews:'78k' },
+      { em:'🥔', name:"Lay's Magic Masala Potato Chips", wt:'52.9 g', price:25, og:0, rating:4.4, reviews:'4.3 lac' },
+      { em:'🥜', name:"Haldiram's Aloo Bhujia 400g", wt:'400 g', price:130, og:150, rating:4.5, reviews:'89k' },
+    ]
+  },
+];
+
+let currentIdx = 0;
+let wished = new Set();
+let cart = {}; // productId-variantIdx → qty
+let currentVariant = {}; // productId → variantIdx
+
+// ══════════════════════════════════════════════
+// RENDER PRODUCT PAGES
+// ══════════════════════════════════════════════
+function buildPager() {
+  const pager = document.getElementById('pager');
+  pager.innerHTML = PRODUCTS.map((p, idx) => buildPage(p, idx)).join('');
+  PRODUCTS.forEach(p => {
+    currentVariant[p.id] = p.variants.findIndex(v => v.default);
+    if (currentVariant[p.id] < 0) currentVariant[p.id] = 0;
+  });
+  setupGalleryListeners();
+  updateFooter();
+}
+
+function buildPage(p, idx) {
+  const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+
+  const galleryHTML = p.images.map((em,i) =>
+    `<div class="gimg" onclick="openFs(${idx},${i})">${em}</div>`
+  ).join('');
+  const dotsHTML = p.images.map((_,i) =>
+    `<div class="gd${i===0?' on':''}"></div>`
+  ).join('');
+
+  const hlPills = Object.entries(p.highlights).map(([k,v])=>`
+    <div class="hl-pill">
+      <div class="hl-pill-label">${k}</div>
+      <div class="hl-pill-val">${v}</div>
+    </div>`).join('');
+
+  const variantsHTML = p.variants.map((v,i) =>`
+    <div class="variant-card${v.default?' active':''}" data-pid="${p.id}" data-vidx="${i}" onclick="selectVariant(${p.id},${i},this)">
+      <div class="variant-wt">${v.wt}</div>
+      <div class="variant-price">₹${v.price}</div>
+    </div>`).join('');
+
+  const similarHTML = p.similar.map((s,si) =>{
+    const sStars = '★'.repeat(Math.round(s.rating)) + '☆'.repeat(5-Math.round(s.rating));
+    return `<div class="sim-card">
+      <div class="sim-img">
+        ${s.em}
+        <div class="sim-veg"></div>
+        <button class="sim-add" id="simadd-${idx}-${si}" onclick="addSim(event,${idx},${si},this)">ADD</button>
+      </div>
+      <div class="sim-body">
+        <div class="sim-wt">${s.wt}</div>
+        <div class="sim-price-row">
+          <div class="sim-price">₹${s.price}</div>
+          ${s.og>0?`<div class="sim-og">₹${s.og}</div>`:''}
+        </div>
+        <div class="sim-name">${s.name}</div>
+        <div class="sim-rating">
+          <span class="sim-stars">${sStars.slice(0,5)}</span>
+          <span class="sim-rcount">${s.rating} · ${s.reviews}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="product-page" data-idx="${idx}">
+
+    <!-- Gallery -->
+    <div class="gallery">
+      <div class="gallery-track" id="gal-${idx}">${galleryHTML}</div>
+      <div class="gallery-dots" id="dots-${idx}">${dotsHTML}</div>
+      ${p.veg ? '<div class="veg-corner"></div>' : ''}
+    </div>
+
+    <!-- Highlights row -->
+    <div class="hl-row">
+      ${hlPills}
+      <div class="hl-details" onclick="openDetails(${idx})">View<br>details</div>
+    </div>
+
+    <!-- Bought earlier + rating -->
+    <div class="be-row">
+      ${p.boughtEarlier?'<span class="be-tag">Bought Earlier</span>':''}
+      <div class="be-stars">
+        <span class="be-stars-svg">${stars.slice(0,5)}</span>
+        <span class="be-rev">${p.reviews}</span>
+      </div>
+    </div>
+
+    <!-- Product name -->
+    <div class="prod-name">${p.name}</div>
+
+    <div class="divider"></div>
+
+    <!-- Variants -->
+    <div class="variant-block">
+      <div class="variant-title">Select Unit</div>
+      <div class="variant-row">${variantsHTML}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Brand explore -->
+    <div style="height:14px"></div>
+    <div class="brand-row" onclick="showToast('Opening ${p.brand} store')">
+      <div class="brand-logo" style="background:${p.brandColor}">${p.brandLogo}</div>
+      <div class="brand-info">
+        <div class="brand-name">${p.brand}</div>
+        <div class="brand-sub">Explore all products</div>
+      </div>
+      <div class="brand-arr">›</div>
+    </div>
+
+    <!-- Trust badge -->
+    <div class="trust-row">
+      <div class="trust-ic">📦</div>
+      <div class="trust-txt">72 hours only replacement</div>
+      <div class="trust-arr">›</div>
+    </div>
+
+    <!-- Similar products -->
+    <div class="sim-block">
+      <div class="sim-title">Similar products</div>
+      <div class="sim-grid">${similarHTML}</div>
+    </div>
+
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// GALLERY DOTS LISTENER
+// ══════════════════════════════════════════════
+function setupGalleryListeners() {
+  PRODUCTS.forEach((p, idx) => {
+    const track = document.getElementById('gal-'+idx);
+    const dots = document.getElementById('dots-'+idx);
+    track.addEventListener('scroll', () => {
+      const w = track.clientWidth;
+      const i = Math.round(track.scrollLeft / w);
+      [...dots.children].forEach((d,di) => d.classList.toggle('on', di===i));
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+// PAGER SCROLL → ACTIVE PRODUCT
+// ══════════════════════════════════════════════
+const pager = document.getElementById('pager');
+const pageInd = document.getElementById('pageInd');
+let indHideTimer;
+pager.addEventListener('scroll', () => {
+  const w = pager.clientWidth;
+  const idx = Math.round(pager.scrollLeft / w);
+  if (idx !== currentIdx) {
+    currentIdx = idx;
+    updateFooter();
+    updateWishIcon();
+    pageInd.textContent = `${idx+1} of ${PRODUCTS.length}`;
+    pageInd.classList.add('show');
+    clearTimeout(indHideTimer);
+    indHideTimer = setTimeout(()=>pageInd.classList.remove('show'), 900);
+  }
+});
+
+// ══════════════════════════════════════════════
+// VARIANT SELECTION
+// ══════════════════════════════════════════════
+function selectVariant(pid, vidx, el) {
+  currentVariant[pid] = vidx;
+  el.parentElement.querySelectorAll('.variant-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  updateFooter();
+}
+
+// ══════════════════════════════════════════════
+// FOOTER UPDATE
+// ══════════════════════════════════════════════
+function updateFooter() {
+  const p = PRODUCTS[currentIdx];
+  const v = p.variants[currentVariant[p.id]];
+  document.getElementById('sfWt').textContent = v.wt;
+  document.getElementById('sfPrice').textContent = '₹'+v.price;
+
+  const cartKey = p.id+'-'+currentVariant[p.id];
+  const qty = cart[cartKey] || 0;
+  const cta = document.getElementById('sfCta');
+  if (qty > 0) {
+    cta.classList.add('in-cart');
+    cta.innerHTML = `
+      <button class="qty-btn" onclick="changeQty(event,-1)">−</button>
+      <span class="qty-num">${qty} in cart</span>
+      <button class="qty-btn" onclick="changeQty(event,1)">+</button>`;
+  } else {
+    cta.classList.remove('in-cart');
+    cta.innerHTML = 'Add to cart';
+  }
+}
+
+function handleAdd() {
+  const p = PRODUCTS[currentIdx];
+  const cartKey = p.id+'-'+currentVariant[p.id];
+  cart[cartKey] = (cart[cartKey] || 0) + 1;
+  updateFooter();
+  showToast('✓ Added to cart');
+}
+
+function changeQty(e, delta) {
+  e.stopPropagation();
+  const p = PRODUCTS[currentIdx];
+  const cartKey = p.id+'-'+currentVariant[p.id];
+  cart[cartKey] = Math.max(0, (cart[cartKey] || 0) + delta);
+  if (cart[cartKey] === 0) delete cart[cartKey];
+  updateFooter();
+}
+
+// ══════════════════════════════════════════════
+// WISHLIST
+// ══════════════════════════════════════════════
+function toggleWish() {
+  const p = PRODUCTS[currentIdx];
+  if (wished.has(p.id)) { wished.delete(p.id); showToast('Removed from wishlist'); }
+  else { wished.add(p.id); showToast('❤ Added to wishlist'); }
+  updateWishIcon();
+}
+function updateWishIcon() {
+  const p = PRODUCTS[currentIdx];
+  const btn = document.getElementById('wishBtn');
+  if (wished.has(p.id)) btn.classList.add('wished');
+  else btn.classList.remove('wished');
+  // Update icon SVG fill
+  const svg = btn.querySelector('svg path');
+  if (wished.has(p.id)) svg.setAttribute('fill','#E23744'), svg.setAttribute('stroke','#E23744');
+  else svg.setAttribute('fill','none'), svg.setAttribute('stroke','#1C1C1C');
+}
+
+// ══════════════════════════════════════════════
+// SIMILAR PRODUCTS ADD
+// ══════════════════════════════════════════════
+function addSim(e, idx, si, btn) {
+  e.stopPropagation();
+  btn.textContent = '✓ ADDED';
+  btn.classList.add('added');
+  setTimeout(() => { btn.textContent = 'ADD'; btn.classList.remove('added'); }, 1200);
+  showToast('✓ Added to cart');
+}
+
+// ══════════════════════════════════════════════
+// VIEW DETAILS SHEET
+// ══════════════════════════════════════════════
+function openDetails(idx) {
+  const p = PRODUCTS[idx];
+  document.getElementById('vdImg').textContent = p.em;
+  document.getElementById('vdName').textContent = p.name;
+
+  const hlsHTML = Object.entries(p.highlights).map(([k,v])=>`
+    <div class="vd-pill"><div class="vd-pill-lbl">${k}</div><div class="vd-pill-val">${v}</div></div>
+  `).join('');
+
+  const keyHTML = Object.entries(p.keyInfo).map(([k,v])=>`
+    <div class="acc-row"><div class="acc-key">${k}</div><div class="acc-val">${v}</div></div>
+  `).join('');
+
+  const nutHTML = Object.entries(p.nutrition).map(([k,v])=>`
+    <div class="acc-row"><div class="acc-key">${k}</div><div class="acc-val">${v}</div></div>
+  `).join('');
+
+  document.getElementById('vdBody').innerHTML = `
+    <div class="vd-section-title">Highlights</div>
+    <div class="vd-pills">${hlsHTML}</div>
+
+    <div class="vd-section-title">All details</div>
+
+    <div class="acc open" onclick="this.classList.toggle('open');event.stopPropagation()">
+      <div class="acc-head">
+        <div class="acc-title">Key Information</div>
+        <div class="acc-arr">▼</div>
+      </div>
+      <div class="acc-body">${keyHTML}</div>
+    </div>
+
+    <div class="acc" onclick="this.classList.toggle('open');event.stopPropagation()">
+      <div class="acc-head">
+        <div class="acc-title">Nutritional Information</div>
+        <div class="acc-arr">▼</div>
+      </div>
+      <div class="acc-body">${nutHTML}</div>
+    </div>
+  `;
+
+  document.getElementById('sheetBg').classList.add('show');
+  document.getElementById('vdSheet').classList.add('open');
+}
+
+function closeDetails() {
+  document.getElementById('sheetBg').classList.remove('show');
+  document.getElementById('vdSheet').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// FULLSCREEN IMAGE VIEWER
+// ══════════════════════════════════════════════
+let fsCurrentIdx = 0, fsImgIdx = 0;
+function openFs(pIdx, imgIdx) {
+  fsCurrentIdx = pIdx;
+  fsImgIdx = imgIdx;
+  const p = PRODUCTS[pIdx];
+  document.getElementById('fsImg').textContent = p.images[imgIdx];
+
+  document.getElementById('fsThumbs').innerHTML = p.images.map((em,i)=>
+    `<div class="fs-thumb${i===imgIdx?' on':''}" onclick="setFsImg(${i})">${em}</div>`
+  ).join('');
+
+  document.getElementById('fsViewer').classList.add('open');
+}
+function setFsImg(i) {
+  fsImgIdx = i;
+  const p = PRODUCTS[fsCurrentIdx];
+  document.getElementById('fsImg').textContent = p.images[i];
+  [...document.getElementById('fsThumbs').children].forEach((t,ti) => t.classList.toggle('on', ti===i));
+}
+function closeFs() {
+  document.getElementById('fsViewer').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+buildPager();
+</script>
+</body>
+</html>

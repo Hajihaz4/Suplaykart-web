@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Coming Soon</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --whatsapp:#25D366;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* DEMO TOGGLES */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 8px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* HEADER */
+.hdr{
+  flex-shrink:0;background:white;
+  padding:44px 14px 12px;
+  display:flex;align-items:center;gap:10px;
+  position:relative;z-index:5;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:transform .15s;
+}
+.hdr-back:active{transform:scale(.92)}
+.hdr-back svg{width:18px;height:18px;fill:var(--dark)}
+.hdr-loc{flex:1;min-width:0;cursor:pointer}
+.hdr-loc-row1{
+  display:flex;align-items:center;gap:5px;
+  font-size:14px;font-weight:800;color:var(--dark);letter-spacing:-.2px;
+}
+.hdr-loc-row1 svg{width:13px;height:13px;fill:var(--red)}
+.hdr-loc-row1 .chev{font-size:10px;color:var(--gray)}
+.hdr-loc-row2{
+  font-size:11px;color:var(--gray);font-weight:600;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hdr-help{
+  font-size:11px;font-weight:700;color:var(--green);
+  background:var(--green-lt);padding:7px 11px;border-radius:18px;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+}
+.hdr-help svg{width:12px;height:12px;fill:currentColor}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;scrollbar-width:none;background:white;padding-bottom:18px}
+.main::-webkit-scrollbar{display:none}
+
+/* HERO ILLUSTRATION */
+.hero{
+  position:relative;
+  background:linear-gradient(180deg,var(--green-lt) 0%,#F4FBF5 60%,#FFFFFF 100%);
+  padding:24px 0 28px;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,rgba(12,131,31,.04) 0,rgba(12,131,31,.04) 1px,transparent 1px,transparent 18px);
+  pointer-events:none;
+}
+
+.hero-svg-wrap{
+  position:relative;width:100%;height:200px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* The map illustration */
+.map-illust{
+  width:300px;height:200px;position:relative;
+}
+
+.region-bg{
+  position:absolute;inset:0;
+  background:white;border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 8px 22px rgba(12,131,31,.08);
+  border:1px solid var(--green-lt);
+}
+
+.region-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(to right,rgba(12,131,31,.07) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(12,131,31,.07) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+
+/* Service area circle (Nagore) */
+.svc-area{
+  position:absolute;
+  left:60px;top:90px;
+  width:90px;height:90px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(12,131,31,.25) 0%,rgba(12,131,31,.05) 70%,transparent 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.svc-area::before{
+  content:'';position:absolute;inset:0;
+  border-radius:50%;
+  border:2px dashed var(--green);
+  opacity:.7;
+  animation:rotateRing 18s linear infinite;
+}
+@keyframes rotateRing{
+  to{transform:rotate(360deg)}
+}
+.svc-pin{
+  width:32px;height:38px;
+  position:relative;z-index:2;
+  animation:pinFloat 2s ease-in-out infinite;
+}
+@keyframes pinFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+.svc-pin svg{width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}
+.svc-label{
+  position:absolute;
+  top:-8px;left:50%;
+  transform:translateX(-50%);
+  background:var(--green);color:white;
+  font-size:9px;font-weight:800;
+  padding:3px 9px;border-radius:11px;
+  white-space:nowrap;letter-spacing:.3px;
+  z-index:3;
+  box-shadow:0 2px 6px rgba(12,131,31,.3);
+}
+.svc-label::after{
+  content:'';position:absolute;
+  bottom:-4px;left:50%;
+  transform:translateX(-50%) rotate(45deg);
+  width:6px;height:6px;background:var(--green);
+}
+
+/* User location pin (faraway) */
+.user-area{
+  position:absolute;
+  right:50px;top:30px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.user-pin{
+  width:28px;height:34px;position:relative;
+  animation:pinFloat 1.6s ease-in-out infinite;
+  animation-delay:.4s;
+}
+.user-pin svg{width:100%;height:100%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.2))}
+.user-label{
+  background:var(--dark);color:white;
+  font-size:9px;font-weight:800;
+  padding:3px 9px;border-radius:11px;
+  white-space:nowrap;letter-spacing:.3px;
+}
+
+.user-pulse{
+  position:absolute;
+  top:0;left:50%;
+  transform:translateX(-50%);
+  width:30px;height:30px;border-radius:50%;
+  background:var(--red);opacity:.3;
+  animation:pulseRing 2.2s ease-out infinite;
+}
+@keyframes pulseRing{
+  0%{transform:translateX(-50%) scale(.7);opacity:.5}
+  100%{transform:translateX(-50%) scale(2.2);opacity:0}
+}
+
+/* Connecting line */
+.connect-line{
+  position:absolute;
+  left:0;top:0;width:100%;height:100%;
+  pointer-events:none;
+}
+
+/* Distance label on the line */
+.distance-label{
+  position:absolute;
+  left:50%;top:75px;
+  transform:translateX(-50%) rotate(-22deg);
+  background:white;
+  padding:4px 10px;border-radius:11px;
+  border:1.5px dashed var(--gray-lt);
+  font-size:10px;font-weight:800;color:var(--dark);
+  display:flex;align-items:center;gap:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  z-index:4;
+}
+.distance-label svg{width:10px;height:10px;fill:var(--gray)}
+
+/* Sad scooter floating bottom-right */
+.scooter-art{
+  position:absolute;
+  bottom:14px;right:14px;
+  font-size:34px;line-height:1;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.1));
+  animation:scooterShake 3s ease-in-out infinite;
+}
+@keyframes scooterShake{
+  0%,100%{transform:rotate(-5deg)}
+  50%{transform:rotate(5deg)}
+}
+
+/* MESSAGE BLOCK */
+.msg{
+  text-align:center;
+  padding:8px 28px 20px;
+  position:relative;z-index:5;
+}
+.msg-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--orange-lt);color:var(--orange);
+  font-size:10px;font-weight:800;letter-spacing:.5px;
+  padding:5px 12px;border-radius:14px;
+  text-transform:uppercase;margin-bottom:14px;
+}
+.msg-tag svg{width:11px;height:11px;fill:currentColor}
+.msg-title{
+  font-size:22px;font-weight:900;color:var(--dark);
+  letter-spacing:-.5px;line-height:1.15;
+  margin-bottom:8px;
+}
+.msg-title .green{color:var(--green)}
+.msg-sub{
+  font-size:13px;color:var(--gray);
+  line-height:1.55;font-weight:500;
+}
+.msg-sub strong{color:var(--dark);font-weight:700}
+
+/* WAITLIST CARD */
+.waitlist-card{
+  margin:16px 14px 0;
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  border-radius:16px;padding:18px 16px 14px;
+  color:white;position:relative;overflow:hidden;
+  box-shadow:0 10px 26px rgba(12,131,31,.25);
+}
+.waitlist-card::before{
+  content:'';position:absolute;
+  top:-30px;right:-30px;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(255,255,255,.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.waitlist-card::after{
+  content:'';position:absolute;
+  bottom:-40px;left:-40px;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.wl-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.2);
+  font-size:10px;font-weight:800;letter-spacing:.5px;
+  padding:4px 10px;border-radius:11px;
+  text-transform:uppercase;margin-bottom:10px;
+  position:relative;z-index:2;
+}
+.wl-badge .live-dot{
+  width:6px;height:6px;border-radius:50%;background:#76FF03;
+  animation:livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.5;transform:scale(.7)}
+}
+
+.wl-title{
+  font-size:17px;font-weight:900;letter-spacing:-.3px;
+  line-height:1.2;margin-bottom:5px;position:relative;z-index:2;
+}
+.wl-sub{
+  font-size:11.5px;color:rgba(255,255,255,.85);
+  font-weight:500;line-height:1.5;
+  position:relative;z-index:2;
+}
+
+/* Waitlist progress */
+.wl-progress{
+  margin-top:14px;position:relative;z-index:2;
+  background:rgba(0,0,0,.25);
+  border-radius:11px;padding:11px 12px;
+}
+.wl-progress-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:7px;
+}
+.wl-progress-l{font-size:11px;font-weight:700;color:rgba(255,255,255,.85)}
+.wl-progress-r{font-size:13px;font-weight:900;color:white;letter-spacing:-.2px}
+.wl-progress-r .target{font-size:10px;color:rgba(255,255,255,.6);font-weight:700}
+.wl-bar{
+  height:5px;background:rgba(255,255,255,.18);
+  border-radius:3px;overflow:hidden;position:relative;
+}
+.wl-bar-fill{
+  height:100%;width:62%;
+  background:linear-gradient(90deg,#76FF03,#B2FF59);
+  border-radius:3px;
+  position:relative;overflow:hidden;
+  transition:width .8s cubic-bezier(.22,1,.36,1);
+}
+.wl-bar-fill::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
+  animation:shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+
+/* NOTIFY ME FORM */
+.notify-form{
+  margin-top:14px;
+  display:flex;gap:8px;
+  position:relative;z-index:2;
+}
+.notify-input{
+  flex:1;background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.3);
+  border-radius:11px;padding:11px 14px;
+  font-family:var(--font);font-size:13px;
+  font-weight:700;color:white;outline:none;
+  transition:all .2s;
+}
+.notify-input::placeholder{color:rgba(255,255,255,.6);font-weight:500}
+.notify-input:focus{
+  background:rgba(255,255,255,.22);
+  border-color:rgba(255,255,255,.5);
+}
+.notify-btn{
+  background:white;color:var(--green);
+  border:none;border-radius:11px;padding:0 18px;
+  font-family:var(--font);font-size:12px;font-weight:900;cursor:pointer;
+  transition:transform .15s;
+  display:flex;align-items:center;gap:5px;
+  letter-spacing:-.1px;
+}
+.notify-btn:active{transform:scale(.97)}
+.notify-btn svg{width:13px;height:13px;fill:var(--green)}
+
+.notify-success{
+  display:none;
+  margin-top:14px;background:rgba(255,255,255,.15);
+  border-radius:11px;padding:12px 14px;
+  text-align:center;
+  position:relative;z-index:2;
+  animation:fadeIn .3s ease-out;
+}
+.notify-success.show{display:block}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.notify-success-em{font-size:24px;display:block;margin-bottom:5px}
+.notify-success-title{font-size:14px;font-weight:900;color:white;letter-spacing:-.2px}
+.notify-success-sub{font-size:11px;color:rgba(255,255,255,.85);margin-top:3px;font-weight:500;line-height:1.5}
+.notify-success-pos{
+  display:inline-flex;align-items:center;gap:4px;
+  background:white;color:var(--green);
+  font-size:11px;font-weight:900;
+  padding:3px 10px;border-radius:11px;margin-top:8px;
+}
+
+/* SECTION TITLE */
+.sec-title{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:24px 18px 8px;
+}
+
+/* WHERE WE OPERATE */
+.cities-card{
+  margin:0 14px;
+  background:white;border:1.5px solid var(--border);
+  border-radius:14px;overflow:hidden;
+}
+.city-row{
+  padding:13px 14px;
+  display:flex;align-items:center;gap:11px;
+  border-top:1px solid var(--border-lt);
+  cursor:pointer;transition:background .15s;
+}
+.city-row:first-child{border-top:none}
+.city-row:active{background:var(--light)}
+.city-em{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.city-em svg{width:17px;height:17px;fill:var(--green)}
+.city-info{flex:1;min-width:0}
+.city-name{
+  font-size:13px;font-weight:800;color:var(--dark);
+  display:flex;align-items:center;gap:6px;letter-spacing:-.1px;
+}
+.city-tag{
+  font-size:8px;font-weight:800;letter-spacing:.4px;
+  padding:2px 6px;border-radius:7px;
+  text-transform:uppercase;
+}
+.city-tag.live{background:var(--green-lt);color:var(--green)}
+.city-tag.soon{background:var(--orange-lt);color:var(--orange)}
+.city-meta{font-size:10.5px;color:var(--gray);margin-top:2px;font-weight:600}
+.city-arr{font-size:14px;color:var(--gray-lt)}
+
+/* PICK SERVICE NOTE */
+.pick-note{
+  margin:14px 14px 0;
+  background:var(--orange-lt);
+  border:1px solid #FFCBA0;
+  border-radius:14px;padding:14px;
+  display:flex;align-items:flex-start;gap:11px;
+}
+.pick-em{
+  width:36px;height:36px;border-radius:9px;
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:18px;
+}
+.pick-info{flex:1;min-width:0}
+.pick-title{
+  font-size:13px;font-weight:800;color:#9A4400;letter-spacing:-.1px;
+  display:flex;align-items:center;gap:6px;
+}
+.pick-tag{
+  font-size:8px;font-weight:800;letter-spacing:.4px;
+  background:var(--orange);color:white;
+  padding:2px 6px;border-radius:7px;text-transform:uppercase;
+}
+.pick-sub{font-size:11px;color:#7A3500;margin-top:3px;line-height:1.5;font-weight:500}
+.pick-cta{
+  font-size:11px;font-weight:800;color:var(--orange);
+  margin-top:6px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:3px;
+}
+
+/* INVITE FRIENDS */
+.invite-card{
+  margin:14px 14px 0;
+  background:linear-gradient(135deg,#FFF8E1 0%,#FFFEF5 100%);
+  border:1.5px dashed #FFB300;
+  border-radius:14px;padding:14px;
+}
+.invite-row{display:flex;align-items:center;gap:11px}
+.invite-em{font-size:30px;line-height:1;flex-shrink:0}
+.invite-info{flex:1;min-width:0}
+.invite-title{font-size:13px;font-weight:900;color:var(--dark);letter-spacing:-.2px}
+.invite-sub{font-size:11px;color:var(--gray);margin-top:3px;line-height:1.5;font-weight:500}
+.invite-sub strong{color:#B8860B}
+.invite-actions{display:flex;gap:7px;margin-top:11px}
+.invite-btn{
+  flex:1;background:white;border:1.5px solid var(--border);
+  border-radius:9px;padding:9px 8px;cursor:pointer;
+  font-family:var(--font);font-size:11px;font-weight:800;color:var(--dark);
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .15s;
+}
+.invite-btn:active{transform:scale(.97)}
+.invite-btn.wa{background:var(--whatsapp);color:white;border-color:var(--whatsapp)}
+.invite-btn svg{width:13px;height:13px;fill:currentColor}
+
+/* BROWSE ANYWAY */
+.browse-card{
+  margin:14px 14px 0;
+  background:white;border:1.5px solid var(--border);
+  border-radius:14px;padding:14px;
+  display:flex;align-items:center;gap:11px;cursor:pointer;
+  transition:transform .15s, background .15s;
+}
+.browse-card:active{transform:scale(.99);background:var(--light)}
+.browse-em{
+  width:36px;height:36px;border-radius:9px;
+  background:#E3F2FD;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.browse-em svg{width:18px;height:18px;fill:#1565C0}
+.browse-info{flex:1;min-width:0}
+.browse-title{font-size:13px;font-weight:800;color:var(--dark);letter-spacing:-.1px}
+.browse-sub{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.4;font-weight:500}
+.browse-arr{font-size:16px;color:var(--gray-lt)}
+
+/* HELP CARD */
+.help-card{
+  margin:14px 14px 0;
+  background:linear-gradient(135deg,#1DB954 0%,#0FA341 100%);
+  border-radius:14px;padding:14px;color:white;
+  display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:transform .15s;
+  box-shadow:0 4px 12px rgba(37,211,102,.25);
+}
+.help-card:active{transform:scale(.99)}
+.help-em{font-size:26px;line-height:1;flex-shrink:0}
+.help-info{flex:1;min-width:0}
+.help-title{font-size:13px;font-weight:900;letter-spacing:-.2px}
+.help-sub{font-size:11px;color:rgba(255,255,255,.9);margin-top:2px;line-height:1.4;font-weight:500}
+.help-arr{font-size:16px;color:rgba(255,255,255,.7)}
+
+/* FOOTER LOGO */
+.footer-brand{
+  text-align:center;padding:24px 0 16px;
+}
+.footer-logo{
+  width:46px;height:46px;border-radius:11px;
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:22px;font-weight:900;
+  margin:0 auto 8px;
+  font-family:var(--font);
+}
+.footer-tag{
+  font-size:11px;font-weight:700;color:var(--gray);
+  font-style:italic;letter-spacing:-.1px;
+}
+.footer-tag .green{color:var(--green);font-style:normal;font-weight:800}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:30px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-label">User Location</div>
+    <div class="demo-row">
+      <button class="db on" onclick="setLocation('chennai')">Chennai</button>
+      <button class="db" onclick="setLocation('madurai')">Madurai</button>
+      <button class="db" onclick="setLocation('bangalore')">Bangalore</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="hdr-loc" onclick="showToast('Change location')">
+      <div class="hdr-loc-row1">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        <span id="userCity">Chennai</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="hdr-loc-row2" id="userArea">T Nagar · Tamil Nadu</div>
+    </div>
+    <div class="hdr-help" onclick="showToast('Opening WhatsApp...')">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+      Help
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-svg-wrap">
+        <div class="map-illust">
+          <div class="region-bg">
+            <div class="region-grid"></div>
+
+            <!-- Connecting curved dashed line between user and Nagore -->
+            <svg class="connect-line" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <defs>
+                <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                  <path d="M 0 0 L 6 3 L 0 6 z" fill="#9CA3AF"/>
+                </marker>
+              </defs>
+              <path d="M 105 130 Q 165 70, 230 55"
+                stroke="#9CA3AF" stroke-width="1.5"
+                stroke-dasharray="5 4" fill="none"
+                marker-end="url(#arrow)"/>
+            </svg>
+
+            <!-- Service area (Nagore) -->
+            <div class="svc-area">
+              <div class="svc-label">Suplaykart</div>
+              <div class="svc-pin">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 0C7.58 0 4 3.58 4 8c0 6 8 16 8 16s8-10 8-16c0-4.42-3.58-8-8-8z" fill="#0C831F"/>
+                  <circle cx="12" cy="8" r="3" fill="white"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- User location -->
+            <div class="user-area">
+              <div style="position:relative">
+                <div class="user-pulse"></div>
+                <div class="user-pin">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C7.58 0 4 3.58 4 8c0 6 8 16 8 16s8-10 8-16c0-4.42-3.58-8-8-8z" fill="#E23744"/>
+                    <circle cx="12" cy="8" r="3" fill="white"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="user-label" id="userLabel">You're here</div>
+            </div>
+
+            <!-- Distance badge -->
+            <div class="distance-label">
+              <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+              <span id="distanceText">~324 km away</span>
+            </div>
+
+            <!-- Sad scooter -->
+            <div class="scooter-art">🛵</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGE -->
+      <div class="msg">
+        <div class="msg-tag">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/></svg>
+          Out of service area
+        </div>
+        <div class="msg-title">We don't deliver in <span class="green" id="msgCity">Chennai</span> yet</div>
+        <div class="msg-sub">
+          Suplaykart currently serves <strong>Nagore</strong> only. We're working hard to expand soon — drop your number to be the first to know!
+        </div>
+      </div>
+    </div>
+
+    <!-- WAITLIST CARD -->
+    <div class="waitlist-card">
+      <div class="wl-badge">
+        <span class="live-dot"></span>
+        Join the waitlist
+      </div>
+      <div class="wl-title">Be the first to shop when we launch in your city 🎉</div>
+      <div class="wl-sub">Get exclusive ₹100 OFF on your first order + free delivery for the first month.</div>
+
+      <!-- Progress -->
+      <div class="wl-progress">
+        <div class="wl-progress-row">
+          <div class="wl-progress-l">
+            <span id="wlCity">Chennai</span> waitlist
+          </div>
+          <div class="wl-progress-r">
+            <span id="wlCount">624</span> <span class="target">/ 1,000 needed</span>
+          </div>
+        </div>
+        <div class="wl-bar"><div class="wl-bar-fill" id="wlBar" style="width:62%"></div></div>
+      </div>
+
+      <!-- Phone form -->
+      <div class="notify-form" id="notifyForm">
+        <input type="tel" class="notify-input" id="phoneInput" placeholder="Enter your mobile number" maxlength="10">
+        <button class="notify-btn" onclick="submitNotify()">
+          Notify me
+          <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </button>
+      </div>
+
+      <!-- Success state (hidden initially) -->
+      <div class="notify-success" id="notifySuccess">
+        <span class="notify-success-em">🎉</span>
+        <div class="notify-success-title">You're on the list!</div>
+        <div class="notify-success-sub">We'll WhatsApp you the moment we launch in your city. Thanks for believing in us!</div>
+        <div class="notify-success-pos">
+          <span>📍</span>
+          You're #<span id="userPos">625</span> in <span id="successCity">Chennai</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHERE WE OPERATE -->
+    <div class="sec-title">Where Suplaykart operates</div>
+    <div class="cities-card">
+      <div class="city-row" onclick="switchToNagore()">
+        <div class="city-em">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        </div>
+        <div class="city-info">
+          <div class="city-name">
+            Nagore
+            <span class="city-tag live">● Live</span>
+          </div>
+          <div class="city-meta">10-min delivery · Nagapattinam district</div>
+        </div>
+        <div class="city-arr">›</div>
+      </div>
+      <div class="city-row" onclick="showToast('Coming soon to Nagapattinam')">
+        <div class="city-em" style="background:var(--orange-lt)">
+          <svg viewBox="0 0 24 24" style="fill:var(--orange)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        </div>
+        <div class="city-info">
+          <div class="city-name">
+            Nagapattinam Town
+            <span class="city-tag soon">Coming Soon</span>
+          </div>
+          <div class="city-meta">Expected launch · June 2026</div>
+        </div>
+        <div class="city-arr">›</div>
+      </div>
+      <div class="city-row" onclick="showToast('Coming soon to Velankanni')">
+        <div class="city-em" style="background:var(--orange-lt)">
+          <svg viewBox="0 0 24 24" style="fill:var(--orange)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        </div>
+        <div class="city-info">
+          <div class="city-name">
+            Velankanni
+            <span class="city-tag soon">Coming Soon</span>
+          </div>
+          <div class="city-meta">Expected launch · August 2026</div>
+        </div>
+        <div class="city-arr">›</div>
+      </div>
+    </div>
+
+    <!-- PICK & DROP NOTE -->
+    <div class="pick-note">
+      <div class="pick-em">📦</div>
+      <div class="pick-info">
+        <div class="pick-title">
+          Need something picked up in Nagore?
+          <span class="pick-tag">PICK</span>
+        </div>
+        <div class="pick-sub">Even if you're elsewhere, you can use our Pick &amp; Drop service to send packages within Nagore for ₹49 flat.</div>
+        <div class="pick-cta" onclick="showToast('Opening Pick service')">Use Pick &amp; Drop ›</div>
+      </div>
+    </div>
+
+    <!-- INVITE FRIENDS -->
+    <div class="invite-card">
+      <div class="invite-row">
+        <div class="invite-em">🚀</div>
+        <div class="invite-info">
+          <div class="invite-title">Speed up our launch in your city!</div>
+          <div class="invite-sub">When we hit <strong>1,000 signups</strong>, we'll launch in your city within <strong>30 days</strong>. Invite friends to join faster!</div>
+        </div>
+      </div>
+      <div class="invite-actions">
+        <button class="invite-btn wa" onclick="showToast('Sharing via WhatsApp...')">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Share on WhatsApp
+        </button>
+        <button class="invite-btn" onclick="copyLink()">
+          <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- BROWSE ANYWAY -->
+    <div class="browse-card" onclick="showToast('Browsing demo catalog...')">
+      <div class="browse-em">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"/></svg>
+      </div>
+      <div class="browse-info">
+        <div class="browse-title">Browse our catalog anyway</div>
+        <div class="browse-sub">See what we sell in Nagore (you can't order from here)</div>
+      </div>
+      <div class="browse-arr">›</div>
+    </div>
+
+    <!-- WHATSAPP HELP -->
+    <div class="help-card" onclick="showToast('Opening WhatsApp +91 94878 67816')">
+      <div class="help-em">💬</div>
+      <div class="help-info">
+        <div class="help-title">Have a question?</div>
+        <div class="help-sub">Chat with us on WhatsApp · 10am–10pm</div>
+      </div>
+      <div class="help-arr">›</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-brand">
+      <div class="footer-logo">S</div>
+      <div class="footer-tag">Where every <span class="green">second</span> counts!</div>
+    </div>
+
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">Done</div>
+
+</div>
+
+<script>
+const LOCATIONS = {
+  chennai:  { city:'Chennai',   area:'T Nagar · Tamil Nadu',     dist:'~324 km away', count:624, pos:625 },
+  madurai:  { city:'Madurai',   area:'Anna Nagar · Tamil Nadu',  dist:'~248 km away', count:312, pos:313 },
+  bangalore:{ city:'Bangalore', area:'Koramangala · Karnataka',  dist:'~512 km away', count:892, pos:893 }
+};
+
+let currentLoc = 'chennai';
+
+function setLocation(key) {
+  currentLoc = key;
+  const data = LOCATIONS[key];
+
+  // Update toggle buttons
+  document.querySelectorAll('.demo .db').forEach(b => b.classList.remove('on'));
+  const idx = key === 'chennai' ? 0 : key === 'madurai' ? 1 : 2;
+  document.querySelectorAll('.demo .db')[idx].classList.add('on');
+
+  // Update header
+  document.getElementById('userCity').textContent = data.city;
+  document.getElementById('userArea').textContent = data.area;
+
+  // Update hero
+  document.getElementById('userLabel').textContent = `You're in ${data.city}`;
+  document.getElementById('distanceText').textContent = data.dist;
+  document.getElementById('msgCity').textContent = data.city;
+
+  // Update waitlist
+  document.getElementById('wlCity').textContent = data.city;
+  document.getElementById('wlCount').textContent = data.count.toLocaleString();
+  const pct = Math.min(100, Math.round((data.count/1000)*100));
+  document.getElementById('wlBar').style.width = pct + '%';
+
+  // Reset success
+  document.getElementById('notifyForm').style.display = 'flex';
+  document.getElementById('notifySuccess').classList.remove('show');
+  document.getElementById('phoneInput').value = '';
+  document.getElementById('userPos').textContent = data.pos;
+  document.getElementById('successCity').textContent = data.city;
+}
+
+function submitNotify() {
+  const phone = document.getElementById('phoneInput').value.replace(/\D/g,'');
+  if (phone.length !== 10) {
+    showToast('Enter a valid 10-digit number');
+    return;
+  }
+  document.getElementById('notifyForm').style.display = 'none';
+  document.getElementById('notifySuccess').classList.add('show');
+
+  // Update count
+  const data = LOCATIONS[currentLoc];
+  data.count += 1;
+  document.getElementById('wlCount').textContent = data.count.toLocaleString();
+  const pct = Math.min(100, Math.round((data.count/1000)*100));
+  document.getElementById('wlBar').style.width = pct + '%';
+}
+
+function switchToNagore() {
+  showToast('Switching location to Nagore...');
+}
+
+function copyLink() {
+  showToast('Invite link copied!');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1700);
+}
+</script>
+</body>
+</html>

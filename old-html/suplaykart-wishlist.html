@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Wishlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* ── HERO BANNER ─────────────────────────────── */
+.hero{
+  flex-shrink:0;position:relative;
+  background:linear-gradient(180deg,var(--green-lt) 0%,#F4FBF5 60%,#FFFFFF 100%);
+  padding:44px 0 24px;overflow:hidden;
+}
+
+/* Watermark "Wishlist" text repeating */
+.hero-bg-text{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:space-around;
+  font-family:var(--font);font-weight:900;
+  font-size:60px;color:var(--green);opacity:.06;
+  pointer-events:none;letter-spacing:-2px;
+  white-space:nowrap;
+}
+.hero-bg-text span{padding-left:18px}
+
+/* Header bar */
+.hero-top{
+  display:flex;align-items:center;
+  padding:0 14px;position:relative;z-index:5;
+}
+.hdr-icon{
+  width:36px;height:36px;border-radius:50%;
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+  transition:transform .15s;
+}
+.hdr-icon:active{transform:scale(.92)}
+.hdr-icon svg{width:18px;height:18px;fill:var(--dark)}
+.hero-title{
+  flex:1;text-align:center;
+  font-size:28px;font-weight:900;
+  color:var(--green);letter-spacing:-.5px;
+  font-family:var(--font);
+}
+
+/* Hero illustration */
+.hero-art{
+  position:relative;z-index:3;
+  margin:18px auto 0;
+  width:280px;height:130px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Product capsule with hand */
+.hero-capsule{
+  position:relative;
+  width:280px;height:90px;
+  background:white;
+  border:2px solid var(--green-lt);
+  border-radius:18px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;
+  box-shadow:0 6px 20px rgba(12,131,31,.08);
+}
+.hero-prod{
+  width:46px;height:46px;border-radius:11px;
+  background:linear-gradient(180deg,#F0F9F0 0%,#E0F0E5 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;line-height:1;
+  flex-shrink:0;
+}
+.hero-prod.v1{background:linear-gradient(180deg,#FFF8E1 0%,#FFF3D0 100%)}
+.hero-prod.v2{background:linear-gradient(180deg,#FCE4EC 0%,#F8BBD0 100%)}
+.hero-prod.v3{background:linear-gradient(180deg,#E1F5FE 0%,#B3E5FC 100%)}
+.hero-prod.v4{background:linear-gradient(180deg,#FFF3E0 0%,#FFE0B2 100%)}
+
+/* hand + heart in middle */
+.hero-mid{
+  position:absolute;
+  top:-38px;left:50%;
+  transform:translateX(-50%);
+  width:72px;height:80px;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.hero-hearts{
+  position:absolute;top:0;left:50%;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.hero-hearts .hb{
+  font-size:14px;line-height:1;opacity:.5;
+  animation:heartFloat 1.8s ease-in-out infinite;
+}
+.hero-hearts .hb:nth-child(2){font-size:10px;opacity:.3;animation-delay:.4s}
+.hero-hearts .hb:nth-child(3){font-size:8px;opacity:.2;animation-delay:.8s}
+.hero-hearts .hm{
+  font-size:24px;line-height:1;
+  animation:heartPulse 1.4s ease-in-out infinite;
+}
+@keyframes heartFloat{
+  0%,100%{transform:translateY(0);opacity:.5}
+  50%{transform:translateY(-8px);opacity:.2}
+}
+@keyframes heartPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.18)}
+}
+.hero-hand{
+  font-size:42px;line-height:1;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.1));
+  transform:rotate(-12deg);
+}
+
+/* ── HEADER STICKY (when scrolled) ───────────── */
+.scroll-hdr{
+  position:absolute;top:0;left:0;right:0;
+  background:white;border-bottom:1px solid var(--border);
+  padding:44px 14px 12px;
+  display:flex;align-items:center;gap:10px;
+  z-index:20;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.scroll-hdr.show{opacity:1;pointer-events:all}
+.scroll-hdr .hdr-icon{box-shadow:none;background:var(--light)}
+.scroll-hdr-title{
+  flex:1;text-align:center;
+  font-size:16px;font-weight:800;color:var(--dark);
+  letter-spacing:-.2px;
+}
+
+/* ── MAIN ────────────────────────────────────── */
+.main{flex:1;overflow-y:auto;scrollbar-width:none;background:white;padding-bottom:90px}
+.main::-webkit-scrollbar{display:none}
+
+/* ── EMPTY STATE ─────────────────────────────── */
+.empty-msg{
+  text-align:center;padding:6px 24px 20px;
+}
+.empty-title{
+  font-size:15px;font-weight:800;color:var(--dark);
+  letter-spacing:-.2px;
+}
+.empty-sub{
+  font-size:11px;color:var(--gray);font-weight:500;
+  margin-top:4px;line-height:1.5;
+}
+
+/* ── COUNT STRIP ─────────────────────────────── */
+.count-strip{
+  padding:14px 16px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.count-text{font-size:13px;font-weight:800;color:var(--dark);letter-spacing:-.1px}
+.count-text strong{color:var(--green)}
+.sort-btn{
+  font-size:11px;font-weight:700;color:var(--green);
+  background:var(--green-lt);padding:5px 10px;
+  border-radius:14px;cursor:pointer;
+  display:flex;align-items:center;gap:4px;
+}
+.sort-btn svg{width:12px;height:12px;fill:currentColor}
+
+/* ── PRODUCT GRID ────────────────────────────── */
+.grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;padding:0 12px;
+}
+
+.card{
+  background:white;border:1px solid var(--border-lt);
+  border-radius:13px;overflow:hidden;
+  position:relative;
+  display:flex;flex-direction:column;
+  cursor:pointer;
+  transition:transform .15s, border-color .15s;
+}
+.card:active{transform:scale(.99)}
+
+.card-img-wrap{
+  width:100%;aspect-ratio:1/1;
+  background:var(--light);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  font-size:64px;line-height:1;
+}
+.card-img-wrap.v1{background:linear-gradient(180deg,#FFF8E1 0%,#FFF3D0 100%)}
+.card-img-wrap.v2{background:linear-gradient(180deg,#FCE4EC 0%,#F8BBD0 100%)}
+.card-img-wrap.v3{background:linear-gradient(180deg,#E1F5FE 0%,#B3E5FC 100%)}
+.card-img-wrap.v4{background:linear-gradient(180deg,#F3E5F5 0%,#E1BEE7 100%)}
+.card-img-wrap.v5{background:linear-gradient(180deg,#FFF3E0 0%,#FFE0B2 100%)}
+.card-img-wrap.v6{background:linear-gradient(180deg,#E8F5E9 0%,#C8E6C9 100%)}
+
+/* Wishlist heart - top right */
+.wish-heart{
+  position:absolute;top:8px;right:8px;
+  width:30px;height:30px;border-radius:50%;
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  z-index:3;transition:transform .15s;
+}
+.wish-heart.active{color:var(--red)}
+.wish-heart:active{transform:scale(.85)}
+
+/* ADD button - bottom right of image */
+.add-btn{
+  position:absolute;bottom:-12px;right:8px;
+  width:64px;height:30px;
+  background:white;
+  border:1.5px solid var(--green);
+  border-radius:8px;
+  font-family:var(--font);font-size:11px;font-weight:800;
+  color:var(--green);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  letter-spacing:.4px;
+  box-shadow:0 4px 8px rgba(12,131,31,.12);
+  transition:transform .12s;
+  z-index:3;
+}
+.add-btn:active{transform:scale(.94)}
+
+/* qty stepper - replaces ADD when added */
+.qty-stepper{
+  position:absolute;bottom:-12px;right:8px;
+  display:none;align-items:center;gap:0;
+  background:var(--green);border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 4px 8px rgba(12,131,31,.18);
+  z-index:3;
+}
+.qty-stepper.show{display:flex}
+.qty-stepper .qb{
+  width:24px;height:30px;
+  background:transparent;border:none;color:white;
+  font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;
+}
+.qty-stepper .qn{
+  min-width:18px;text-align:center;
+  font-size:12px;font-weight:800;color:white;
+}
+
+/* Veg dot */
+.veg-dot{
+  position:absolute;top:8px;left:8px;
+  width:14px;height:14px;
+  border:1.5px solid var(--green);
+  background:white;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+}
+.veg-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* Price overlay on image */
+.price-tag{
+  position:absolute;bottom:8px;left:8px;z-index:2;
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.price-now{
+  background:var(--green);color:white;
+  font-size:13px;font-weight:900;
+  padding:3px 9px;border-radius:6px;
+  letter-spacing:-.2px;
+  box-shadow:0 2px 4px rgba(12,131,31,.2);
+}
+.price-was{
+  font-size:9px;color:var(--gray-lt);
+  text-decoration:line-through;font-weight:600;
+  background:white;padding:1px 6px;border-radius:4px;
+  margin-top:3px;
+}
+
+/* Card body */
+.card-body{
+  padding:18px 10px 11px;
+  display:flex;flex-direction:column;
+  flex:1;
+}
+.off-tag{
+  font-size:10px;font-weight:800;color:var(--green);
+  margin-bottom:5px;letter-spacing:.2px;
+}
+.card-name{
+  font-size:12px;font-weight:600;color:var(--dark);
+  line-height:1.3;letter-spacing:-.1px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:32px;
+  margin-bottom:5px;
+}
+.card-wt{
+  font-size:10px;color:var(--gray);
+  font-weight:600;margin-bottom:6px;
+}
+.card-flavor{
+  display:inline-block;background:var(--green-lt);
+  font-size:9px;font-weight:700;color:var(--green);
+  padding:2px 7px;border-radius:8px;
+  width:fit-content;margin-bottom:7px;
+}
+.card-rating{
+  display:flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;color:var(--gray);
+  margin-top:auto;
+}
+.card-rating .stars{color:var(--green);font-size:10px;letter-spacing:0}
+.rating-count{color:var(--gray);font-weight:500}
+
+/* ── FLOATING BOTTOM ─────────────────────────── */
+.floating-bottom{
+  position:absolute;bottom:14px;left:12px;right:12px;
+  display:flex;gap:10px;
+  z-index:50;
+}
+.fd-progress{
+  flex:1;background:var(--dark);color:white;
+  border-radius:14px;padding:11px 14px;
+  display:flex;align-items:center;gap:11px;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
+}
+.fd-progress-em{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:14px;
+}
+.fd-progress-info{flex:1;min-width:0}
+.fd-progress-title{
+  font-size:11px;font-weight:800;letter-spacing:-.1px;
+  display:flex;align-items:center;gap:5px;
+}
+.fd-progress-title .chev{font-size:10px;color:rgba(255,255,255,.7)}
+.fd-progress-sub{font-size:10px;color:rgba(255,255,255,.7);margin-top:1px;font-weight:500}
+
+.cart-fab{
+  flex-shrink:0;background:var(--green);color:white;
+  border-radius:14px;padding:9px 14px;
+  display:flex;align-items:center;gap:9px;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(12,131,31,.3);
+  transition:transform .15s;
+}
+.cart-fab:active{transform:scale(.97)}
+.cart-fab-em{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:14px;
+}
+.cart-fab-text{display:flex;flex-direction:column;line-height:1.2}
+.cart-fab-l1{font-size:13px;font-weight:900;letter-spacing:-.1px}
+.cart-fab-l2{font-size:9px;color:rgba(255,255,255,.85);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:absolute;bottom:90px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:60;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+
+/* ── EMPTY WISHLIST STATE ────────────────────── */
+.empty-state{
+  display:none;flex:1;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:60px 30px;text-align:center;
+}
+.empty-state.show{display:flex}
+.empty-art{
+  width:120px;height:120px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;font-size:54px;
+}
+.empty-h-title{font-size:18px;font-weight:900;color:var(--dark);margin-bottom:7px;letter-spacing:-.3px}
+.empty-h-sub{font-size:12px;color:var(--gray);line-height:1.6;max-width:240px;margin-bottom:20px}
+.empty-cta{
+  background:var(--green);color:white;border:none;
+  padding:11px 22px;border-radius:11px;
+  font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- SCROLL HEADER (sticky white bar when scrolled) -->
+  <div class="scroll-hdr" id="scrollHdr">
+    <div class="hdr-icon" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="scroll-hdr-title">Wishlist</div>
+    <div class="hdr-icon" onclick="showToast('Search wishlist')">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- HERO BANNER -->
+    <div class="hero">
+      <div class="hero-bg-text">
+        <span>Wishlist</span>
+        <span>Wishlist</span>
+        <span>Wishlist</span>
+      </div>
+
+      <!-- Top header (over hero) -->
+      <div class="hero-top">
+        <div class="hdr-icon" onclick="history.back()">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+        <div class="hero-title">Wishlist</div>
+        <div class="hdr-icon" onclick="showToast('Search wishlist')">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+      </div>
+
+      <!-- Illustration: capsule with products + hand + hearts -->
+      <div class="hero-art">
+        <div class="hero-capsule">
+          <div class="hero-prod v3">👕</div>
+          <div class="hero-prod v2">⌚</div>
+          <div class="hero-prod v1">🍯</div>
+          <div class="hero-prod v5">🏀</div>
+        </div>
+        <div class="hero-mid">
+          <div class="hero-hearts">
+            <div class="hb">💗</div>
+            <div class="hb">❤️</div>
+            <div class="hb">💗</div>
+            <div class="hm">❤️</div>
+          </div>
+          <div class="hero-hand">🤏</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state intro -->
+    <div class="empty-msg">
+      <div class="empty-title">Your saved favourites</div>
+      <div class="empty-sub">Items you love, all in one place. Add to cart anytime!</div>
+    </div>
+
+    <!-- COUNT STRIP -->
+    <div class="count-strip">
+      <div class="count-text"><strong id="wishCount">2</strong> items saved</div>
+      <div class="sort-btn" onclick="showToast('Sort by recent / price / name')">
+        <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        Sort
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid" id="grid">
+
+      <!-- Card 1 -->
+      <div class="card" data-id="1">
+        <div class="card-img-wrap v5">
+          <span class="veg-dot"></span>
+          <div class="wish-heart active" onclick="event.stopPropagation();removeFromWishlist(1)">❤</div>
+          🍦
+          <div class="price-tag">
+            <div class="price-now">₹130</div>
+          </div>
+          <button class="add-btn" id="addBtn-1" onclick="event.stopPropagation();addToCart(1)">ADD</button>
+          <div class="qty-stepper" id="qty-1">
+            <button class="qb" onclick="event.stopPropagation();updateQty(1,-1)">−</button>
+            <span class="qn" id="qn-1">1</span>
+            <button class="qb" onclick="event.stopPropagation();updateQty(1,1)">+</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">Arun Sea Salt Caramel Granola Ice Cream Sandwich</div>
+          <div class="card-wt">1 pc (60 ml)</div>
+          <div class="card-flavor">Caramel</div>
+          <div class="card-rating">
+            <span class="stars">★</span> 3.9
+            <span class="rating-count">(6k)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card" data-id="2">
+        <div class="card-img-wrap v4">
+          <span class="veg-dot"></span>
+          <div class="wish-heart active" onclick="event.stopPropagation();removeFromWishlist(2)">❤</div>
+          🥔
+          <div class="price-tag">
+            <div class="price-now">₹24</div>
+            <div class="price-was">₹25</div>
+          </div>
+          <button class="add-btn" id="addBtn-2" onclick="event.stopPropagation();addToCart(2)">ADD</button>
+          <div class="qty-stepper" id="qty-2">
+            <button class="qb" onclick="event.stopPropagation();updateQty(2,-1)">−</button>
+            <span class="qn" id="qn-2">1</span>
+            <button class="qb" onclick="event.stopPropagation();updateQty(2,1)">+</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="off-tag">₹1 OFF</div>
+          <div class="card-name">Lay's West Indies Hot 'n' Sweet Chilli Potato Chips</div>
+          <div class="card-wt">1 pack (48 g)</div>
+          <div class="card-flavor">Sweet Chilli</div>
+          <div class="card-rating">
+            <span class="stars">★</span> 4.8
+            <span class="rating-count">(4L)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EMPTY STATE (when wishlist is empty) -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-art">💔</div>
+      <div class="empty-h-title">Your wishlist is empty</div>
+      <div class="empty-h-sub">Tap the heart icon on any product to save it here for later</div>
+      <button class="empty-cta" onclick="showToast('Going to shop...')">Browse Products</button>
+    </div>
+
+  </main>
+
+  <!-- FLOATING BOTTOM -->
+  <div class="floating-bottom" id="floatingBottom">
+    <div class="fd-progress" onclick="showToast('Add ₹64 more for free delivery')">
+      <div class="fd-progress-em">🎉</div>
+      <div class="fd-progress-info">
+        <div class="fd-progress-title">Unlock free delivery <span class="chev">▴</span></div>
+        <div class="fd-progress-sub">Shop for ₹64 more</div>
+      </div>
+    </div>
+    <div class="cart-fab" id="cartFab" style="display:none" onclick="showToast('Opening cart...')">
+      <div class="cart-fab-em">🛒</div>
+      <div class="cart-fab-text">
+        <div class="cart-fab-l1">Cart</div>
+        <div class="cart-fab-l2"><span id="cartItems">0</span> items</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">Done</div>
+
+</div><!-- shell -->
+
+<script>
+// State
+const state = {
+  cart: {},      // {productId: qty}
+  wishlist: [1,2]
+};
+
+// ══════════════════════════════════════════════
+// SCROLL — show sticky header when scrolled
+// ══════════════════════════════════════════════
+const main = document.getElementById('main');
+const scrollHdr = document.getElementById('scrollHdr');
+main.addEventListener('scroll', () => {
+  scrollHdr.classList.toggle('show', main.scrollTop > 200);
+});
+
+// ══════════════════════════════════════════════
+// ADD TO CART
+// ══════════════════════════════════════════════
+function addToCart(id) {
+  state.cart[id] = 1;
+  document.getElementById('addBtn-' + id).style.display = 'none';
+  document.getElementById('qty-' + id).classList.add('show');
+  document.getElementById('qn-' + id).textContent = '1';
+  updateCartFab();
+  showToast('Added to cart');
+}
+
+function updateQty(id, delta) {
+  const cur = state.cart[id] || 0;
+  const next = Math.max(0, cur + delta);
+  if (next === 0) {
+    delete state.cart[id];
+    document.getElementById('addBtn-' + id).style.display = '';
+    document.getElementById('qty-' + id).classList.remove('show');
+  } else {
+    state.cart[id] = next;
+    document.getElementById('qn-' + id).textContent = next;
+  }
+  updateCartFab();
+}
+
+function updateCartFab() {
+  const total = Object.values(state.cart).reduce((s,q)=>s+q,0);
+  const fab = document.getElementById('cartFab');
+  const fdProgress = document.querySelector('.fd-progress');
+  if (total > 0) {
+    fab.style.display = 'flex';
+    fdProgress.style.flex = '1';
+    document.getElementById('cartItems').textContent = total;
+  } else {
+    fab.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════
+// REMOVE FROM WISHLIST
+// ══════════════════════════════════════════════
+function removeFromWishlist(id) {
+  const card = document.querySelector(`.card[data-id="${id}"]`);
+  if (!card) return;
+  card.style.transition = 'opacity .3s, transform .3s';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(.85)';
+  setTimeout(() => {
+    card.remove();
+    state.wishlist = state.wishlist.filter(x => x !== id);
+    document.getElementById('wishCount').textContent = state.wishlist.length;
+    showToast('Removed from wishlist');
+    if (state.wishlist.length === 0) {
+      document.querySelector('.grid').style.display = 'none';
+      document.querySelector('.count-strip').style.display = 'none';
+      document.getElementById('emptyState').classList.add('show');
+    }
+  }, 300);
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+</script>
+</body>
+</html>

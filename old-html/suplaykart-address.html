@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Add Address</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --blue:#1565C0;--blue-lt:#E3F2FD;
+  --purple:#8E24AA;--purple-lt:#F3E5F5;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* DEMO CONTROLS */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 6px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* SCREENS */
+.screen{
+  position:absolute;inset:0;
+  background:white;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);
+  z-index:5;
+}
+.screen.active{transform:translateX(0);z-index:6}
+.screen.first{transform:translateX(0)}
+
+/* ═══════════════════════════════════════════════
+   SCREEN 1: MAP PICKER
+   ═══════════════════════════════════════════════ */
+
+.map-screen{background:#E8F0E8}
+
+/* Header */
+.map-hdr{
+  flex-shrink:0;background:white;
+  padding:44px 14px 10px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border-lt);
+  position:relative;z-index:5;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:transform .15s;
+}
+.hdr-back:active{transform:scale(.92)}
+.hdr-back svg{width:18px;height:18px;fill:var(--dark)}
+.hdr-title-info{flex:1;min-width:0}
+.hdr-title{font-size:15px;font-weight:800;color:var(--dark);letter-spacing:-.2px;line-height:1.1}
+.hdr-sub{font-size:10px;color:var(--gray);font-weight:600;margin-top:1px}
+
+/* Search bar */
+.map-search-wrap{
+  flex-shrink:0;background:white;
+  padding:10px 14px 14px;
+  border-bottom:1px solid var(--border-lt);
+  position:relative;z-index:4;
+}
+.map-search{
+  background:var(--light);border-radius:11px;
+  padding:11px 14px;
+  display:flex;align-items:center;gap:9px;
+  cursor:pointer;
+  border:1.5px solid transparent;
+  transition:border-color .2s;
+}
+.map-search:focus-within{border-color:var(--green);background:white}
+.map-search svg{width:16px;height:16px;flex-shrink:0;fill:var(--green)}
+.map-search input{
+  flex:1;border:none;outline:none;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--dark);background:transparent;
+}
+.map-search input::placeholder{color:var(--gray-lt);font-weight:500}
+.map-search-mic{
+  width:1px;height:18px;background:var(--border);
+}
+.map-search svg.mic{fill:var(--red);width:14px;height:14px}
+
+/* Quick chips below search */
+.quick-chips{
+  display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
+  padding-top:10px;margin:0 -14px;padding-left:14px;padding-right:14px;
+}
+.quick-chips::-webkit-scrollbar{display:none}
+.qchip{
+  flex-shrink:0;background:white;border:1px solid var(--border);
+  padding:6px 10px;border-radius:14px;
+  font-family:var(--font);font-size:10.5px;font-weight:700;color:var(--dark);
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;transition:all .15s;
+}
+.qchip:active{transform:scale(.96)}
+.qchip.active{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+.qchip-em{font-size:11px;line-height:1}
+
+/* Map area */
+.map-area{
+  flex:1;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#E8F0E8 0%,#E0EAE0 100%);
+  cursor:grab;
+  user-select:none;
+  touch-action:none;
+}
+.map-area:active{cursor:grabbing}
+
+/* Map content (transformable) */
+.map-content{
+  position:absolute;
+  width:200%;height:200%;
+  top:-50%;left:-50%;
+  transition:transform .25s cubic-bezier(.22,1,.36,1);
+  pointer-events:none;
+}
+.map-area.dragging .map-content{transition:none}
+.map-content svg{width:100%;height:100%}
+
+/* Fixed center pin (overlays map) */
+.pin-fixed{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%, -100%);
+  z-index:10;
+  pointer-events:none;
+}
+.pin-fixed svg{
+  width:42px;height:54px;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.18));
+  transition:transform .25s cubic-bezier(.22,1,.36,1);
+}
+.map-area.dragging .pin-fixed svg{
+  transform:translateY(-12px);
+}
+
+/* Pin shadow + accuracy ring */
+.pin-pulse-wrap{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%, -50%);
+  z-index:8;pointer-events:none;
+}
+.pin-pulse{
+  position:absolute;top:0;left:50%;
+  transform:translate(-50%, -50%);
+  width:34px;height:34px;border-radius:50%;
+  background:var(--green);opacity:.18;
+  animation:pulseRing 2s ease-out infinite;
+}
+@keyframes pulseRing{
+  0%{transform:translate(-50%,-50%) scale(.7);opacity:.4}
+  100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}
+}
+.pin-pulse-2{
+  animation-delay:.6s;
+}
+
+.pin-shadow{
+  position:absolute;top:0;left:50%;
+  transform:translate(-50%, -50%);
+  width:14px;height:5px;border-radius:50%;
+  background:rgba(0,0,0,.25);filter:blur(2px);
+  transition:all .25s;
+}
+.map-area.dragging .pin-shadow{
+  width:20px;opacity:.5;
+}
+
+/* Out of service state */
+.map-area.oos .pin-pulse{background:var(--red)}
+.map-area.oos .pin-fixed svg path:first-of-type{fill:#E23744 !important}
+
+/* Floating "Use current location" button */
+.gps-fab{
+  position:absolute;right:14px;bottom:18px;
+  z-index:15;
+  width:46px;height:46px;border-radius:50%;
+  background:white;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;
+  box-shadow:0 6px 16px rgba(0,0,0,.15);
+  transition:transform .15s;
+}
+.gps-fab:active{transform:scale(.94)}
+.gps-fab svg{width:22px;height:22px;fill:var(--green)}
+.gps-fab.locating{
+  background:var(--green);color:white;
+}
+.gps-fab.locating svg{
+  fill:white;animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Drag hint (shows briefly on first load) */
+.drag-hint{
+  position:absolute;top:14px;left:50%;
+  transform:translateX(-50%);
+  z-index:12;
+  background:rgba(28,28,28,.85);color:white;
+  font-size:11px;font-weight:600;
+  padding:7px 14px;border-radius:18px;
+  display:flex;align-items:center;gap:6px;
+  pointer-events:none;
+  opacity:0;
+  animation:hintFade 4s ease-out .5s;
+}
+@keyframes hintFade{
+  0%{opacity:0;transform:translate(-50%,-10px)}
+  15%,75%{opacity:1;transform:translate(-50%,0)}
+  100%{opacity:0;transform:translate(-50%,-10px)}
+}
+.drag-hint svg{width:13px;height:13px;fill:white}
+
+/* OUT OF SERVICE BANNER */
+.oos-banner{
+  position:absolute;top:14px;left:14px;right:14px;
+  z-index:14;
+  background:white;
+  border:1.5px solid var(--red);
+  border-radius:11px;padding:11px 13px;
+  display:none;align-items:flex-start;gap:9px;
+  box-shadow:0 6px 16px rgba(226,55,68,.18);
+  animation:slideDown .3s cubic-bezier(.22,1,.36,1);
+}
+.oos-banner.show{display:flex}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.oos-em{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px}
+.oos-info{flex:1;min-width:0}
+.oos-title{font-size:12px;font-weight:800;color:var(--red);letter-spacing:-.1px}
+.oos-sub{font-size:10.5px;color:#9A2A2A;margin-top:2px;line-height:1.5;font-weight:500}
+
+/* BOTTOM SHEET (always visible) */
+.map-sheet{
+  flex-shrink:0;background:white;
+  padding:14px 16px 18px;
+  border-top:1px solid var(--border-lt);
+  box-shadow:0 -6px 20px rgba(0,0,0,.06);
+  position:relative;z-index:20;
+}
+.sheet-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--green-lt);color:var(--green);
+  font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  padding:3px 9px;border-radius:14px;
+  margin-bottom:10px;
+}
+.sheet-tag.oos{background:var(--red-lt);color:var(--red)}
+.sheet-tag svg{width:11px;height:11px;fill:currentColor}
+.sheet-tag .live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  animation:livePulse 1.6s ease-in-out infinite;
+}
+@keyframes livePulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.7)}
+}
+
+.detected-row{
+  display:flex;align-items:flex-start;gap:11px;
+}
+.detected-em{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:16px;
+}
+.detected-em.oos{background:var(--red-lt)}
+.detected-info{flex:1;min-width:0}
+.detected-title{
+  font-size:14px;font-weight:800;color:var(--dark);
+  letter-spacing:-.2px;line-height:1.25;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.detected-sub{
+  font-size:11px;color:var(--gray);font-weight:500;
+  margin-top:3px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.detected-edit{
+  font-size:10.5px;font-weight:800;color:var(--green);
+  cursor:pointer;flex-shrink:0;align-self:center;
+  padding:5px 9px;background:var(--green-lt);border-radius:14px;
+}
+
+.confirm-btn{
+  width:100%;background:var(--green);color:white;
+  border:none;padding:14px;border-radius:12px;
+  font-family:var(--font);font-size:14px;font-weight:800;
+  cursor:pointer;margin-top:14px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .15s;
+  box-shadow:0 4px 12px rgba(12,131,31,.22);
+}
+.confirm-btn:active{transform:scale(.98)}
+.confirm-btn:disabled{
+  background:#D0D0D0;color:white;
+  box-shadow:none;cursor:not-allowed;
+}
+.confirm-btn svg{width:14px;height:14px;fill:currentColor}
+
+/* ═══════════════════════════════════════════════
+   SCREEN 2: ADDRESS DETAILS FORM
+   ═══════════════════════════════════════════════ */
+
+.form-screen{background:var(--light)}
+
+.form-hdr{
+  flex-shrink:0;background:white;
+  padding:44px 14px 12px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.form-hdr-info{flex:1;min-width:0}
+.form-hdr-title{font-size:15px;font-weight:800;color:var(--dark);letter-spacing:-.2px;line-height:1.1}
+.form-hdr-sub{font-size:10px;color:var(--gray);font-weight:600;margin-top:1px}
+.form-hdr-action{
+  width:36px;height:36px;border-radius:50%;background:var(--red-lt);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;
+}
+.form-hdr-action svg{width:16px;height:16px;fill:var(--red)}
+
+.form-body{
+  flex:1;overflow-y:auto;scrollbar-width:none;
+  padding-bottom:90px;
+}
+.form-body::-webkit-scrollbar{display:none}
+
+/* Map preview at top */
+.map-preview{
+  background:white;
+  padding:12px 14px 12px;
+  border-bottom:1px solid var(--border);
+}
+.map-preview-row{
+  display:flex;align-items:flex-start;gap:11px;
+}
+.map-preview-img{
+  width:74px;height:74px;border-radius:11px;
+  position:relative;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(180deg,#E8F0E8,#D5E5D5);
+  cursor:pointer;
+}
+.map-preview-img svg{width:100%;height:100%}
+.map-preview-pin{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%, -100%);
+  z-index:2;
+}
+.map-preview-pin svg{width:18px;height:24px}
+.map-preview-info{flex:1;min-width:0}
+.map-preview-title{
+  font-size:13px;font-weight:800;color:var(--dark);
+  letter-spacing:-.1px;line-height:1.2;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.map-preview-sub{
+  font-size:10.5px;color:var(--gray);font-weight:500;
+  margin-top:3px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.map-preview-change{
+  display:inline-block;margin-top:5px;
+  font-size:10.5px;font-weight:800;color:var(--green);
+  cursor:pointer;
+}
+
+/* Form sections */
+.form-sec{
+  background:white;margin-top:8px;
+  padding:14px 16px 16px;
+}
+.form-sec-title{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:10px;
+}
+.form-sec-title-l{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.form-sec-title-l-text{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+
+.form-field{margin-bottom:13px}
+.form-field:last-child{margin-bottom:0}
+.form-label{
+  font-size:10.5px;font-weight:700;color:var(--gray);
+  margin-bottom:6px;display:flex;align-items:center;gap:4px;
+}
+.form-label .req{color:var(--red);font-weight:800}
+.form-label .opt{
+  font-size:9px;font-weight:700;color:var(--gray-lt);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.form-input{
+  width:100%;background:white;
+  border:1.5px solid var(--border);border-radius:11px;
+  padding:12px 14px;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--dark);outline:none;
+  transition:all .2s;
+}
+.form-input:focus{border-color:var(--green)}
+.form-input::placeholder{color:var(--gray-lt);font-weight:500}
+.form-input.error{border-color:var(--red);background:var(--red-lt)}
+.form-error-msg{
+  font-size:10px;color:var(--red);font-weight:700;
+  margin-top:5px;display:none;align-items:center;gap:4px;
+}
+.form-error-msg.show{display:flex}
+.form-error-msg svg{width:11px;height:11px;fill:currentColor}
+
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Tag selector */
+.tag-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.tag-card{
+  background:white;border:1.5px solid var(--border);
+  border-radius:11px;padding:11px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  cursor:pointer;transition:all .2s;
+  font-family:var(--font);
+}
+.tag-card:active{transform:scale(.96)}
+.tag-card.active{
+  background:var(--green-lt);border-color:var(--green);
+}
+.tag-card-em{font-size:22px;line-height:1}
+.tag-card-name{font-size:11px;font-weight:800;color:var(--dark);letter-spacing:-.1px}
+.tag-card.active .tag-card-name{color:var(--green)}
+
+/* Custom label input (appears when "Other" selected) */
+.custom-label-wrap{
+  margin-top:10px;
+  display:none;
+  animation:slideDown .3s cubic-bezier(.22,1,.36,1);
+}
+.custom-label-wrap.show{display:block}
+
+/* Toggle row */
+.toggle-row{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 0;cursor:pointer;
+}
+.toggle-row + .toggle-row{border-top:1px solid var(--border-lt)}
+.toggle-row-info{flex:1;min-width:0}
+.toggle-row-title{
+  font-size:13px;font-weight:700;color:var(--dark);
+  letter-spacing:-.1px;
+}
+.toggle-row-sub{
+  font-size:10.5px;color:var(--gray);font-weight:500;
+  margin-top:2px;line-height:1.4;
+}
+.toggle{
+  position:relative;width:42px;height:24px;
+  background:#E0E0E0;border-radius:12px;
+  cursor:pointer;transition:background .25s;flex-shrink:0;
+}
+.toggle.on{background:var(--green)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:18px;height:18px;border-radius:50%;
+  background:white;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:transform .25s;
+}
+.toggle.on::after{transform:translateX(18px)}
+
+/* Receiver fields (collapsible) */
+.receiver-fields{
+  display:none;
+  margin-top:12px;
+  animation:slideDown .3s cubic-bezier(.22,1,.36,1);
+}
+.receiver-fields.show{display:block}
+
+.phone-row{
+  display:flex;gap:8px;
+}
+.phone-prefix{
+  background:var(--light);border:1.5px solid var(--border);
+  border-radius:11px;padding:12px 14px;
+  font-family:var(--font);font-size:13px;font-weight:700;color:var(--dark);
+  flex-shrink:0;
+}
+
+/* Sticky footer */
+.form-footer{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;
+  padding:12px 14px 18px;
+  border-top:1px solid var(--border);
+  box-shadow:0 -4px 16px rgba(0,0,0,.06);
+  z-index:20;
+}
+.save-btn{
+  width:100%;background:var(--green);color:white;
+  border:none;padding:14px;border-radius:12px;
+  font-family:var(--font);font-size:14px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .15s;
+  box-shadow:0 4px 12px rgba(12,131,31,.22);
+}
+.save-btn:active{transform:scale(.98)}
+.save-btn:disabled{
+  background:#D0D0D0;color:white;
+  box-shadow:none;cursor:not-allowed;
+}
+.save-btn svg{width:14px;height:14px;fill:white}
+
+/* ═══════════════════════════════════════════════
+   SUCCESS MODAL
+   ═══════════════════════════════════════════════ */
+.success-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.55);
+  z-index:400;opacity:0;pointer-events:none;
+  transition:opacity .3s;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.success-bg.show{opacity:1;pointer-events:all}
+.success-card{
+  background:white;border-radius:18px;width:100%;max-width:320px;
+  padding:26px 22px 20px;text-align:center;
+  transform:scale(.85);transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.success-bg.show .success-card{transform:scale(1)}
+.success-circle{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;
+}
+.success-tick{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;
+  animation:tickPop .55s cubic-bezier(.22,1,.36,1) .15s both;
+}
+@keyframes tickPop{
+  0%{transform:scale(0)}
+  60%{transform:scale(1.2)}
+  100%{transform:scale(1)}
+}
+.success-title{font-size:17px;font-weight:900;color:var(--dark);letter-spacing:-.2px}
+.success-msg{
+  font-size:12px;color:var(--gray);font-weight:500;
+  margin-top:5px;line-height:1.5;
+}
+.success-cta{
+  width:100%;background:var(--green);color:white;
+  border:none;padding:12px;border-radius:11px;
+  font-family:var(--font);font-size:13px;font-weight:800;
+  cursor:pointer;margin-top:14px;
+}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:80px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-label">Screen</div>
+    <div class="demo-row">
+      <button class="db on" onclick="goScreen('map')">Map</button>
+      <button class="db" onclick="goScreen('form')">Form</button>
+    </div>
+    <div class="demo-label" style="margin-top:5px">Mode</div>
+    <div class="demo-row">
+      <button class="db on" onclick="setMode('add')">Add</button>
+      <button class="db" onclick="setMode('edit')">Edit</button>
+    </div>
+    <div class="demo-label" style="margin-top:5px">Service</div>
+    <div class="demo-row">
+      <button class="db on" onclick="setOOS(false)">In</button>
+      <button class="db" onclick="setOOS(true)">Out</button>
+    </div>
+  </div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 1: MAP PICKER
+     ════════════════════════════════════════════════ -->
+<div class="screen first map-screen" id="screen-map">
+
+  <!-- HEADER -->
+  <div class="map-hdr">
+    <div class="hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="hdr-title-info">
+      <div class="hdr-title">Set delivery location</div>
+      <div class="hdr-sub">Drag map to adjust pin</div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="map-search-wrap">
+    <div class="map-search">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" id="searchInput" placeholder="Search area, street name..." onfocus="showToast('Showing nearby suggestions...')">
+      <div class="map-search-mic"></div>
+      <svg class="mic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+    </div>
+
+    <div class="quick-chips">
+      <button class="qchip active" onclick="snapTo('current', this)">
+        <span class="qchip-em">📍</span>Current
+      </button>
+      <button class="qchip" onclick="snapTo('home', this)">
+        <span class="qchip-em">🏠</span>Home
+      </button>
+      <button class="qchip" onclick="snapTo('main', this)">
+        <span class="qchip-em">🏪</span>Main Road
+      </button>
+      <button class="qchip" onclick="snapTo('beach', this)">
+        <span class="qchip-em">🏖️</span>Beach Road
+      </button>
+      <button class="qchip" onclick="snapTo('dargah', this)">
+        <span class="qchip-em">🕌</span>Dargah Street
+      </button>
+      <button class="qchip" onclick="snapTo('hospital', this)">
+        <span class="qchip-em">🏥</span>Hospital Rd
+      </button>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-area" id="mapArea">
+
+    <!-- Drag hint -->
+    <div class="drag-hint">
+      <svg viewBox="0 0 24 24"><path d="M13 6c0-1.65-1.35-3-3-3S7 4.35 7 6c0 .65.21 1.25.56 1.74L8.66 9 7.79 9.85c-.51.51-.51 1.34 0 1.85l4.5 4.5c.51.51 1.34.51 1.85 0l.66-.66c.39-.39.39-1.02 0-1.41l-2.74-2.74c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l2.74 2.74c.39.39 1.02.39 1.41 0l1.18-1.18c.51-.51.51-1.34 0-1.85L17.41 8 18.51 6.74C18.79 6.35 19 5.7 19 5h-2c0 .27-.05.51-.13.74l-.39.45L13.71 5.41c.18-.43.29-.91.29-1.41 0 0-.45 1-2 1z"/></svg>
+      Drag the map to adjust pin
+    </div>
+
+    <!-- OUT OF SERVICE BANNER -->
+    <div class="oos-banner" id="oosBanner">
+      <div class="oos-em">⚠️</div>
+      <div class="oos-info">
+        <div class="oos-title">Outside our service area</div>
+        <div class="oos-sub">We currently deliver only in Nagore. Pick a closer location or check serviceability.</div>
+      </div>
+    </div>
+
+    <!-- Map content (transformable) -->
+    <div class="map-content" id="mapContent">
+      <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <pattern id="mapgrid" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(12,131,31,.04)" stroke-width="1"/>
+          </pattern>
+          <pattern id="parkpattern" width="14" height="14" patternUnits="userSpaceOnUse">
+            <circle cx="7" cy="7" r="1.2" fill="rgba(76,175,80,.4)"/>
+          </pattern>
+        </defs>
+
+        <!-- Background -->
+        <rect width="800" height="800" fill="#E8F0E8"/>
+        <rect width="800" height="800" fill="url(#mapgrid)"/>
+
+        <!-- Park areas -->
+        <rect x="60" y="160" width="120" height="90" rx="8" fill="#C8E6C9"/>
+        <rect x="60" y="160" width="120" height="90" rx="8" fill="url(#parkpattern)"/>
+        <text x="120" y="208" text-anchor="middle" font-family="Poppins" font-size="11" font-weight="700" fill="#2E7D32" opacity=".7">PARK</text>
+
+        <rect x="540" y="540" width="160" height="120" rx="8" fill="#C8E6C9"/>
+        <rect x="540" y="540" width="160" height="120" rx="8" fill="url(#parkpattern)"/>
+        <text x="620" y="605" text-anchor="middle" font-family="Poppins" font-size="11" font-weight="700" fill="#2E7D32" opacity=".7">BEACH PARK</text>
+
+        <!-- Water (sea on right side) -->
+        <rect x="720" y="0" width="80" height="800" fill="#B3E5FC" opacity=".7"/>
+        <text x="760" y="400" text-anchor="middle" font-family="Poppins" font-size="13" font-weight="700" fill="#0277BD" opacity=".6" transform="rotate(-90 760 400)">BAY OF BENGAL</text>
+
+        <!-- Major roads (white wide) -->
+        <!-- Horizontal main road -->
+        <rect x="0" y="380" width="800" height="40" fill="white"/>
+        <rect x="0" y="380" width="800" height="2" fill="rgba(0,0,0,.05)"/>
+        <rect x="0" y="418" width="800" height="2" fill="rgba(0,0,0,.05)"/>
+        <!-- center divider -->
+        <line x1="0" y1="400" x2="800" y2="400" stroke="#FFB300" stroke-width="2" stroke-dasharray="12 8"/>
+
+        <!-- Vertical main road -->
+        <rect x="380" y="0" width="40" height="800" fill="white"/>
+        <rect x="380" y="0" width="2" height="800" fill="rgba(0,0,0,.05)"/>
+        <rect x="418" y="0" width="2" height="800" fill="rgba(0,0,0,.05)"/>
+        <line x1="400" y1="0" x2="400" y2="800" stroke="#FFB300" stroke-width="2" stroke-dasharray="12 8"/>
+
+        <!-- Secondary roads -->
+        <rect x="0" y="180" width="800" height="20" fill="white" opacity=".85"/>
+        <rect x="0" y="600" width="800" height="20" fill="white" opacity=".85"/>
+        <rect x="180" y="0" width="20" height="800" fill="white" opacity=".85"/>
+        <rect x="600" y="0" width="20" height="800" fill="white" opacity=".85"/>
+
+        <!-- Curved road -->
+        <path d="M 100 700 Q 250 650, 400 700 T 700 750" stroke="white" stroke-width="14" fill="none" opacity=".85"/>
+
+        <!-- Buildings (blocks) -->
+        <!-- Top-left quadrant -->
+        <rect x="220" y="40" width="60" height="80" rx="3" fill="#FFE0B2" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="290" y="40" width="50" height="60" rx="3" fill="#FFCCBC" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="220" y="240" width="80" height="50" rx="3" fill="#FFE082" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="310" y="220" width="60" height="70" rx="3" fill="#F8BBD0" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+
+        <!-- Top-right quadrant -->
+        <rect x="440" y="40" width="100" height="60" rx="3" fill="#C8E6C9" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="560" y="40" width="60" height="100" rx="3" fill="#FFE0B2" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="440" y="220" width="80" height="80" rx="3" fill="#D7CCC8" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="540" y="240" width="70" height="60" rx="3" fill="#FFCDD2" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+
+        <!-- Bottom-left -->
+        <rect x="60" y="440" width="100" height="80" rx="3" fill="#FFE0B2" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="60" y="540" width="80" height="50" rx="3" fill="#F8BBD0" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="220" y="440" width="60" height="60" rx="3" fill="#C8E6C9" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="220" y="520" width="80" height="70" rx="3" fill="#FFE082" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+
+        <!-- Bottom-right -->
+        <rect x="440" y="440" width="80" height="60" rx="3" fill="#FFCCBC" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+        <rect x="540" y="440" width="60" height="70" rx="3" fill="#D7CCC8" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+
+        <!-- Trees scattered -->
+        <circle cx="40" cy="80" r="5" fill="#A5D6A7"/>
+        <circle cx="40" cy="320" r="5" fill="#A5D6A7"/>
+        <circle cx="350" cy="40" r="5" fill="#A5D6A7"/>
+        <circle cx="350" cy="350" r="5" fill="#A5D6A7"/>
+        <circle cx="660" cy="40" r="5" fill="#A5D6A7"/>
+        <circle cx="660" cy="200" r="5" fill="#A5D6A7"/>
+        <circle cx="40" cy="500" r="5" fill="#A5D6A7"/>
+        <circle cx="350" cy="510" r="5" fill="#A5D6A7"/>
+        <circle cx="350" cy="700" r="5" fill="#A5D6A7"/>
+
+        <!-- Suplaykart store marker -->
+        <g transform="translate(440, 360)">
+          <rect x="-22" y="-16" width="44" height="22" rx="4" fill="#0C831F"/>
+          <text x="0" y="0" text-anchor="middle" font-family="Poppins" font-size="9" font-weight="800" fill="white">STORE</text>
+          <polygon points="-4,6 4,6 0,12" fill="#0C831F"/>
+        </g>
+
+        <!-- Street labels -->
+        <text x="200" y="395" text-anchor="middle" font-family="Poppins" font-size="10" font-weight="700" fill="#666" opacity=".75">Main Road</text>
+        <text x="600" y="395" text-anchor="middle" font-family="Poppins" font-size="10" font-weight="700" fill="#666" opacity=".75">Kavanoor Road</text>
+        <text x="395" y="200" text-anchor="middle" font-family="Poppins" font-size="10" font-weight="700" fill="#666" opacity=".75" transform="rotate(-90 395 200)">Beach Road</text>
+        <text x="395" y="600" text-anchor="middle" font-family="Poppins" font-size="10" font-weight="700" fill="#666" opacity=".75" transform="rotate(-90 395 600)">Dargah St</text>
+
+        <text x="120" y="80" text-anchor="middle" font-family="Poppins" font-size="9" font-weight="700" fill="#999">Block A</text>
+        <text x="490" y="80" text-anchor="middle" font-family="Poppins" font-size="9" font-weight="700" fill="#999">Block B</text>
+        <text x="100" y="490" text-anchor="middle" font-family="Poppins" font-size="9" font-weight="700" fill="#999">Block C</text>
+        <text x="490" y="490" text-anchor="middle" font-family="Poppins" font-size="9" font-weight="700" fill="#999">Block D</text>
+
+        <text x="60" y="700" font-family="Poppins" font-size="13" font-weight="800" fill="#1C1C1C" opacity=".5">NAGORE</text>
+      </svg>
+    </div>
+
+    <!-- Pulse rings -->
+    <div class="pin-pulse-wrap">
+      <div class="pin-pulse"></div>
+      <div class="pin-pulse pin-pulse-2"></div>
+      <div class="pin-shadow"></div>
+    </div>
+
+    <!-- FIXED CENTER PIN -->
+    <div class="pin-fixed">
+      <svg viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16z" fill="#0C831F"/>
+        <circle cx="16" cy="16" r="6" fill="white"/>
+        <circle cx="16" cy="16" r="3" fill="#0C831F"/>
+      </svg>
+    </div>
+
+    <!-- GPS button -->
+    <button class="gps-fab" id="gpsBtn" onclick="locateMe()" title="Use current location">
+      <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+    </button>
+  </div>
+
+  <!-- BOTTOM SHEET -->
+  <div class="map-sheet">
+    <div class="sheet-tag" id="sheetTag">
+      <span class="live-dot"></span>
+      Delivering in 22 mins · 0.4 km from store
+    </div>
+    <div class="detected-row">
+      <div class="detected-em" id="detectedEm">📍</div>
+      <div class="detected-info">
+        <div class="detected-title" id="detectedTitle">Main Road, Nagore</div>
+        <div class="detected-sub" id="detectedSub">Near Suplaykart Store, Nagore, Nagapattinam — 611002</div>
+      </div>
+      <div class="detected-edit" onclick="document.getElementById('searchInput').focus()">CHANGE</div>
+    </div>
+
+    <button class="confirm-btn" id="confirmBtn" onclick="confirmLocation()">
+      Confirm location &amp; proceed
+      <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 2: ADDRESS DETAILS FORM
+     ════════════════════════════════════════════════ -->
+<div class="screen form-screen" id="screen-form">
+
+  <!-- HEADER -->
+  <div class="form-hdr">
+    <div class="hdr-back" onclick="goScreen('map')">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="form-hdr-info">
+      <div class="form-hdr-title" id="formTitle">Add address details</div>
+      <div class="form-hdr-sub">Step 2 of 2</div>
+    </div>
+    <div class="form-hdr-action" id="deleteBtn" style="display:none" onclick="confirmDelete()">
+      <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+    </div>
+  </div>
+
+  <div class="form-body">
+
+    <!-- MAP PREVIEW -->
+    <div class="map-preview">
+      <div class="map-preview-row">
+        <div class="map-preview-img" onclick="goScreen('map')">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="80" height="80" fill="#E8F0E8"/>
+            <rect x="0" y="35" width="80" height="6" fill="white"/>
+            <rect x="36" y="0" width="6" height="80" fill="white"/>
+            <rect x="10" y="6" width="22" height="22" rx="2" fill="#FFE0B2"/>
+            <rect x="48" y="6" width="22" height="22" rx="2" fill="#C8E6C9"/>
+            <rect x="10" y="50" width="22" height="22" rx="2" fill="#FFCDD2"/>
+            <rect x="48" y="50" width="22" height="22" rx="2" fill="#FFE082"/>
+          </svg>
+          <div class="map-preview-pin">
+            <svg viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16z" fill="#0C831F"/>
+              <circle cx="16" cy="16" r="5" fill="white"/>
+            </svg>
+          </div>
+        </div>
+        <div class="map-preview-info">
+          <div class="map-preview-title" id="prevTitle">Main Road, Nagore</div>
+          <div class="map-preview-sub" id="prevSub">Near Suplaykart Store, Nagore, Nagapattinam — 611002</div>
+          <span class="map-preview-change" onclick="goScreen('map')">📍 Change pin location</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDRESS DETAILS -->
+    <div class="form-sec">
+      <div class="form-sec-title">Address Details</div>
+
+      <div class="form-field">
+        <div class="form-label">House / Flat / Block No. <span class="req">*</span></div>
+        <input type="text" class="form-input" id="house" placeholder="e.g. 3rd floor, 321 C-Block">
+        <div class="form-error-msg" id="houseError">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          This field is required
+        </div>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Floor <span class="opt">Optional</span></div>
+        <input type="text" class="form-input" id="floor" placeholder="e.g. 3rd floor, Ground floor">
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Apartment / Road / Area <span class="opt">Optional</span></div>
+        <input type="text" class="form-input" id="area" value="Main Road, Nagore">
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Landmark <span class="opt">Optional · helps rider find you faster</span></div>
+        <input type="text" class="form-input" id="landmark" placeholder="e.g. Near Suplaykart Store, Opposite school">
+      </div>
+    </div>
+
+    <!-- SAVE AS -->
+    <div class="form-sec">
+      <div class="form-sec-title">Save as</div>
+      <div class="tag-grid" id="tagGrid">
+        <div class="tag-card active" data-tag="home" onclick="selectTag(this)">
+          <div class="tag-card-em">🏠</div>
+          <div class="tag-card-name">Home</div>
+        </div>
+        <div class="tag-card" data-tag="work" onclick="selectTag(this)">
+          <div class="tag-card-em">💼</div>
+          <div class="tag-card-name">Work</div>
+        </div>
+        <div class="tag-card" data-tag="other" onclick="selectTag(this)">
+          <div class="tag-card-em">📍</div>
+          <div class="tag-card-name">Other</div>
+        </div>
+      </div>
+
+      <!-- Custom label (only for "Other") -->
+      <div class="custom-label-wrap" id="customLabelWrap">
+        <div class="form-field" style="margin-top:0">
+          <div class="form-label">Custom name <span class="req">*</span></div>
+          <input type="text" class="form-input" id="customLabel" placeholder="e.g. Mom's place, PG, Hostel" maxlength="20">
+        </div>
+      </div>
+    </div>
+
+    <!-- RECEIVER DETAILS -->
+    <div class="form-sec">
+      <div class="form-sec-title-l">
+        <div class="form-sec-title-l-text">Receiver Details</div>
+      </div>
+
+      <div class="toggle-row" onclick="toggleReceiver()">
+        <div class="toggle-row-info">
+          <div class="toggle-row-title">Order is for someone else?</div>
+          <div class="toggle-row-sub">Add their name and phone for delivery</div>
+        </div>
+        <div class="toggle" id="receiverToggle"></div>
+      </div>
+
+      <div class="receiver-fields" id="receiverFields">
+        <div class="form-field">
+          <div class="form-label">Receiver's name <span class="req">*</span></div>
+          <input type="text" class="form-input" id="receiverName" placeholder="Full name">
+        </div>
+        <div class="form-field">
+          <div class="form-label">Receiver's phone <span class="req">*</span></div>
+          <div class="phone-row">
+            <div class="phone-prefix">🇮🇳 +91</div>
+            <input type="tel" class="form-input" id="receiverPhone" placeholder="10-digit mobile" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'')">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEFAULT TOGGLE -->
+    <div class="form-sec">
+      <div class="toggle-row" onclick="toggleDefault()">
+        <div class="toggle-row-info">
+          <div class="toggle-row-title">Set as default delivery address</div>
+          <div class="toggle-row-sub">Used for all future orders by default</div>
+        </div>
+        <div class="toggle on" id="defaultToggle"></div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+
+  <!-- STICKY FOOTER -->
+  <div class="form-footer">
+    <button class="save-btn" id="saveBtn" onclick="saveAddress()">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <span id="saveBtnText">Save address</span>
+    </button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="success-bg" id="successBg">
+  <div class="success-card">
+    <div class="success-circle">
+      <div class="success-tick">✓</div>
+    </div>
+    <div class="success-title" id="successTitle">Address saved!</div>
+    <div class="success-msg" id="successMsg">Your Home address is now ready to use for orders.</div>
+    <button class="success-cta" onclick="closeSuccess()">Continue</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Done</div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let mode = 'add';       // 'add' or 'edit'
+let isOOS = false;      // out of service
+let selectedTag = 'home';
+let receiverOn = false;
+let isDefault = true;
+let mapOffset = { x:0, y:0 };
+
+// Mock addresses (cycled when map is panned)
+const ADDRESSES = [
+  { title:'Main Road, Nagore', sub:'Near Suplaykart Store, Nagore, Nagapattinam — 611002', dist:'0.4 km · 22 mins' },
+  { title:'Kavanoor Main Road, Nagore', sub:'Block B, Kavanoor, Nagore, Nagapattinam — 611002', dist:'1.2 km · 24 mins' },
+  { title:'Beach Road, Nagore', sub:'Near Beach Park, Nagore, Nagapattinam — 611002', dist:'1.8 km · 26 mins' },
+  { title:'Dargah Street, Nagore', sub:'Near Nagore Dargah, Nagore — 611002', dist:'0.9 km · 23 mins' },
+  { title:'Bus Stand Road, Nagore', sub:'Block A, Near Bus Stand, Nagore — 611002', dist:'0.6 km · 22 mins' },
+  { title:'Hospital Road, Nagore', sub:'Near GH, Block C, Nagore — 611002', dist:'1.5 km · 25 mins' },
+];
+
+const SNAP_LOCATIONS = {
+  current: { offset:{x:0,y:0}, addr:0 },
+  home:    { offset:{x:80,y:-60}, addr:1 },
+  main:    { offset:{x:0,y:0}, addr:0 },
+  beach:   { offset:{x:-30,y:120}, addr:2 },
+  dargah:  { offset:{x:60,y:-80}, addr:3 },
+  hospital:{ offset:{x:-90,y:60}, addr:5 },
+};
+
+// ══════════════════════════════════════════════
+// SCREEN NAV
+// ══════════════════════════════════════════════
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (id === 'map') {
+    document.getElementById('screen-map').classList.add('active');
+  } else {
+    document.getElementById('screen-form').classList.add('active');
+  }
+  document.querySelectorAll('.demo-row')[0].querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo-row')[0].querySelectorAll('.db')[id === 'map' ? 0 : 1].classList.add('on');
+}
+
+// ══════════════════════════════════════════════
+// MODE (Add / Edit)
+// ══════════════════════════════════════════════
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.demo-row')[1].querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo-row')[1].querySelectorAll('.db')[m === 'add' ? 0 : 1].classList.add('on');
+
+  if (m === 'edit') {
+    document.getElementById('formTitle').textContent = 'Edit address';
+    document.getElementById('saveBtnText').textContent = 'Update address';
+    document.getElementById('deleteBtn').style.display = '';
+    // Pre-fill
+    document.getElementById('house').value = '3rd floor, 321 C-Block';
+    document.getElementById('floor').value = '3rd floor';
+    document.getElementById('area').value = 'No 1 Kavanoor Main Road, Nagore';
+    document.getElementById('landmark').value = 'Near VGN building';
+  } else {
+    document.getElementById('formTitle').textContent = 'Add address details';
+    document.getElementById('saveBtnText').textContent = 'Save address';
+    document.getElementById('deleteBtn').style.display = 'none';
+    document.getElementById('house').value = '';
+    document.getElementById('floor').value = '';
+    document.getElementById('landmark').value = '';
+  }
+}
+
+// ══════════════════════════════════════════════
+// OUT OF SERVICE
+// ══════════════════════════════════════════════
+function setOOS(out) {
+  isOOS = out;
+  document.querySelectorAll('.demo-row')[2].querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo-row')[2].querySelectorAll('.db')[out ? 1 : 0].classList.add('on');
+
+  const mapArea = document.getElementById('mapArea');
+  const banner = document.getElementById('oosBanner');
+  const sheetTag = document.getElementById('sheetTag');
+  const detectedEm = document.getElementById('detectedEm');
+  const confirmBtn = document.getElementById('confirmBtn');
+
+  if (out) {
+    mapArea.classList.add('oos');
+    banner.classList.add('show');
+    sheetTag.classList.add('oos');
+    sheetTag.innerHTML = `<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Outside service area`;
+    detectedEm.classList.add('oos');
+    document.getElementById('detectedTitle').textContent = 'Coimbatore, Tamil Nadu';
+    document.getElementById('detectedSub').textContent = 'RS Puram, Coimbatore — 641002 · ~225 km from Nagore';
+    confirmBtn.disabled = true;
+    confirmBtn.querySelector('span') ? confirmBtn.querySelector('span').textContent = 'Cannot deliver here' :
+      confirmBtn.innerHTML = `Cannot deliver here <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+  } else {
+    mapArea.classList.remove('oos');
+    banner.classList.remove('show');
+    sheetTag.classList.remove('oos');
+    sheetTag.innerHTML = `<span class="live-dot"></span> Delivering in 22 mins · 0.4 km from store`;
+    detectedEm.classList.remove('oos');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = `Confirm location &amp; proceed <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>`;
+    snapTo('current', document.querySelector('.qchip.active'));
+  }
+}
+
+// ══════════════════════════════════════════════
+// MAP PAN (drag-to-pan with mouse + touch)
+// ══════════════════════════════════════════════
+const mapArea = document.getElementById('mapArea');
+const mapContent = document.getElementById('mapContent');
+let isDragging = false;
+let dragStart = { x:0, y:0 };
+let dragOffset = { x:0, y:0 };
+
+function applyMapTransform() {
+  mapContent.style.transform = `translate(${mapOffset.x}px, ${mapOffset.y}px)`;
+}
+
+function handleDragStart(e) {
+  if (isOOS) return;
+  isDragging = true;
+  mapArea.classList.add('dragging');
+  const point = e.touches ? e.touches[0] : e;
+  dragStart = { x:point.clientX, y:point.clientY };
+  dragOffset = { ...mapOffset };
+}
+
+function handleDragMove(e) {
+  if (!isDragging) return;
+  const point = e.touches ? e.touches[0] : e;
+  mapOffset.x = dragOffset.x + (point.clientX - dragStart.x);
+  mapOffset.y = dragOffset.y + (point.clientY - dragStart.y);
+  // Limit pan
+  mapOffset.x = Math.max(-160, Math.min(160, mapOffset.x));
+  mapOffset.y = Math.max(-160, Math.min(160, mapOffset.y));
+  applyMapTransform();
+}
+
+function handleDragEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+  mapArea.classList.remove('dragging');
+  // Update address based on pan distance
+  updateAddressFromOffset();
+}
+
+mapArea.addEventListener('mousedown', handleDragStart);
+mapArea.addEventListener('mousemove', handleDragMove);
+mapArea.addEventListener('mouseup', handleDragEnd);
+mapArea.addEventListener('mouseleave', handleDragEnd);
+mapArea.addEventListener('touchstart', handleDragStart, {passive:true});
+mapArea.addEventListener('touchmove', handleDragMove, {passive:true});
+mapArea.addEventListener('touchend', handleDragEnd);
+
+function updateAddressFromOffset() {
+  if (isOOS) return;
+  // Pick address based on pan distance (cycling through)
+  const dist = Math.sqrt(mapOffset.x * mapOffset.x + mapOffset.y * mapOffset.y);
+  const idx = Math.min(Math.floor(dist / 30), ADDRESSES.length - 1);
+  setAddress(idx);
+  // Update active chip
+  document.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
+}
+
+function setAddress(idx) {
+  const addr = ADDRESSES[idx];
+  document.getElementById('detectedTitle').textContent = addr.title;
+  document.getElementById('detectedSub').textContent = addr.sub;
+  document.getElementById('sheetTag').innerHTML =
+    `<span class="live-dot"></span> Delivering in 22 mins · ${addr.dist.split(' · ')[0]}`;
+  document.getElementById('prevTitle').textContent = addr.title;
+  document.getElementById('prevSub').textContent = addr.sub;
+  document.getElementById('area').value = addr.title;
+}
+
+// ══════════════════════════════════════════════
+// QUICK CHIPS
+// ══════════════════════════════════════════════
+function snapTo(key, btn) {
+  if (isOOS) return;
+  document.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const target = SNAP_LOCATIONS[key];
+  if (!target) return;
+  mapOffset = { ...target.offset };
+  applyMapTransform();
+  setAddress(target.addr);
+}
+
+// ══════════════════════════════════════════════
+// GPS BUTTON
+// ══════════════════════════════════════════════
+function locateMe() {
+  const btn = document.getElementById('gpsBtn');
+  btn.classList.add('locating');
+  setTimeout(() => {
+    btn.classList.remove('locating');
+    if (isOOS) {
+      setOOS(false);
+    }
+    snapTo('current', document.querySelectorAll('.qchip')[0]);
+    showToast('📍 Location updated');
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════
+// CONFIRM LOCATION → FORM SCREEN
+// ══════════════════════════════════════════════
+function confirmLocation() {
+  if (isOOS) {
+    showToast('Cannot deliver to this location');
+    return;
+  }
+  goScreen('form');
+}
+
+// ══════════════════════════════════════════════
+// FORM: Tag selection
+// ══════════════════════════════════════════════
+function selectTag(card) {
+  document.querySelectorAll('.tag-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  selectedTag = card.dataset.tag;
+  const customWrap = document.getElementById('customLabelWrap');
+  if (selectedTag === 'other') {
+    customWrap.classList.add('show');
+    setTimeout(() => document.getElementById('customLabel').focus(), 200);
+  } else {
+    customWrap.classList.remove('show');
+  }
+}
+
+// ══════════════════════════════════════════════
+// FORM: Toggles
+// ══════════════════════════════════════════════
+function toggleReceiver() {
+  receiverOn = !receiverOn;
+  document.getElementById('receiverToggle').classList.toggle('on', receiverOn);
+  document.getElementById('receiverFields').classList.toggle('show', receiverOn);
+}
+
+function toggleDefault() {
+  isDefault = !isDefault;
+  document.getElementById('defaultToggle').classList.toggle('on', isDefault);
+}
+
+// ══════════════════════════════════════════════
+// FORM: Save
+// ══════════════════════════════════════════════
+function saveAddress() {
+  const house = document.getElementById('house').value.trim();
+  const houseError = document.getElementById('houseError');
+  const houseInput = document.getElementById('house');
+
+  if (!house) {
+    houseError.classList.add('show');
+    houseInput.classList.add('error');
+    houseInput.focus();
+    setTimeout(() => {
+      houseInput.classList.remove('error');
+    }, 2000);
+    return;
+  }
+
+  if (selectedTag === 'other') {
+    const customLabel = document.getElementById('customLabel').value.trim();
+    if (!customLabel) {
+      showToast('Enter custom name');
+      document.getElementById('customLabel').focus();
+      return;
+    }
+  }
+
+  if (receiverOn) {
+    const name = document.getElementById('receiverName').value.trim();
+    const phone = document.getElementById('receiverPhone').value.trim();
+    if (!name) { showToast("Enter receiver's name"); return; }
+    if (phone.length !== 10) { showToast('Enter valid 10-digit phone'); return; }
+  }
+
+  // Show success
+  const tagLabel = selectedTag === 'home' ? 'Home' :
+                   selectedTag === 'work' ? 'Work' :
+                   document.getElementById('customLabel').value.trim();
+
+  document.getElementById('successTitle').textContent =
+    mode === 'edit' ? 'Address updated!' : 'Address saved!';
+  document.getElementById('successMsg').textContent =
+    mode === 'edit'
+      ? `Your ${tagLabel} address details have been updated.`
+      : `Your ${tagLabel} address is now ready to use for orders.`;
+  document.getElementById('successBg').classList.add('show');
+}
+
+function closeSuccess() {
+  document.getElementById('successBg').classList.remove('show');
+  showToast(mode === 'edit' ? 'Address updated' : 'Returning to addresses...');
+}
+
+// ══════════════════════════════════════════════
+// DELETE
+// ══════════════════════════════════════════════
+function confirmDelete() {
+  if (confirm('Delete this address? This cannot be undone.')) {
+    showToast('Address deleted');
+    setTimeout(() => goScreen('map'), 800);
+  }
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+</script>
+</body>
+</html>

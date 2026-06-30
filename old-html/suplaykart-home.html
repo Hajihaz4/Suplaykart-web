@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #0C831F;
+  --green-dark: #0a6b19;
+  --green-bg: #E8F5E9;
+  --yellow-header: #FFFBE6;
+  --dark: #1C1C1C;
+  --gray: #6B6B6B;
+  --light: #F0F0F0;
+  --border: #E8E8E8;
+  --white: #FFFFFF;
+  --red: #E23744;
+  --font: 'Poppins', sans-serif;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font)}
+
+/* ── PHONE SHELL ─────────────────────────────── */
+.shell{
+  max-width:390px;
+  height:100vh;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--light);
+  position:relative;
+  box-shadow:0 0 60px rgba(0,0,0,0.6);
+}
+
+/* ── DEMO CONTROLS ───────────────────────────── */
+.demo{
+  position:fixed;
+  top:6px;right:calc(50% - 195px + 4px);
+  z-index:9999;
+  background:rgba(10,10,10,0.85);
+  backdrop-filter:blur(8px);
+  border-radius:10px;
+  padding:8px 9px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  font-family:var(--font);
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;text-align:center}
+.demo-row{display:flex;gap:3px}
+.db{font-family:var(--font);font-size:8px;font-weight:700;padding:4px 7px;border:none;border-radius:5px;cursor:pointer;opacity:.45;transition:.2s}
+.db.on{opacity:1}
+.db-norm{background:#FFFBE6;color:#333}
+.db-rain{background:#203A43;color:#7EC8E3}
+.db-sum{background:#FF8200;color:#fff}
+.db-in{background:#0C831F;color:#fff}
+.db-out{background:#E23744;color:#fff}
+
+/* ── OUT OF SERVICE SCREEN ───────────────────── */
+.oos{
+  position:absolute;inset:0;
+  background:white;
+  z-index:500;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px 24px;
+  text-align:center;
+}
+.oos.hide{display:none}
+.oos-art{font-size:88px;margin-bottom:20px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.oos-title{font-size:22px;font-weight:800;color:var(--dark);margin-bottom:8px}
+.oos-sub{font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:28px}
+.oos-loc{
+  display:flex;align-items:center;gap:10px;
+  background:var(--light);border:1.5px solid var(--border);
+  border-radius:12px;padding:13px 16px;width:100%;margin-bottom:14px;
+  cursor:pointer;
+}
+.oos-loc-txt{flex:1;text-align:left}
+.oos-loc-txt small{display:block;font-size:10px;color:var(--gray);font-weight:500}
+.oos-loc-txt strong{display:block;font-size:14px;font-weight:700;color:var(--dark)}
+.oos-btn{
+  background:var(--green);color:white;border:none;
+  padding:15px 24px;border-radius:12px;
+  font-family:var(--font);font-size:15px;font-weight:700;
+  width:100%;cursor:pointer;
+  box-shadow:0 4px 14px rgba(12,131,31,0.3);
+}
+.oos-note{font-size:12px;color:var(--gray);margin-top:14px}
+.oos-note a{color:var(--green);font-weight:600;text-decoration:none}
+
+/* ── MAIN APP ────────────────────────────────── */
+.app{display:flex;flex-direction:column;height:100vh}
+.app.hide{display:none}
+
+/* ── HEADER ──────────────────────────────────── */
+.hdr{
+  position:relative;
+  flex-shrink:0;
+  padding:44px 16px 14px;
+  overflow:hidden;
+  transition:background .6s ease;
+}
+/* WEATHER STATES */
+.hdr.norm{background:linear-gradient(150deg,#FFFBE6 0%,#FFF3C4 100%)}
+.hdr.rain{background:linear-gradient(150deg,#0F2027 0%,#203A43 55%,#2C5364 100%)}
+.hdr.sum{background:linear-gradient(150deg,#FF7200 0%,#FFB300 60%,#FFD000 100%)}
+
+/* Rain drops */
+.rain-wrap{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.rdrop{
+  position:absolute;top:-50px;
+  width:1.5px;border-radius:2px;
+  background:linear-gradient(transparent,rgba(160,210,255,.75));
+  animation:rdrop linear infinite;
+}
+@keyframes rdrop{
+  0%{transform:translateY(0) skewX(-12deg);opacity:0}
+  8%{opacity:.9}
+  92%{opacity:.5}
+  100%{transform:translateY(240px) skewX(-12deg);opacity:0}
+}
+
+/* Sun */
+.sun-wrap{position:absolute;top:-18px;right:-18px;width:110px;height:110px;pointer-events:none;z-index:1}
+.sun-rays{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);animation:srot 9s linear infinite}
+@keyframes srot{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.sun-core{
+  position:absolute;top:50%;left:50%;
+  width:44px;height:44px;
+  background:rgba(255,255,255,.45);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  animation:spulse 2.5s ease-in-out infinite;
+}
+@keyframes spulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.18)}}
+
+/* Normal sparkles */
+.spark-wrap{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.spark{
+  position:absolute;width:5px;height:5px;
+  background:#FFD700;border-radius:50%;
+  animation:sfloat ease-in infinite;opacity:0;
+}
+@keyframes sfloat{
+  0%{transform:scale(0) translateY(0);opacity:0}
+  25%{transform:scale(1) translateY(-10px);opacity:.9}
+  75%{opacity:.4}
+  100%{transform:scale(0) translateY(-70px);opacity:0}
+}
+
+/* Header content */
+.hdr-inner{position:relative;z-index:2;display:flex;gap:10px;align-items:flex-start}
+.hdr-left{flex:1}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(12,131,31,.12);color:var(--green);
+  font-size:11px;font-weight:700;
+  padding:4px 9px;border-radius:20px;margin-bottom:4px;
+}
+.hdr.rain .badge{background:rgba(255,255,255,.15);color:rgba(255,255,255,.9)}
+.hdr.sum .badge{background:rgba(0,0,0,.12);color:#3D1800}
+.badge-dot{width:6px;height:6px;background:currentColor;border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.store-title{font-size:21px;font-weight:900;color:var(--dark);line-height:1.2;margin-bottom:4px;letter-spacing:-.3px}
+.hdr.rain .store-title{color:white}
+.hdr.sum .store-title{color:#2D1000}
+.loc-row{display:flex;align-items:center;gap:4px;font-size:12px;color:rgba(28,28,28,.75);flex-wrap:nowrap}
+.hdr.rain .loc-row{color:rgba(255,255,255,.75)}
+.hdr.sum .loc-row{color:#4A2000}
+.loc-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.loc-addr{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.loc-chev{font-size:10px;opacity:.6}
+
+/* Header icons */
+.hdr-icons{display:flex;gap:8px;flex-shrink:0}
+.hdr-icon{
+  width:38px;height:38px;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(6px);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  position:relative;
+  color:var(--dark);
+}
+.hdr.rain .hdr-icon{background:rgba(255,255,255,.15);color:white}
+.hdr.sum .hdr-icon{background:rgba(255,255,255,.3);color:#3D1800}
+.hdr-icon svg{width:20px;height:20px;fill:currentColor}
+.wallet-txt{font-size:10px;font-weight:800;line-height:1}
+.hdr-cart-badge{
+  position:absolute;top:-3px;right:-3px;
+  background:var(--red);color:white;
+  font-size:8px;font-weight:800;
+  min-width:16px;height:16px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 3px;border:2px solid white;
+  font-family:var(--font);
+}
+
+/* ── MAIN SCROLL AREA ────────────────────────── */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.main::-webkit-scrollbar{display:none}
+
+/* ── SEARCH ──────────────────────────────────── */
+.srch-wrap{
+  padding:10px 16px 8px;
+  background:transparent;
+  position:sticky;top:0;z-index:50;
+  transition:background .25s,box-shadow .25s;
+}
+.srch-wrap.scrolled{background:white;box-shadow:0 2px 14px rgba(0,0,0,.1);padding:8px 16px}
+.srch-bar{
+  display:flex;align-items:center;gap:10px;
+  background:white;border-radius:12px;
+  padding:11px 14px;
+  box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+.srch-wrap.scrolled .srch-bar{box-shadow:none;background:var(--light)}
+.srch-bar input{flex:1;border:none;outline:none;font-family:var(--font);font-size:14px;background:transparent;color:var(--dark)}
+.srch-bar input::placeholder{color:#A0A0A0}
+.srch-ic{fill:var(--gray);flex-shrink:0}
+
+/* ── QUICK PILLS ─────────────────────────────── */
+.pills-row{
+  padding:6px 0 12px;
+  overflow-x:auto;scrollbar-width:none;white-space:nowrap;
+}
+.pills-row::-webkit-scrollbar{display:none}
+.pills-inner{display:flex;gap:8px;padding:0 16px}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:white;border-radius:20px;
+  padding:6px 13px;font-size:12px;font-weight:600;
+  color:var(--dark);cursor:pointer;
+  box-shadow:0 1px 5px rgba(0,0,0,.06);
+  white-space:nowrap;
+}
+.pill.active{background:var(--green);color:white}
+.pill span{font-size:13px}
+
+/* ── HERO CAROUSEL ───────────────────────────── */
+.carousel{padding:0 16px 14px}
+.c-track{
+  display:flex;overflow-x:auto;gap:10px;
+  scroll-snap-type:x mandatory;scrollbar-width:none;
+}
+.c-track::-webkit-scrollbar{display:none}
+.c-slide{
+  min-width:100%;height:136px;border-radius:16px;
+  flex-shrink:0;scroll-snap-align:start;
+  overflow:hidden;position:relative;cursor:pointer;
+}
+.c1{background:linear-gradient(135deg,#1B4332,#52B788)}
+.c2{background:linear-gradient(135deg,#6A0572,#C77DFF)}
+.c3{background:linear-gradient(135deg,#B5451B,#E87C2A)}
+.c-body{position:absolute;inset:0;padding:18px 20px;display:flex;flex-direction:column;justify-content:flex-end}
+.c-tag{
+  display:inline-block;background:rgba(255,255,255,.25);
+  color:white;font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:20px;margin-bottom:6px;width:fit-content;
+}
+.c-title{font-size:20px;font-weight:900;color:white;line-height:1.15;letter-spacing:-.3px}
+.c-sub{font-size:11px;color:rgba(255,255,255,.8);margin-top:3px}
+.c-emoji{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:58px;line-height:1}
+.c-dots{display:flex;justify-content:center;gap:5px;margin-top:9px}
+.c-dot{width:6px;height:6px;border-radius:3px;background:#CCC;transition:all .3s;cursor:pointer}
+.c-dot.on{width:20px;background:var(--green)}
+
+/* ── LOW PRICES ──────────────────────────────── */
+.lp-section{margin:0 16px 14px;border-radius:16px;overflow:hidden;border:1px solid #FFE566}
+.lp-head{
+  background:linear-gradient(135deg,#1C1C1C,#2D2D2D);
+  padding:14px 16px;text-align:center;
+}
+.lp-h1{font-size:22px;font-weight:900;color:white;letter-spacing:-.5px;line-height:1}
+.lp-badges{display:flex;justify-content:center;gap:8px;margin-top:7px}
+.lpb1{background:#FFD700;color:#1C1C1C;font-size:11px;font-weight:800;padding:4px 14px;border-radius:4px;letter-spacing:.4px}
+.lpb2{background:var(--green);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:4px;letter-spacing:.4px}
+.lp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,213,0,.25)}
+.lp-box{
+  background:#FEFEF6;padding:10px 10px 8px;
+  min-height:92px;position:relative;overflow:hidden;
+  cursor:pointer;display:flex;flex-direction:column;
+  transition:background .15s;
+}
+.lp-box:active{background:#FFFBDF}
+.lp-cn{font-size:11px;font-weight:800;color:var(--dark);line-height:1.3}
+.lp-pn{font-size:10px;color:var(--gray);margin-top:2px;line-height:1.3}
+.lp-price{margin-top:auto;padding-top:4px;font-size:12px;font-weight:800;color:var(--dark)}
+.lp-off{
+  display:inline-block;
+  background:#FFF0B3;color:#9A6400;
+  font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:3px;margin-left:3px;
+}
+.lp-em{position:absolute;bottom:6px;right:6px;font-size:30px;opacity:.85}
+
+/* ── SECTION HEAD ────────────────────────────── */
+.sec-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px}
+.sec-title{font-size:17px;font-weight:800;color:var(--dark)}
+.sec-all{font-size:12px;font-weight:600;color:var(--green);cursor:pointer}
+
+/* ── HORIZONTAL CARDS ────────────────────────── */
+.hcards{overflow-x:auto;scrollbar-width:none;padding-bottom:14px}
+.hcards::-webkit-scrollbar{display:none}
+.hcards-inner{display:flex;gap:10px;padding:0 16px}
+.hcard{
+  min-width:112px;background:white;
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  box-shadow:0 1px 5px rgba(0,0,0,.06);
+}
+.hcard-img{height:78px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.hcard-body{padding:8px 10px 10px}
+.hcard-name{font-size:11px;font-weight:700;color:var(--dark);line-height:1.3}
+.hcard-count{font-size:10px;color:var(--gray);margin-top:2px}
+
+/* ── AD BANNER ───────────────────────────────── */
+.ad{margin:0 16px 14px;border-radius:14px;overflow:hidden;height:88px;cursor:pointer;position:relative}
+.ad-a{background:linear-gradient(135deg,#006494,#0096C7)}
+.ad-b{background:linear-gradient(135deg,#6B2D6B,#AB47BC)}
+.ad-body{position:absolute;inset:0;display:flex;align-items:center;padding:14px 16px;gap:4px}
+.ad-em{font-size:38px;flex-shrink:0;margin-right:8px}
+.ad-txt{flex:1}
+.ad-title{font-size:15px;font-weight:800;color:white}
+.ad-sub{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px}
+.ad-cta{
+  background:white;color:var(--dark);border:none;
+  padding:7px 12px;border-radius:8px;
+  font-family:var(--font);font-size:11px;font-weight:700;
+  cursor:pointer;flex-shrink:0;
+}
+.ad-lbl{
+  position:absolute;top:7px;right:8px;
+  background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);
+  font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;
+}
+
+/* ── WHITE CARD WRAPPER ──────────────────────── */
+.wcard{background:white;margin-bottom:8px}
+
+/* ── CATEGORY GRID ───────────────────────────── */
+.cat-title{font-size:16px;font-weight:800;color:var(--dark);padding:14px 16px 10px}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 8px 8px}
+.cat-item{
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 4px;border-radius:10px;cursor:pointer;transition:background .15s;
+}
+.cat-item:active{background:var(--light)}
+.cat-img{
+  width:62px;height:62px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;margin-bottom:6px;
+}
+.cat-name{font-size:10px;font-weight:600;color:var(--dark);text-align:center;line-height:1.3}
+.bg1{background:#E8F5E9} .bg2{background:#FFF3E0} .bg3{background:#E3F2FD}
+.bg4{background:#FCE4EC} .bg5{background:#F3E5F5} .bg6{background:#E0F7FA}
+.bg7{background:#FFF8E1} .bg8{background:#EFEBE9}
+
+/* ── PRODUCT GRID ────────────────────────────── */
+.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 8px 0}
+.prod-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:white;cursor:pointer}
+.prod-img{
+  position:relative;height:86px;
+  background:#F7F7F7;
+  display:flex;align-items:center;justify-content:center;
+  font-size:42px;
+}
+.ptag{
+  position:absolute;top:4px;left:4px;
+  font-size:8px;font-weight:700;padding:2px 5px;border-radius:4px;
+}
+.ptag-g{background:var(--green);color:white}
+.ptag-r{background:var(--red);color:white}
+.ptag-b{background:#1565C0;color:white}
+.prod-body{padding:6px 8px 8px}
+.prod-wt{font-size:10px;color:var(--gray);font-weight:500}
+.prod-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 2px}
+.prod-price{font-size:14px;font-weight:800;color:var(--dark)}
+.add-btn{
+  background:white;border:1.5px solid var(--green);
+  color:var(--green);font-family:var(--font);
+  font-size:11px;font-weight:800;
+  padding:5px 10px;border-radius:7px;cursor:pointer;
+  transition:all .15s;letter-spacing:.3px;
+}
+.add-btn.added{background:var(--green);color:white;border-color:var(--green)}
+.prod-og{font-size:9px;color:var(--gray);text-decoration:line-through;display:inline}
+.prod-off{font-size:9px;color:var(--green);font-weight:700;margin-left:4px}
+.prod-name{font-size:11px;color:var(--dark);font-weight:500;line-height:1.3;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* See all strip */
+.see-all-strip{
+  margin:8px 8px 14px;border:1.5px solid var(--border);
+  border-radius:10px;padding:11px;text-align:center;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--green);background:white;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+.footer{background:#111;padding:24px 20px 30px;position:relative;overflow:hidden}
+.footer-glow{
+  position:absolute;bottom:-40px;right:-40px;
+  width:180px;height:180px;
+  background:radial-gradient(circle,rgba(12,131,31,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.footer-s{
+  position:absolute;bottom:0;right:0;
+  font-size:160px;font-weight:900;color:rgba(255,255,255,.025);
+  font-family:var(--font);line-height:1;user-select:none;pointer-events:none;
+}
+.f-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.f-logo{
+  width:44px;height:44px;background:white;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;color:#1C1C1C;font-family:var(--font);
+}
+.f-name{font-size:17px;font-weight:900;color:white;letter-spacing:-.3px}
+.f-tag{font-size:10px;color:rgba(255,255,255,.4);font-style:italic;margin-top:1px}
+.f-card{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;
+}
+.f-card-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.f-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.f-row:last-child{margin-bottom:0}
+.f-label{font-size:11px;color:rgba(255,255,255,.6)}
+.f-value{font-size:11px;font-weight:700;color:#7EEB8A}
+.f-wa{
+  display:flex;align-items:center;gap:10px;
+  background:#1DB954;border-radius:10px;
+  padding:12px 14px;margin-bottom:12px;
+  cursor:pointer;text-decoration:none;
+}
+.f-wa-ico{font-size:22px;flex-shrink:0}
+.f-wa-txt{flex:1}
+.f-wa-label{font-size:10px;color:rgba(255,255,255,.8);font-weight:600}
+.f-wa-num{font-size:15px;font-weight:800;color:white}
+.f-wa-arr{font-size:18px;color:rgba(255,255,255,.5)}
+.f-socials{display:flex;gap:10px;margin-bottom:18px}
+.f-soc{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;color:white}
+.soc-fb{background:#1877F2}
+.soc-yt{background:#FF0000}
+.soc-ig{background:linear-gradient(135deg,#833AB4,#E1306C,#FCAF45)}
+.f-div{border:none;border-top:1px solid rgba(255,255,255,.08);margin:14px 0}
+.f-copy{font-size:10px;color:rgba(255,255,255,.3);line-height:1.7}
+.f-copy a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:600}
+
+/* ── BOTTOM NAV ──────────────────────────────── */
+.bnav{
+  flex-shrink:0;
+  background:white;
+  border-top:1px solid var(--border);
+  display:flex;
+  padding:8px 0 18px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.05);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;gap:3px;cursor:pointer;
+  position:relative;
+}
+.nav-svg{width:22px;height:22px;fill:#9E9E9E;transition:all .2s;flex-shrink:0}
+.nav-item.active .nav-svg{fill:var(--green);transform:scale(1.1)}
+.nav-pick .nav-svg{fill:#9E9E9E}
+.nav-item.nav-pick.active .nav-svg{fill:#FF6B00}
+.nav-lbl{font-size:10px;font-weight:600;color:#9E9E9E}
+.nav-item.active .nav-lbl{color:var(--green)}
+.nav-item.nav-pick.active .nav-lbl{color:#FF6B00}
+.cart-badge{
+  position:absolute;top:0;right:12px;
+  background:var(--red);color:white;
+  font-size:8px;font-weight:800;
+  min-width:15px;height:15px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 3px;
+  border:2px solid white;
+}
+
+/* ── STORE CLOSED BANNER ──────────────────────── */
+.closed-banner{
+  background:#FFF5F5;border:1.5px solid #FFD7D7;
+  margin:0 16px 14px;border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+}
+.cb-icon{font-size:24px;flex-shrink:0}
+.cb-txt strong{display:block;font-size:13px;font-weight:800;color:#C62828}
+.cb-txt span{font-size:11px;color:var(--gray)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+<!-- DEMO CONTROLS -->
+<div class="demo">
+  <div class="demo-label">Weather</div>
+  <div class="demo-row">
+    <button class="db db-norm on" onclick="setW('norm')">☀ Normal</button>
+    <button class="db db-rain" onclick="setW('rain')">🌧 Rain</button>
+    <button class="db db-sum" onclick="setW('sum')">🔥 Summer</button>
+  </div>
+  <div class="demo-label">Service Area</div>
+  <div class="demo-row">
+    <button class="db db-in on" onclick="setZone(1)">✓ In Zone</button>
+    <button class="db db-out" onclick="setZone(0)">✗ No Zone</button>
+  </div>
+</div>
+
+<!-- OUT OF SERVICE SCREEN -->
+<div id="oos" class="oos hide">
+  <div class="oos-art">🛵</div>
+  <h2 class="oos-title">We're not here yet!</h2>
+  <p class="oos-sub">Suplaykart doesn't deliver to your area yet. We're expanding fast across Tamil Nadu — check back soon or try a nearby location.</p>
+  <div class="oos-loc">
+    <span style="font-size:20px">📍</span>
+    <div class="oos-loc-txt">
+      <small>Detected location</small>
+      <strong>Chennai, Tamil Nadu</strong>
+    </div>
+    <span style="color:var(--gray);font-size:14px">✎</span>
+  </div>
+  <button class="oos-btn">Try a different address</button>
+  <p class="oos-note">Want to know when we arrive? <a href="#">Notify me ›</a></p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app">
+
+  <!-- HEADER -->
+  <header class="hdr norm" id="hdr">
+    <div class="rain-wrap" id="rainW"></div>
+    <div class="sun-wrap" id="sunW" style="display:none">
+      <div class="sun-rays">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <g transform="translate(55,55)">
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(45)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(90)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(135)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(180)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(225)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(270)"/>
+            <line x1="0" y1="-52" x2="0" y2="-38" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round" transform="rotate(315)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="sun-core"></div>
+    </div>
+    <div class="spark-wrap" id="sparkW"></div>
+
+    <div class="hdr-inner">
+      <div class="hdr-left">
+        <div class="badge" id="badge">
+          <div class="badge-dot"></div>
+          <span id="badge-txt">Delivering in 22 mins</span>
+        </div>
+        <div class="store-title" id="store-title">Get it fast, Nagore! ⚡</div>
+        <div class="loc-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="fill:var(--green);flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <span class="loc-tag">HOME</span>
+          <span class="loc-addr">— Nagore, Nagapattinam</span>
+          <span class="loc-chev">▾</span>
+        </div>
+      </div>
+      <div class="hdr-icons">
+        <div class="hdr-icon" style="position:relative" onclick="setNav(document.querySelectorAll('.nav-item')[0])">
+          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0021.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          <span class="hdr-cart-badge" id="hdrCartBadge">0</span>
+        </div>
+        <div class="hdr-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SCROLL -->
+  <main class="main" id="main">
+
+    <!-- STICKY SEARCH -->
+    <div class="srch-wrap" id="srchWrap">
+      <div class="srch-bar">
+        <svg class="srch-ic" width="18" height="18" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" placeholder='Search "paneer, dal, soap..."'>
+        <svg class="srch-ic" width="18" height="18" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </div>
+    </div>
+
+    <!-- QUICK PILLS -->
+    <div class="pills-row">
+      <div class="pills-inner">
+        <div class="pill active"><span>🛒</span> Grocery</div>
+        <div class="pill"><span>🍽️</span> Restaurants</div>
+        <div class="pill"><span>🛵</span> Pick & Drop</div>
+        <div class="pill"><span>💄</span> Beauty</div>
+        <div class="pill"><span>📱</span> Electronics</div>
+        <div class="pill"><span>🧴</span> Personal Care</div>
+        <div class="pill"><span>🏠</span> Household</div>
+      </div>
+    </div>
+
+    <!-- HERO CAROUSEL -->
+    <div class="carousel">
+      <div class="c-track" id="cTrack">
+        <div class="c-slide c1">
+          <div class="c-body">
+            <span class="c-tag">🎉 TODAY'S OFFER</span>
+            <div class="c-title">Fresh Groceries<br>In 22 Mins</div>
+            <div class="c-sub">Free delivery on orders above ₹49</div>
+          </div>
+          <div class="c-emoji">🥦</div>
+        </div>
+        <div class="c-slide c2">
+          <div class="c-body">
+            <span class="c-tag">✨ EXCLUSIVE</span>
+            <div class="c-title">Daily Essentials<br>Best Prices</div>
+            <div class="c-sub">Up to 30% off on brands you love</div>
+          </div>
+          <div class="c-emoji">🧴</div>
+        </div>
+        <div class="c-slide c3">
+          <div class="c-body">
+            <span class="c-tag">🍕 NEW</span>
+            <div class="c-title">Restaurant<br>Orders Open!</div>
+            <div class="c-sub">Hot food delivered to your door</div>
+          </div>
+          <div class="c-emoji">🍛</div>
+        </div>
+      </div>
+      <div class="c-dots">
+        <div class="c-dot on"></div>
+        <div class="c-dot"></div>
+        <div class="c-dot"></div>
+      </div>
+    </div>
+
+    <!-- LOW PRICES SECTION -->
+    <div class="lp-section">
+      <div class="lp-head">
+        <div class="lp-h1">LOW PRICES</div>
+        <div class="lp-badges"><span class="lpb1">ALL DAY</span><span class="lpb2">EVERYDAY</span></div>
+      </div>
+      <div class="lp-grid" id="lpGrid">
+        <div class="lp-box"><div class="lp-cn">Tea, Coffee &<br>Beverages</div><div class="lp-pn">Cothas Coffee 500g</div><div class="lp-price">₹459</div><div class="lp-em">☕</div></div>
+        <div class="lp-box"><div class="lp-cn">Kitchen<br>Essentials</div><div class="lp-pn">VKR Ponni Rice</div><div class="lp-price">₹70<small style="font-size:9px;font-weight:500">/kg</small></div><div class="lp-em">🍚</div></div>
+        <div class="lp-box"><div class="lp-cn">Noodles,<br>Biscuits & More</div><div class="lp-pn">Maggi Mega Pack</div><div class="lp-price">₹163<span class="lp-off">33% OFF</span></div><div class="lp-em">🍜</div></div>
+        <div class="lp-box"><div class="lp-cn">Self Care &<br>Wellness</div><div class="lp-pn">Mysore Sandal</div><div class="lp-price">₹99<span class="lp-off">20% OFF</span></div><div class="lp-em">🧼</div></div>
+        <div class="lp-box"><div class="lp-cn">Laundry &<br>Cleaning</div><div class="lp-pn">Harpic 1 Litre</div><div class="lp-price">₹179</div><div class="lp-em">🧹</div></div>
+        <div class="lp-box"><div class="lp-cn">Ice Cream<br>& More</div><div class="lp-pn">Amul Vanilla 1L</div><div class="lp-price">₹169</div><div class="lp-em">🍦</div></div>
+      </div>
+    </div>
+
+    <!-- BUY AGAIN -->
+    <div class="wcard">
+      <div class="sec-hd"><span class="sec-title">Buy Again 🔄</span><span class="sec-all">See all ›</span></div>
+      <div class="hcards">
+        <div class="hcards-inner">
+          <div class="hcard"><div class="hcard-img" style="background:#FFF3E0">🥛</div><div class="hcard-body"><div class="hcard-name">Milk & Dairy</div><div class="hcard-count">4 items</div></div></div>
+          <div class="hcard"><div class="hcard-img" style="background:#E8F5E9">🥬</div><div class="hcard-body"><div class="hcard-name">Sauces & Spreads</div><div class="hcard-count">2 items</div></div></div>
+          <div class="hcard"><div class="hcard-img" style="background:#E3F2FD">🥤</div><div class="hcard-body"><div class="hcard-name">Chips & Namkeen</div><div class="hcard-count">3 items</div></div></div>
+          <div class="hcard"><div class="hcard-img" style="background:#FCE4EC">🥚</div><div class="hcard-body"><div class="hcard-name">Dairy, Bread & Eggs</div><div class="hcard-count">5 items</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AD BANNER 1 -->
+    <div class="ad ad-a">
+      <span class="ad-lbl">AD</span>
+      <div class="ad-body">
+        <div class="ad-em">📚</div>
+        <div class="ad-txt"><div class="ad-title">Support Education</div><div class="ad-sub">Choose P&G — #EraseTheLearningGap</div></div>
+        <button class="ad-cta">Shop now</button>
+      </div>
+    </div>
+
+    <!-- CATEGORY: GROCERY -->
+    <div class="wcard">
+      <div class="cat-title">🥗 Grocery & Kitchen</div>
+      <div class="cat-grid">
+        <div class="cat-item"><div class="cat-img bg1">🥦</div><div class="cat-name">Vegetables & Fruits</div></div>
+        <div class="cat-item"><div class="cat-img bg2">🌾</div><div class="cat-name">Atta, Rice & Dal</div></div>
+        <div class="cat-item"><div class="cat-img bg3">🫙</div><div class="cat-name">Oil, Ghee & Masala</div></div>
+        <div class="cat-item"><div class="cat-img bg4">🥚</div><div class="cat-name">Dairy, Bread & Eggs</div></div>
+        <div class="cat-item"><div class="cat-img bg5">🍞</div><div class="cat-name">Bakery & Biscuits</div></div>
+        <div class="cat-item"><div class="cat-img bg6">🥩</div><div class="cat-name">Chicken & Fish</div></div>
+        <div class="cat-item"><div class="cat-img bg7">🧆</div><div class="cat-name">Dry Fruits & Cereals</div></div>
+        <div class="cat-item"><div class="cat-img bg8">🍳</div><div class="cat-name">Kitchenware</div></div>
+      </div>
+    </div>
+
+    <!-- CATEGORY: BEAUTY -->
+    <div class="wcard">
+      <div class="cat-title">💄 Beauty & Personal Care</div>
+      <div class="cat-grid">
+        <div class="cat-item"><div class="cat-img bg4">🧴</div><div class="cat-name">Bath & Body</div></div>
+        <div class="cat-item"><div class="cat-img bg5">💆</div><div class="cat-name">Hair Care</div></div>
+        <div class="cat-item"><div class="cat-img bg1">🌿</div><div class="cat-name">Skin & Face</div></div>
+        <div class="cat-item"><div class="cat-img bg3">💊</div><div class="cat-name">Health & Pharma</div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS: GROCERY ESSENTIALS -->
+    <div class="wcard">
+      <div class="sec-hd"><span class="sec-title">Grocery Essentials</span><span class="sec-all">See all ›</span></div>
+      <div class="prod-grid">
+        <div class="prod-card"><div class="prod-img"><span class="ptag ptag-g">7% OFF</span>🍜</div><div class="prod-body"><div class="prod-wt">240 g</div><div class="prod-row"><span class="prod-price">₹49</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹53</span><span class="prod-off">7% off</span></div><div class="prod-name">Top Ramen Masala Noodles</div></div></div>
+        <div class="prod-card"><div class="prod-img"><span class="ptag ptag-r">HOT</span>🧈</div><div class="prod-body"><div class="prod-wt">500 g</div><div class="prod-row"><span class="prod-price">₹285</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹320</span><span class="prod-off">11% off</span></div><div class="prod-name">Amul Butter Table</div></div></div>
+        <div class="prod-card"><div class="prod-img">🥛</div><div class="prod-body"><div class="prod-wt">1 ltr</div><div class="prod-row"><span class="prod-price">₹62</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div style="height:13px"></div><div class="prod-name">Aavin Full Cream Milk</div></div></div>
+        <div class="prod-card"><div class="prod-img"><span class="ptag ptag-b">NEW</span>🫙</div><div class="prod-body"><div class="prod-wt">1 litre</div><div class="prod-row"><span class="prod-price">₹188</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹210</span><span class="prod-off">10% off</span></div><div class="prod-name">Fortune Sunflower Oil</div></div></div>
+        <div class="prod-card"><div class="prod-img">🌾</div><div class="prod-body"><div class="prod-wt">5 kg</div><div class="prod-row"><span class="prod-price">₹350</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div style="height:13px"></div><div class="prod-name">VKR Ponni Boiled Rice</div></div></div>
+        <div class="prod-card"><div class="prod-img"><span class="ptag ptag-g">9% OFF</span>🍫</div><div class="prod-body"><div class="prod-wt">900 g</div><div class="prod-row"><span class="prod-price">₹163</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹180</span><span class="prod-off">9% off</span></div><div class="prod-name">Maggi 2-Min Noodles Mega</div></div></div>
+      </div>
+      <div class="see-all-strip">See all Grocery products →</div>
+    </div>
+
+    <!-- AD BANNER 2 -->
+    <div class="ad ad-b">
+      <span class="ad-lbl">AD</span>
+      <div class="ad-body">
+        <div class="ad-em">🧴</div>
+        <div class="ad-txt"><div class="ad-title">Skincare Deals</div><div class="ad-sub">CeraVe, Dermafique & more — up to 40% off</div></div>
+        <button class="ad-cta">Explore</button>
+      </div>
+    </div>
+
+    <!-- PRODUCTS: DRINKS -->
+    <div class="wcard">
+      <div class="sec-hd"><span class="sec-title">Refreshing Drinks 🥤</span><span class="sec-all">See all ›</span></div>
+      <div class="prod-grid">
+        <div class="prod-card"><div class="prod-img" style="background:#FFF3E0"><span class="ptag ptag-g">7% OFF</span>🥤</div><div class="prod-body"><div class="prod-wt">750 ml</div><div class="prod-row"><span class="prod-price">₹37</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹40</span><span class="prod-off">7% off</span></div><div class="prod-name">Coca-Cola Soft Drink</div></div></div>
+        <div class="prod-card"><div class="prod-img" style="background:#E8F5E9">🧃</div><div class="prod-body"><div class="prod-wt">1 ltr</div><div class="prod-row"><span class="prod-price">₹68</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹85</span><span class="prod-off">20% off</span></div><div class="prod-name">Minute Maid Pulpy Orange</div></div></div>
+        <div class="prod-card"><div class="prod-img" style="background:#E3F2FD"><span class="ptag ptag-b">NEW</span>🍹</div><div class="prod-body"><div class="prod-wt">350 ml</div><div class="prod-row"><span class="prod-price">₹25</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div style="height:13px"></div><div class="prod-name">7UP Nimbooz Lemon Juice</div></div></div>
+      </div>
+      <div class="see-all-strip">See all Drinks →</div>
+    </div>
+
+    <!-- CATEGORY: HOUSEHOLD -->
+    <div class="wcard">
+      <div class="cat-title">🏠 Household Essentials</div>
+      <div class="cat-grid">
+        <div class="cat-item"><div class="cat-img bg2">🧹</div><div class="cat-name">Cleaners & Repellents</div></div>
+        <div class="cat-item"><div class="cat-img bg6">📱</div><div class="cat-name">Electronics</div></div>
+        <div class="cat-item"><div class="cat-img bg7">✏️</div><div class="cat-name">Stationery & Games</div></div>
+        <div class="cat-item"><div class="cat-img bg1">🛏️</div><div class="cat-name">Home & Lifestyle</div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS: PERSONAL CARE -->
+    <div class="wcard">
+      <div class="sec-hd"><span class="sec-title">Personal Care ✨</span><span class="sec-all">See all ›</span></div>
+      <div class="prod-grid">
+        <div class="prod-card"><div class="prod-img" style="background:#FCE4EC"><span class="ptag ptag-g">20% OFF</span>🧼</div><div class="prod-body"><div class="prod-wt">125g × 3</div><div class="prod-row"><span class="prod-price">₹87</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹109</span><span class="prod-off">20% off</span></div><div class="prod-name">Mysore Sandal Soap</div></div></div>
+        <div class="prod-card"><div class="prod-img" style="background:#F3E5F5">🪥</div><div class="prod-body"><div class="prod-wt">200 g</div><div class="prod-row"><span class="prod-price">₹99</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div style="height:13px"></div><div class="prod-name">Colgate Strong Teeth Toothpaste</div></div></div>
+        <div class="prod-card"><div class="prod-img" style="background:#E8F5E9"><span class="ptag ptag-r">SALE</span>🚿</div><div class="prod-body"><div class="prod-wt">750 ml</div><div class="prod-row"><span class="prod-price">₹179</span><button class="add-btn" onclick="addCart(this)">ADD</button></div><div><span class="prod-og">₹220</span><span class="prod-off">18% off</span></div><div class="prod-name">Dove Body Wash Original</div></div></div>
+      </div>
+      <div class="see-all-strip">See all Personal Care →</div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-glow"></div>
+      <div class="footer-s">S</div>
+      <div class="f-brand">
+        <div class="f-logo">S</div>
+        <div><div class="f-name">SUPLAYKART</div><div class="f-tag">Where every second counts!</div></div>
+      </div>
+      <div class="f-card">
+        <div class="f-card-title">⏰ Store Hours</div>
+        <div class="f-row"><span class="f-label">Mon–Thu, Sat–Sun</span><span class="f-value">10 AM–2 PM & 4–10 PM</span></div>
+        <div class="f-row"><span class="f-label">Friday</span><span class="f-value">10 AM–12:30 PM & 4–10 PM</span></div>
+      </div>
+      <a class="f-wa" href="https://wa.me/919487867816">
+        <div class="f-wa-ico">💬</div>
+        <div class="f-wa-txt">
+          <div class="f-wa-label">WhatsApp Only — For cancellations</div>
+          <div class="f-wa-num">+91 94878 67816</div>
+        </div>
+        <div class="f-wa-arr">›</div>
+      </a>
+      <div class="f-card">
+        <div class="f-card-title">ℹ️ Cancellation Policy</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.7">Cancel within <strong style="color:white">5 minutes</strong> via WhatsApp only. Late cancellations incur delivery charges.</div>
+      </div>
+      <div class="f-socials" style="margin-top:14px">
+        <div class="f-soc soc-fb">f</div>
+        <div class="f-soc soc-yt">▶</div>
+        <div class="f-soc soc-ig">📷</div>
+      </div>
+      <hr class="f-div">
+      <div class="f-copy">
+        © 2025 Suplaykart — All rights reserved.<br>
+        Designed & Managed by <a href="#">ALLBEE SOLUTIONS</a>
+      </div>
+    </footer>
+
+  </main><!-- end main scroll -->
+
+  <!-- BOTTOM NAV: Home | Shop | Category | Pick | Restaurants -->
+  <nav class="bnav">
+    <div class="nav-item active" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="nav-lbl">Home</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-1.66 0-3-1.34-3-3h2c0 .55.45 1 1 1s1-.45 1-1h2c0 1.66-1.34 3-3 3z"/></svg>
+      <span class="nav-lbl">Shop</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2z"/></svg>
+      <span class="nav-lbl">Category</span>
+    </div>
+    <div class="nav-item nav-pick" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <span class="nav-lbl">Pick</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-3.87-3.12-6-7.51-6C4.09 8.99 1 11.12 1 14.99v1H16.03v-1z"/></svg>
+      <span class="nav-lbl">Restaurants</span>
+    </div>
+  </nav>
+
+</div><!-- end app -->
+
+</div><!-- end shell -->
+
+<script>
+// ── WEATHER ──────────────────────────────────────
+let curW = 'norm';
+function setW(mode) {
+  curW = mode;
+  const hdr = document.getElementById('hdr');
+  hdr.className = 'hdr ' + mode;
+
+  document.querySelectorAll('.db-norm,.db-rain,.db-sum').forEach(b => b.classList.remove('on'));
+  document.querySelector('.db-' + (mode === 'norm' ? 'norm' : mode === 'rain' ? 'rain' : 'sum')).classList.add('on');
+
+  const rainW = document.getElementById('rainW');
+  const sunW = document.getElementById('sunW');
+  const sparkW = document.getElementById('sparkW');
+  rainW.innerHTML = ''; sunW.style.display = 'none'; sparkW.innerHTML = '';
+
+  if (mode === 'rain') {
+    for (let i = 0; i < 40; i++) {
+      const d = document.createElement('div');
+      d.className = 'rdrop';
+      d.style.cssText = `left:${Math.random()*105}%;height:${18+Math.random()*28}px;animation-duration:${0.5+Math.random()*.7}s;animation-delay:${Math.random()*1.8}s`;
+      rainW.appendChild(d);
+    }
+    document.getElementById('badge-txt').textContent = 'Delivering through rain ☔';
+    document.getElementById('store-title').textContent = 'Rainy day delivery! 🌧️';
+  } else if (mode === 'sum') {
+    sunW.style.display = 'block';
+    document.getElementById('badge-txt').textContent = 'Beat the heat, order now ☀️';
+    document.getElementById('store-title').textContent = 'Stay cool, we deliver! ☀️';
+  } else {
+    for (let i = 0; i < 9; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      s.style.cssText = `left:${5+Math.random()*85}%;bottom:${8+Math.random()*55}px;animation-duration:${2.5+Math.random()*2}s;animation-delay:${Math.random()*4}s;width:${3+Math.random()*4}px;height:${3+Math.random()*4}px`;
+      sparkW.appendChild(s);
+    }
+    document.getElementById('badge-txt').textContent = 'Delivering in 22 mins';
+    document.getElementById('store-title').textContent = 'Get it fast, Nagore! ⚡';
+  }
+}
+setW('norm');
+
+// ── ZONE ─────────────────────────────────────────
+function setZone(inZone) {
+  document.getElementById('oos').classList.toggle('hide', !!inZone);
+  document.getElementById('app').classList.toggle('hide', !inZone);
+  document.querySelector('.db-in').classList.toggle('on', !!inZone);
+  document.querySelector('.db-out').classList.toggle('on', !inZone);
+}
+
+// ── STICKY SEARCH ─────────────────────────────────
+const mainEl = document.getElementById('main');
+const srchWrap = document.getElementById('srchWrap');
+mainEl.addEventListener('scroll', () => {
+  srchWrap.classList.toggle('scrolled', mainEl.scrollTop > 40);
+});
+
+// ── CAROUSEL ─────────────────────────────────────
+const cTrack = document.getElementById('cTrack');
+const dots = document.querySelectorAll('.c-dot');
+let curSlide = 0;
+cTrack.addEventListener('scroll', () => {
+  const w = cTrack.clientWidth;
+  curSlide = Math.round(cTrack.scrollLeft / w);
+  dots.forEach((d, i) => d.classList.toggle('on', i === curSlide));
+});
+setInterval(() => {
+  curSlide = (curSlide + 1) % 3;
+  cTrack.scrollTo({ left: curSlide * cTrack.clientWidth, behavior: 'smooth' });
+}, 3800);
+dots.forEach((d, i) => d.addEventListener('click', () => {
+  curSlide = i;
+  cTrack.scrollTo({ left: i * cTrack.clientWidth, behavior: 'smooth' });
+}));
+
+// ── CART ──────────────────────────────────────────
+let cartCount = 0;
+function addCart(btn) {
+  cartCount++;
+  document.getElementById('hdrCartBadge').textContent = cartCount;
+  btn.textContent = '✓ Added';
+  btn.classList.add('added');
+  setTimeout(() => { btn.textContent = 'ADD'; btn.classList.remove('added'); }, 1400);
+}
+
+// ── BOTTOM NAV ────────────────────────────────────
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── PILLS ─────────────────────────────────────────
+document.querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', function() {
+    document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

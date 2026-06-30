@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Brand tokens (from old-html design tokens) — the shared Tailwind preset and
+   full theme are built in Phase 1B when UI work begins. */
+@theme {
+  --color-brand: #0c831f;
+  --color-brand-dark: #085316;
+  --color-brand-light: #e8f5e9;
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}

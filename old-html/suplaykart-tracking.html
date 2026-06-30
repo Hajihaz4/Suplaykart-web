@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Order Tracking</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--light);box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* ── DEMO CONTROLS ──────────────────────────── */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 6px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* ── HEADER ──────────────────────────────────── */
+.hdr{
+  flex-shrink:0;background:white;
+  padding:44px 16px 12px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:5;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.hdr-back svg{width:18px;height:18px;fill:var(--dark)}
+.hdr-info{flex:1;min-width:0}
+.hdr-title{font-size:14px;font-weight:800;color:var(--dark);letter-spacing:-.2px}
+.hdr-id{font-size:10px;color:var(--gray);font-weight:500;margin-top:1px;font-family:'Courier New',monospace}
+.hdr-help{
+  font-size:11px;font-weight:700;color:var(--green);
+  padding:7px 12px;border-radius:18px;background:var(--green-lt);
+  cursor:pointer;
+}
+
+/* ── MAIN ────────────────────────────────────── */
+.main{flex:1;overflow-y:auto;scrollbar-width:none}
+.main::-webkit-scrollbar{display:none}
+
+/* ── STATUS HERO ─────────────────────────────── */
+.hero{
+  position:relative;background:white;
+  padding:24px 18px 20px;
+  text-align:center;overflow:hidden;
+  border-bottom:1px solid var(--border-lt);
+}
+.hero.delivered{background:linear-gradient(160deg,#E8F5E9 0%,#FFFFFF 70%)}
+.hero.cancelled{background:linear-gradient(160deg,#FEE7E9 0%,#FFFFFF 70%)}
+
+.live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red);color:white;
+  font-size:10px;font-weight:800;
+  padding:3px 10px;border-radius:20px;
+  margin-bottom:14px;letter-spacing:.5px;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;background:white;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.7)}
+}
+.hero.delivered .live-badge{display:none}
+.hero.cancelled .live-badge{display:none}
+
+.hero-icon-wrap{
+  width:88px;height:88px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.hero-svg{width:100%;height:100%}
+
+.hero-status{
+  font-size:20px;font-weight:900;color:var(--dark);
+  letter-spacing:-.4px;line-height:1.2;
+}
+.hero-eta{
+  font-size:13px;color:var(--gray);font-weight:600;
+  margin-top:5px;line-height:1.4;
+}
+.hero-eta strong{color:var(--dark);font-weight:800}
+.hero.delivered .hero-status{color:var(--green)}
+.hero.cancelled .hero-status{color:var(--red)}
+
+/* progress bar */
+.hero-bar{
+  height:4px;background:var(--border-lt);
+  border-radius:2px;margin-top:18px;overflow:hidden;
+  position:relative;
+}
+.hero-bar-fill{
+  height:100%;background:linear-gradient(90deg,var(--green-dk),var(--green));
+  border-radius:2px;transition:width .8s cubic-bezier(.22,1,.36,1);
+  position:relative;overflow:hidden;
+}
+.hero-bar-fill::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  animation:shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+.hero.delivered .hero-bar-fill::after{display:none}
+
+/* ── MINI MAP ────────────────────────────────── */
+.map-card{
+  display:none;
+  background:white;margin:10px 12px 0;
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);
+}
+.map-card.show{display:block;animation:slideDown .4s cubic-bezier(.22,1,.36,1)}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.map-svg-wrap{
+  position:relative;height:140px;
+  background:linear-gradient(180deg,#E8F4F0 0%,#F0F5F0 100%);
+}
+.map-svg{width:100%;height:100%}
+.map-info{
+  padding:11px 14px;border-top:1px solid var(--border-lt);
+  display:flex;align-items:center;gap:10px;
+}
+.map-info-em{font-size:18px}
+.map-info-text{flex:1;min-width:0}
+.map-info-title{font-size:12px;font-weight:800;color:var(--dark)}
+.map-info-sub{font-size:10px;color:var(--gray);margin-top:1px}
+
+/* ── RIDER CARD ──────────────────────────────── */
+.rider-card{
+  display:none;
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  margin:10px 12px 0;border-radius:14px;
+  padding:14px;color:white;
+  position:relative;overflow:hidden;
+}
+.rider-card.show{display:block;animation:slideDown .4s cubic-bezier(.22,1,.36,1)}
+.rider-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.rider-row{display:flex;align-items:center;gap:11px;position:relative;z-index:2}
+.rider-avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:white;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(255,255,255,.25);
+  font-family:var(--font);
+}
+.rider-info{flex:1;min-width:0}
+.rider-name{font-size:14px;font-weight:800;letter-spacing:-.2px}
+.rider-rating{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:rgba(255,255,255,.85);font-weight:600;margin-top:2px;
+}
+.rider-stars{color:#FFD54F;font-size:10px;letter-spacing:1px}
+.rider-vehicle{
+  background:rgba(0,0,0,.18);font-family:'Courier New',monospace;
+  font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:4px;letter-spacing:.5px;
+}
+.rider-actions{display:flex;gap:8px;margin-top:13px;position:relative;z-index:2}
+.rider-btn{
+  flex:1;background:white;color:var(--green);
+  border:none;padding:10px;border-radius:9px;
+  font-family:var(--font);font-size:12px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .15s;
+}
+.rider-btn.secondary{background:rgba(255,255,255,.18);color:white}
+.rider-btn:active{transform:scale(.96)}
+.rider-btn svg{width:13px;height:13px;fill:currentColor}
+
+/* ── TIMELINE ────────────────────────────────── */
+.tl-card{background:white;margin:10px 12px 0;border-radius:14px;padding:16px 16px 8px}
+.tl-title{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:14px;letter-spacing:-.1px}
+.tl-list{position:relative}
+.tl-item{
+  display:flex;gap:14px;padding-bottom:18px;
+  position:relative;
+}
+.tl-item:last-child{padding-bottom:0}
+
+.tl-dot{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--white);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;z-index:2;
+  transition:all .4s;
+  font-size:11px;color:var(--gray-lt);
+}
+.tl-line{
+  position:absolute;left:11px;top:24px;
+  width:2px;height:calc(100% - 24px);
+  background:var(--border);
+  z-index:1;
+}
+.tl-item:last-child .tl-line{display:none}
+
+.tl-item.done .tl-dot{
+  background:var(--green);border-color:var(--green);color:white;
+}
+.tl-item.done .tl-dot::after{content:'✓';font-size:11px;font-weight:800}
+.tl-item.done .tl-line{background:var(--green)}
+
+.tl-item.current .tl-dot{
+  background:white;border-color:var(--green);
+  box-shadow:0 0 0 4px var(--green-lt);
+  animation:pulseDot 1.5s ease-in-out infinite;
+}
+.tl-item.current .tl-dot::after{
+  content:'';width:8px;height:8px;border-radius:50%;background:var(--green);
+}
+@keyframes pulseDot{
+  0%,100%{box-shadow:0 0 0 4px var(--green-lt)}
+  50%{box-shadow:0 0 0 8px rgba(12,131,31,.15)}
+}
+
+.tl-item.cancelled .tl-dot{
+  background:var(--red);border-color:var(--red);color:white;
+}
+.tl-item.cancelled .tl-dot::after{content:'✕';font-size:10px;font-weight:800}
+
+.tl-content{flex:1;min-width:0;padding-top:1px}
+.tl-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tl-step-name{font-size:13px;font-weight:700;color:var(--gray-lt);letter-spacing:-.1px}
+.tl-time{font-size:10px;color:var(--gray-lt);font-weight:600;flex-shrink:0}
+.tl-desc{font-size:11px;color:var(--gray-lt);margin-top:2px;line-height:1.5}
+
+.tl-item.done .tl-step-name,
+.tl-item.current .tl-step-name{color:var(--dark)}
+.tl-item.done .tl-time,
+.tl-item.current .tl-time{color:var(--green);font-weight:700}
+.tl-item.done .tl-desc{color:var(--gray)}
+.tl-item.current .tl-desc{color:var(--dark);font-weight:600}
+
+.tl-item.cancelled .tl-step-name{color:var(--red)}
+.tl-item.cancelled .tl-time{color:var(--red);font-weight:700}
+.tl-item.cancelled .tl-desc{color:var(--red);font-weight:600}
+
+/* ── ADDRESS CARD ────────────────────────────── */
+.addr-card{
+  background:white;margin:10px 12px 0;
+  border-radius:14px;padding:14px;
+  display:flex;align-items:flex-start;gap:11px;
+}
+.addr-em{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.addr-info{flex:1;min-width:0}
+.addr-label{font-size:10px;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.4px}
+.addr-name{font-size:13px;font-weight:800;color:var(--dark);margin-top:2px}
+.addr-line{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.5}
+.addr-phone{font-size:11px;color:var(--dark);margin-top:6px;font-weight:600}
+
+/* ── ORDER CARD ──────────────────────────────── */
+.order-card{background:white;margin:10px 12px 0;border-radius:14px;overflow:hidden}
+.order-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px;cursor:pointer;
+}
+.order-head-left{display:flex;align-items:center;gap:10px;flex:1}
+.order-head-em{font-size:20px}
+.order-head-title{font-size:13px;font-weight:800;color:var(--dark)}
+.order-head-sub{font-size:10px;color:var(--gray);margin-top:1px}
+.order-arr{font-size:14px;color:var(--gray);transition:transform .25s}
+.order-card.open .order-arr{transform:rotate(180deg)}
+.order-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s, padding .35s;
+}
+.order-card.open .order-body{padding:0 14px 14px;max-height:500px}
+
+.order-item{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 0;border-top:1px solid var(--border-lt);
+}
+.order-item-img{
+  width:40px;height:40px;border-radius:8px;background:var(--light);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  flex-shrink:0;
+}
+.order-item-info{flex:1;min-width:0}
+.order-item-name{font-size:11px;font-weight:600;color:var(--dark);line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.order-item-qty{font-size:10px;color:var(--gray);margin-top:2px}
+.order-item-price{font-size:12px;font-weight:800;color:var(--dark);flex-shrink:0}
+
+/* ── BILL CARD ───────────────────────────────── */
+.bill-card{background:white;margin:10px 12px 0;border-radius:14px;overflow:hidden}
+.bill-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px;cursor:pointer;
+}
+.bill-arr{font-size:14px;color:var(--gray);transition:transform .25s}
+.bill-card.open .bill-arr{transform:rotate(180deg)}
+.bill-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s, padding .35s;
+}
+.bill-card.open .bill-body{padding:0 14px 14px;max-height:400px}
+.bill-row{
+  display:flex;justify-content:space-between;
+  padding:6px 0;font-size:12px;
+  border-top:1px solid var(--border-lt);
+}
+.bill-row:first-child{border-top:none}
+.bill-row .bl-l{color:var(--gray);font-weight:500}
+.bill-row .bl-r{color:var(--dark);font-weight:700}
+.bill-row.discount .bl-r{color:var(--green)}
+.bill-row.total{margin-top:6px;padding-top:10px;border-top:1px dashed var(--border)}
+.bill-row.total .bl-l{color:var(--dark);font-weight:800;font-size:13px}
+.bill-row.total .bl-r{color:var(--dark);font-weight:900;font-size:14px}
+.payment-strip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--light);border-radius:9px;
+  padding:9px 12px;margin-top:10px;
+}
+.payment-strip-em{font-size:14px}
+.payment-strip-txt{font-size:11px;color:var(--dark);font-weight:600}
+
+/* ── ACTIONS ─────────────────────────────────── */
+.actions{margin:10px 12px 30px}
+.action-btn{
+  background:white;border:1px solid var(--border);
+  border-radius:12px;padding:13px 14px;
+  display:flex;align-items:center;gap:11px;
+  cursor:pointer;margin-bottom:8px;
+  transition:transform .15s, background .15s;
+  width:100%;font-family:var(--font);
+}
+.action-btn:active{transform:scale(.99);background:var(--light)}
+.action-btn-em{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.action-em-orange{background:var(--orange-lt)}
+.action-em-red{background:var(--red-lt)}
+.action-em-green{background:var(--green-lt)}
+.action-em-gray{background:var(--light)}
+.action-info{flex:1;text-align:left;min-width:0}
+.action-title{font-size:12px;font-weight:700;color:var(--dark)}
+.action-sub{font-size:10px;color:var(--gray);margin-top:1px;line-height:1.4}
+.action-arr{font-size:14px;color:var(--gray-lt);flex-shrink:0}
+
+.cancel-timer{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--orange-lt);color:var(--orange);
+  font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;
+  margin-left:6px;
+}
+
+/* ── RATE CARD ───────────────────────────────── */
+.rate-card{
+  display:none;
+  background:linear-gradient(135deg,#FFF9E6 0%,#FFFFFF 100%);
+  border:1.5px solid #FFE082;
+  margin:10px 12px 0;border-radius:14px;padding:18px 16px;
+  text-align:center;
+}
+.rate-card.show{display:block;animation:slideDown .4s cubic-bezier(.22,1,.36,1)}
+.rate-em{font-size:40px;margin-bottom:6px;display:block}
+.rate-title{font-size:14px;font-weight:800;color:var(--dark)}
+.rate-sub{font-size:11px;color:var(--gray);margin-top:4px;line-height:1.4}
+.rate-stars{display:flex;justify-content:center;gap:6px;margin:14px 0 12px}
+.rate-star{
+  font-size:32px;color:#E0E0E0;cursor:pointer;
+  transition:transform .15s, color .2s;
+}
+.rate-star:active{transform:scale(1.2)}
+.rate-star.lit{color:#FFB300}
+.rate-cta{
+  background:var(--green);color:white;border:none;
+  padding:10px 22px;border-radius:9px;
+  font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;
+}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:fixed;bottom:60px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:60;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO CONTROLS -->
+  <div class="demo">
+    <div class="demo-label">Order State</div>
+    <div class="demo-row">
+      <button class="db" onclick="setStep(0)">Placed</button>
+      <button class="db" onclick="setStep(1)">Confirmed</button>
+      <button class="db" onclick="setStep(2)">Packed</button>
+      <button class="db on" onclick="setStep(3)">OFD</button>
+      <button class="db" onclick="setStep(4)">Delivered</button>
+      <button class="db" onclick="setStep(-1)" style="background:rgba(226,55,68,.4)">Cancelled</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="hdr-info">
+      <div class="hdr-title">Order Tracking</div>
+      <div class="hdr-id">#SP-845721 · Today, 4:08 PM</div>
+    </div>
+    <div class="hdr-help" onclick="showToast('Opening help...')">Help</div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+      <div class="hero-icon-wrap" id="heroIcon"></div>
+      <div class="hero-status" id="heroStatus">Out for delivery</div>
+      <div class="hero-eta" id="heroEta">Arriving in <strong>8 mins</strong> · ETA <strong>4:23 PM</strong></div>
+      <div class="hero-bar"><div class="hero-bar-fill" id="heroBar" style="width:75%"></div></div>
+    </div>
+
+    <!-- MINI MAP -->
+    <div class="map-card" id="mapCard">
+      <div class="map-svg-wrap">
+        <svg class="map-svg" viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0,0,0,.04)" stroke-width="1"/>
+            </pattern>
+            <path id="route" d="M 40 100 Q 90 70, 140 80 T 240 60 T 320 50" fill="none"/>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".25"/>
+            </filter>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)"/>
+          <rect x="0" y="60" width="360" height="14" fill="rgba(255,255,255,.45)"/>
+          <rect x="120" y="0" width="14" height="140" fill="rgba(255,255,255,.4)"/>
+
+          <path d="M 40 100 Q 90 70, 140 80 T 240 60 T 320 50" fill="none"
+                stroke="#0C831F" stroke-width="3" stroke-linecap="round"
+                stroke-dasharray="5 5" opacity=".7"/>
+          <path d="M 40 100 Q 90 70, 140 80" fill="none"
+                stroke="#0C831F" stroke-width="3.5" stroke-linecap="round"/>
+
+          <circle cx="40" cy="100" r="9" fill="white" stroke="#FF6B00" stroke-width="3"/>
+          <circle cx="40" cy="100" r="4" fill="#FF6B00"/>
+          <text x="40" y="118" font-family="Poppins" font-size="9" font-weight="700"
+                text-anchor="middle" fill="#FF6B00">Store</text>
+
+          <circle cx="320" cy="50" r="9" fill="white" stroke="#E23744" stroke-width="3"/>
+          <circle cx="320" cy="50" r="4" fill="#E23744"/>
+          <text x="320" y="36" font-family="Poppins" font-size="9" font-weight="700"
+                text-anchor="middle" fill="#E23744">Home</text>
+
+          <g>
+            <circle r="13" fill="white" stroke="#0C831F" stroke-width="2.5" filter="url(#shadow)"/>
+            <text font-family="Poppins" font-size="14" text-anchor="middle" dominant-baseline="central">🛵</text>
+            <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#route"/>
+            </animateMotion>
+          </g>
+        </svg>
+      </div>
+      <div class="map-info">
+        <div class="map-info-em">📍</div>
+        <div class="map-info-text">
+          <div class="map-info-title">Rider is 1.2 km away</div>
+          <div class="map-info-sub">Heading to Nagore Main Road · 4:23 PM ETA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIDER CARD -->
+    <div class="rider-card" id="riderCard">
+      <div class="rider-row">
+        <div class="rider-avatar">M</div>
+        <div class="rider-info">
+          <div class="rider-name">Murugan K.</div>
+          <div class="rider-rating">
+            <span class="rider-stars">★★★★★</span>
+            <span>4.8</span>
+            <span>·</span>
+            <span class="rider-vehicle">TN 51 AB 1234</span>
+          </div>
+        </div>
+      </div>
+      <div class="rider-actions">
+        <button class="rider-btn" onclick="showToast('Calling Murugan...')">
+          <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+          Call rider
+        </button>
+        <button class="rider-btn secondary" onclick="showToast('Opening chat')">
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+          Chat
+        </button>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="tl-card">
+      <div class="tl-title">📦 Order journey</div>
+      <div class="tl-list" id="tlList"></div>
+    </div>
+
+    <!-- ADDRESS -->
+    <div class="addr-card">
+      <div class="addr-em">🏠</div>
+      <div class="addr-info">
+        <div class="addr-label">Delivering to · Home</div>
+        <div class="addr-name">Hajihaz</div>
+        <div class="addr-line">3rd floor, 321 C-Block, Nagore Main Road, Nagore, Nagapattinam — 611002</div>
+        <div class="addr-phone">📞 +91 94878 67816</div>
+      </div>
+    </div>
+
+    <!-- ORDER ITEMS -->
+    <div class="order-card" id="orderCard">
+      <div class="order-head" onclick="document.getElementById('orderCard').classList.toggle('open')">
+        <div class="order-head-left">
+          <div class="order-head-em">🛒</div>
+          <div>
+            <div class="order-head-title">5 items in this order</div>
+            <div class="order-head-sub">From Suplaykart Store</div>
+          </div>
+        </div>
+        <div class="order-arr">▼</div>
+      </div>
+      <div class="order-body">
+        <div class="order-item">
+          <div class="order-item-img">🥛</div>
+          <div class="order-item-info"><div class="order-item-name">Aavin Full Cream Milk</div><div class="order-item-qty">1 ltr × 2</div></div>
+          <div class="order-item-price">₹124</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-img">🍞</div>
+          <div class="order-item-info"><div class="order-item-name">Modern Bread Loaf</div><div class="order-item-qty">400 g × 1</div></div>
+          <div class="order-item-price">₹40</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-img">🥚</div>
+          <div class="order-item-info"><div class="order-item-name">Fresh Eggs (12 pcs)</div><div class="order-item-qty">12 pcs × 1</div></div>
+          <div class="order-item-price">₹85</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-img">🍫</div>
+          <div class="order-item-info"><div class="order-item-name">Cadbury Dairy Milk Silk</div><div class="order-item-qty">150 g × 1</div></div>
+          <div class="order-item-price">₹165</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-img">🥔</div>
+          <div class="order-item-info"><div class="order-item-name">Lay's Magic Masala Chips</div><div class="order-item-qty">52.9 g × 3</div></div>
+          <div class="order-item-price">₹75</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BILL -->
+    <div class="bill-card open" id="billCard">
+      <div class="bill-head" onclick="document.getElementById('billCard').classList.toggle('open')">
+        <div class="order-head-left">
+          <div class="order-head-em">💰</div>
+          <div>
+            <div class="order-head-title">Bill total · ₹487</div>
+            <div class="order-head-sub">Pay on delivery</div>
+          </div>
+        </div>
+        <div class="bill-arr">▼</div>
+      </div>
+      <div class="bill-body">
+        <div class="bill-row"><span class="bl-l">Items total</span><span class="bl-r">₹489</span></div>
+        <div class="bill-row"><span class="bl-l">Delivery fee</span><span class="bl-r">₹15</span></div>
+        <div class="bill-row"><span class="bl-l">Handling charge</span><span class="bl-r">₹3</span></div>
+        <div class="bill-row discount"><span class="bl-l">Coupon · WELCOME10</span><span class="bl-r">−₹20</span></div>
+        <div class="bill-row total"><span class="bl-l">Total paid</span><span class="bl-r">₹487</span></div>
+        <div class="payment-strip">
+          <div class="payment-strip-em">💵</div>
+          <div class="payment-strip-txt">Pay on delivery · COD or UPI to rider</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATE -->
+    <div class="rate-card" id="rateCard">
+      <span class="rate-em">🎉</span>
+      <div class="rate-title">How was your order?</div>
+      <div class="rate-sub">Tap a star to rate your delivery</div>
+      <div class="rate-stars" id="rateStars">
+        <span class="rate-star" onclick="rate(1)">★</span>
+        <span class="rate-star" onclick="rate(2)">★</span>
+        <span class="rate-star" onclick="rate(3)">★</span>
+        <span class="rate-star" onclick="rate(4)">★</span>
+        <span class="rate-star" onclick="rate(5)">★</span>
+      </div>
+      <button class="rate-cta" onclick="showToast('Thanks for the feedback!')">Submit rating</button>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions" id="actions">
+      <button class="action-btn" id="cancelBtn" onclick="showToast('Opening WhatsApp...')">
+        <div class="action-btn-em action-em-red">✕</div>
+        <div class="action-info">
+          <div class="action-title">Cancel order <span class="cancel-timer" id="cancelTimer">4:32 left</span></div>
+          <div class="action-sub">Cancel only via WhatsApp within 5 mins</div>
+        </div>
+        <div class="action-arr">›</div>
+      </button>
+      <button class="action-btn" id="repeatBtn" style="display:none" onclick="showToast('Items added to cart')">
+        <div class="action-btn-em action-em-green">🔄</div>
+        <div class="action-info">
+          <div class="action-title">Repeat this order</div>
+          <div class="action-sub">Add same items to your cart in one tap</div>
+        </div>
+        <div class="action-arr">›</div>
+      </button>
+      <button class="action-btn" onclick="showToast('Opening invoice...')">
+        <div class="action-btn-em action-em-gray">📄</div>
+        <div class="action-info">
+          <div class="action-title">Download invoice</div>
+          <div class="action-sub">PDF receipt with full bill breakdown</div>
+        </div>
+        <div class="action-arr">›</div>
+      </button>
+      <button class="action-btn" onclick="showToast('Opening support chat')">
+        <div class="action-btn-em action-em-orange">💬</div>
+        <div class="action-info">
+          <div class="action-title">Need help with this order?</div>
+          <div class="action-sub">Chat with us on WhatsApp · 10am–10pm</div>
+        </div>
+        <div class="action-arr">›</div>
+      </button>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast">Done</div>
+
+</div><!-- shell -->
+
+<script>
+const STEPS = [
+  { name:'Placed', desc:'Order received, awaiting confirmation', time:'4:08 PM' },
+  { name:'Confirmed', desc:'Store accepted your order', time:'4:09 PM' },
+  { name:'Packed', desc:'Items packed and ready for pickup', time:'4:13 PM' },
+  { name:'Out for Delivery', desc:'Murugan picked up your order', time:'4:15 PM' },
+  { name:'Delivered', desc:'Order delivered. Enjoy!', time:'4:23 PM' },
+];
+
+const STATE_DATA = {
+  0: { status:'Order placed!', eta:'Confirming in <strong>1 min</strong>', barWidth:'12%', emoji:'receipt' },
+  1: { status:'Order confirmed', eta:'Preparing now · ETA <strong>22 mins</strong>', barWidth:'30%', emoji:'check' },
+  2: { status:'Packed & ready', eta:'Awaiting rider · ETA <strong>15 mins</strong>', barWidth:'52%', emoji:'box' },
+  3: { status:'Out for delivery', eta:'Arriving in <strong>8 mins</strong> · ETA <strong>4:23 PM</strong>', barWidth:'80%', emoji:'scooter' },
+  4: { status:'Delivered!', eta:'Delivered at <strong>4:23 PM</strong>', barWidth:'100%', emoji:'success' },
+  '-1': { status:'Order cancelled', eta:'Cancelled at <strong>4:11 PM</strong>', barWidth:'0%', emoji:'cancel' },
+};
+
+let currentStep = 3;
+
+const ICONS = {
+  receipt: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <rect x="28" y="18" width="44" height="68" rx="3" fill="#FFF3E8" stroke="#FF6B00" stroke-width="2.5"/>
+    <line x1="36" y1="32" x2="64" y2="32" stroke="#FF6B00" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="42" x2="60" y2="42" stroke="#FFB47A" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="50" x2="56" y2="50" stroke="#FFB47A" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="58" x2="58" y2="58" stroke="#FFB47A" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="50" cy="72" r="7" fill="#FF6B00"/>
+    <path d="M 47 72 L 49 74 L 53 70" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="2.5s" repeatCount="indefinite"/>
+  </svg>`,
+  check: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <rect x="22" y="32" width="56" height="40" rx="4" fill="#E8F5E9" stroke="#0C831F" stroke-width="2.5"/>
+    <path d="M 22 42 L 50 58 L 78 42" stroke="#0C831F" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+    <circle cx="72" cy="68" r="14" fill="#0C831F"/>
+    <path d="M 66 68 L 70 72 L 78 64" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`,
+  box: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <path d="M 25 36 L 50 26 L 75 36 L 75 70 L 50 80 L 25 70 Z" fill="#FFF3E8" stroke="#FF6B00" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M 25 36 L 50 46 L 75 36" fill="none" stroke="#FF6B00" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="50" y1="46" x2="50" y2="80" stroke="#FF6B00" stroke-width="2.5"/>
+    <rect x="42" y="32" width="16" height="6" fill="#FF6B00"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="2s" repeatCount="indefinite"/>
+  </svg>`,
+  scooter: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <line x1="10" y1="78" x2="90" y2="78" stroke="#0C831F" stroke-width="2" stroke-dasharray="4 3" opacity=".4"/>
+    <circle cx="32" cy="76" r="8" fill="white" stroke="#0C831F" stroke-width="2.5"/>
+    <circle cx="32" cy="76" r="3" fill="#0C831F"/>
+    <circle cx="68" cy="76" r="8" fill="white" stroke="#0C831F" stroke-width="2.5"/>
+    <circle cx="68" cy="76" r="3" fill="#0C831F"/>
+    <path d="M 32 68 L 50 50 L 68 50 L 72 68" stroke="#0C831F" stroke-width="2.5" fill="#E8F5E9" stroke-linejoin="round"/>
+    <rect x="42" y="32" width="18" height="20" rx="2" fill="white" stroke="#FF6B00" stroke-width="2"/>
+    <line x1="42" y1="42" x2="60" y2="42" stroke="#FF6B00" stroke-width="1.5"/>
+    <g>
+      <line x1="6" y1="58" x2="22" y2="58" stroke="#0C831F" stroke-width="2.5" stroke-linecap="round" opacity=".5">
+        <animate attributeName="opacity" values="0;.7;0" dur=".9s" repeatCount="indefinite"/>
+      </line>
+      <line x1="10" y1="66" x2="20" y2="66" stroke="#0C831F" stroke-width="2.5" stroke-linecap="round" opacity=".4">
+        <animate attributeName="opacity" values="0;.6;0" dur="1.1s" begin=".3s" repeatCount="indefinite"/>
+      </line>
+    </g>
+  </svg>`,
+  success: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="36" fill="#E8F5E9" stroke="#0C831F" stroke-width="3"/>
+    <path d="M 35 52 L 46 62 L 65 42" stroke="#0C831F" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <animate attributeName="stroke-dasharray" values="0 100;60 0" dur=".8s" fill="freeze"/>
+    </path>
+    <circle cx="20" cy="22" r="3" fill="#FFB300"><animate attributeName="cy" values="22;14;22" dur="1.6s" repeatCount="indefinite"/></circle>
+    <circle cx="82" cy="28" r="3" fill="#E91E63"><animate attributeName="cy" values="28;20;28" dur="1.8s" repeatCount="indefinite"/></circle>
+    <circle cx="14" cy="68" r="2.5" fill="#1565C0"><animate attributeName="cy" values="68;76;68" dur="1.4s" repeatCount="indefinite"/></circle>
+    <circle cx="86" cy="76" r="2.5" fill="#FF6B00"><animate attributeName="cy" values="76;84;76" dur="2s" repeatCount="indefinite"/></circle>
+  </svg>`,
+  cancel: `<svg class="hero-svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="36" fill="#FEE7E9" stroke="#E23744" stroke-width="3"/>
+    <line x1="38" y1="38" x2="62" y2="62" stroke="#E23744" stroke-width="5" stroke-linecap="round"/>
+    <line x1="62" y1="38" x2="38" y2="62" stroke="#E23744" stroke-width="5" stroke-linecap="round"/>
+  </svg>`
+};
+
+function renderTimeline() {
+  const list = document.getElementById('tlList');
+  if (currentStep === -1) {
+    list.innerHTML = `
+      <div class="tl-item done">
+        <div class="tl-dot"></div><div class="tl-line"></div>
+        <div class="tl-content">
+          <div class="tl-row"><div class="tl-step-name">Placed</div><div class="tl-time">4:08 PM</div></div>
+          <div class="tl-desc">Order received</div>
+        </div>
+      </div>
+      <div class="tl-item cancelled">
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-row"><div class="tl-step-name">Cancelled</div><div class="tl-time">4:11 PM</div></div>
+          <div class="tl-desc">Cancelled via WhatsApp · Refund will be initiated within 24 hours</div>
+        </div>
+      </div>`;
+    return;
+  }
+  list.innerHTML = STEPS.map((s, i) => {
+    let cls = '';
+    if (i < currentStep) cls = 'done';
+    else if (i === currentStep) cls = 'current';
+    const time = i <= currentStep ? s.time : '—';
+    const desc = i === currentStep ? s.desc :
+                 i < currentStep ? s.desc :
+                 'Pending';
+    return `<div class="tl-item ${cls}">
+      <div class="tl-dot"></div>
+      ${i < STEPS.length-1 ? '<div class="tl-line"></div>' : ''}
+      <div class="tl-content">
+        <div class="tl-row">
+          <div class="tl-step-name">${s.name}</div>
+          <div class="tl-time">${time}</div>
+        </div>
+        <div class="tl-desc">${desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setStep(s) {
+  currentStep = s;
+  document.querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+  const btnIdx = s === -1 ? 5 : s;
+  document.querySelectorAll('.db')[btnIdx].classList.add('on');
+
+  const data = STATE_DATA[s];
+  const hero = document.getElementById('hero');
+  const heroIcon = document.getElementById('heroIcon');
+  const heroStatus = document.getElementById('heroStatus');
+  const heroEta = document.getElementById('heroEta');
+  const heroBar = document.getElementById('heroBar');
+
+  hero.classList.remove('delivered', 'cancelled');
+  if (s === 4) hero.classList.add('delivered');
+  if (s === -1) hero.classList.add('cancelled');
+
+  heroIcon.style.transition = 'opacity .2s, transform .3s';
+  heroIcon.style.opacity = '0';
+  heroIcon.style.transform = 'scale(.85)';
+  setTimeout(() => {
+    heroIcon.innerHTML = ICONS[data.emoji];
+    heroIcon.style.opacity = '1';
+    heroIcon.style.transform = 'scale(1)';
+  }, 200);
+
+  heroStatus.textContent = data.status;
+  heroEta.innerHTML = data.eta;
+  heroBar.style.width = data.barWidth;
+
+  document.getElementById('mapCard').classList.toggle('show', s === 3);
+  document.getElementById('riderCard').classList.toggle('show', s === 3);
+  document.getElementById('rateCard').classList.toggle('show', s === 4);
+
+  const cancelBtn = document.getElementById('cancelBtn');
+  const repeatBtn = document.getElementById('repeatBtn');
+  cancelBtn.style.display = (s <= 1 && s >= 0) ? '' : 'none';
+  repeatBtn.style.display = (s === 4 || s === -1) ? '' : 'none';
+
+  renderTimeline();
+}
+
+let cancelSecs = 4*60 + 32;
+setInterval(() => {
+  if (cancelSecs <= 0) return;
+  cancelSecs--;
+  const m = Math.floor(cancelSecs/60);
+  const sec = cancelSecs % 60;
+  const t = document.getElementById('cancelTimer');
+  if (t) t.textContent = `${m}:${sec < 10 ? '0' : ''}${sec} left`;
+}, 1000);
+
+function rate(n) {
+  document.querySelectorAll('.rate-star').forEach((s,i) => s.classList.toggle('lit', i < n));
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+setStep(3);
+</script>
+</body>
+</html>

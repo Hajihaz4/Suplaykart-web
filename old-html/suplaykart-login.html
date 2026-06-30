@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --whatsapp:#25D366;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* ── DEMO STEP CONTROLS ─────────────────────── */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 6px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* ── SCREEN STACK ────────────────────────────── */
+.screen{
+  position:absolute;inset:0;
+  background:white;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+  z-index:5;
+}
+.screen.active{transform:translateX(0);z-index:6}
+.screen.first{transform:translateX(0);z-index:5}
+
+/* ─────────────────────────────────────────────
+   SPLASH / PHONE ENTRY SCREEN
+   ───────────────────────────────────────────── */
+.splash-hero{
+  flex-shrink:0;height:48vh;
+  background:linear-gradient(180deg,var(--green-bg) 0%,#FFFFFF 100%);
+  position:relative;overflow:hidden;
+  padding-top:44px;
+}
+.skip-back{
+  position:absolute;top:48px;left:14px;z-index:10;
+  width:36px;height:36px;border-radius:50%;
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;
+}
+.skip-back svg{width:18px;height:18px;fill:var(--dark)}
+
+/* PRODUCT MARQUEE - 2 rows scrolling */
+.marquee-wrap{
+  position:absolute;left:0;right:0;
+  display:flex;flex-direction:column;gap:14px;
+  padding-top:10px;
+}
+.marquee-wrap.row1{top:30px}
+.marquee-wrap.row2{top:175px}
+
+.marquee{
+  display:flex;gap:12px;
+  animation:scrollLeft 25s linear infinite;
+  width:max-content;
+}
+.marquee.slow{animation-duration:32s;animation-direction:reverse}
+@keyframes scrollLeft{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+
+.prod-tile{
+  flex-shrink:0;
+  width:130px;height:130px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#F0F9F0 0%,#E0F0E5 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:60px;line-height:1;
+  position:relative;
+  box-shadow:0 4px 12px rgba(12,131,31,.06);
+}
+.prod-tile.v1{background:linear-gradient(180deg,#FFF8E1 0%,#FFF3D0 100%)}
+.prod-tile.v2{background:linear-gradient(180deg,#FCE4EC 0%,#F8BBD0 100%)}
+.prod-tile.v3{background:linear-gradient(180deg,#E1F5FE 0%,#B3E5FC 100%)}
+.prod-tile.v4{background:linear-gradient(180deg,#FFF3E0 0%,#FFE0B2 100%)}
+.prod-tile.v5{background:linear-gradient(180deg,#F3E5F5 0%,#E1BEE7 100%)}
+
+/* Brand block at bottom */
+.brand-block{
+  flex-shrink:0;padding:24px 24px 20px;
+  text-align:center;background:white;
+  position:relative;z-index:5;
+}
+.logo-wrap{
+  width:72px;height:72px;border-radius:18px;
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;color:white;
+  font-size:36px;font-weight:900;letter-spacing:-1px;
+  box-shadow:0 8px 22px rgba(12,131,31,.3);
+  font-family:var(--font);
+  animation:logoBounce 2.4s ease-in-out infinite;
+}
+@keyframes logoBounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+.brand-tag{
+  font-size:21px;font-weight:900;color:var(--dark);
+  letter-spacing:-.5px;line-height:1.2;
+}
+.brand-tag .green{color:var(--green)}
+.brand-sub{
+  font-size:13px;color:var(--gray);
+  margin-top:6px;font-weight:500;
+}
+
+/* ── PHONE FORM ──────────────────────────────── */
+.form-area{
+  flex:1;background:white;
+  padding:8px 22px 18px;
+  display:flex;flex-direction:column;
+}
+.phone-row{
+  display:flex;gap:8px;margin-top:6px;
+}
+.country{
+  width:64px;
+  background:white;border:1.5px solid var(--border);
+  border-radius:11px;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  font-size:13px;cursor:pointer;
+}
+.country .flag{font-size:18px;line-height:1}
+.country .chev{font-size:10px;color:var(--gray)}
+.phone-input{
+  flex:1;display:flex;align-items:center;
+  background:white;border:1.5px solid var(--border);
+  border-radius:11px;padding:0 14px;
+  transition:border-color .2s;
+}
+.phone-input.focused{border-color:var(--green)}
+.phone-prefix{
+  font-size:14px;font-weight:700;color:var(--dark);
+  padding-right:8px;border-right:1px solid var(--border);
+  margin-right:10px;
+}
+.phone-input input{
+  flex:1;border:none;outline:none;
+  font-family:var(--font);font-size:15px;
+  font-weight:700;color:var(--dark);
+  padding:13px 0;background:transparent;
+  letter-spacing:.5px;
+}
+.phone-input input::placeholder{color:var(--gray-lt);font-weight:500;letter-spacing:0}
+
+/* CTA buttons */
+.cta-primary{
+  margin-top:14px;width:100%;
+  background:var(--whatsapp);color:white;
+  border:none;padding:14px;border-radius:12px;
+  font-family:var(--font);font-size:14px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .2s;
+  box-shadow:0 4px 12px rgba(37,211,102,.25);
+}
+.cta-primary:active{transform:scale(.98)}
+.cta-primary:disabled{
+  background:#D0D0D0;color:white;
+  box-shadow:none;cursor:not-allowed;
+}
+.cta-primary svg{width:16px;height:16px;fill:currentColor}
+
+.cta-secondary{
+  margin-top:10px;width:100%;
+  background:transparent;color:var(--green);
+  border:1.5px solid var(--green);padding:13px;border-radius:12px;
+  font-family:var(--font);font-size:13px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .15s;
+}
+.cta-secondary:active{transform:scale(.98)}
+.cta-secondary svg{width:14px;height:14px;fill:currentColor}
+.cta-secondary:disabled{color:var(--gray-lt);border-color:var(--border);cursor:not-allowed}
+
+/* Terms */
+.terms{
+  margin-top:auto;padding-top:18px;
+  text-align:center;font-size:10.5px;color:var(--gray);
+  line-height:1.6;font-weight:500;
+}
+.terms a{color:var(--dark);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+
+/* ─────────────────────────────────────────────
+   OTP SCREEN
+   ───────────────────────────────────────────── */
+.otp-hdr{
+  flex-shrink:0;background:white;
+  padding:44px 16px 14px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border-lt);
+}
+.otp-hdr .skip-back{position:static}
+.otp-hdr-title{font-size:15px;font-weight:800;color:var(--dark);letter-spacing:-.2px;flex:1}
+
+.otp-body{
+  flex:1;overflow-y:auto;padding:24px 22px 18px;
+  display:flex;flex-direction:column;
+  scrollbar-width:none;
+}
+.otp-body::-webkit-scrollbar{display:none}
+
+.otp-illust{
+  width:96px;height:96px;
+  border-radius:24px;
+  background:linear-gradient(135deg,var(--green-lt) 0%,#D5EBD8 100%);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;position:relative;
+}
+.otp-illust svg{width:54px;height:54px;fill:var(--green)}
+.otp-illust .ping{
+  position:absolute;inset:-8px;border-radius:32px;
+  border:2px solid var(--green);opacity:0;
+  animation:ping 2s ease-out infinite;
+}
+@keyframes ping{
+  0%{transform:scale(.8);opacity:0}
+  20%{opacity:.5}
+  100%{transform:scale(1.15);opacity:0}
+}
+
+.otp-title{
+  font-size:20px;font-weight:900;color:var(--dark);
+  text-align:center;letter-spacing:-.4px;line-height:1.2;
+}
+.otp-sub{
+  font-size:13px;color:var(--gray);text-align:center;
+  margin-top:7px;line-height:1.5;font-weight:500;
+}
+.otp-sub strong{color:var(--dark);font-weight:800}
+.otp-edit{
+  font-size:11px;font-weight:700;color:var(--green);
+  cursor:pointer;display:inline-flex;align-items:center;gap:3px;
+  margin-top:8px;
+}
+.otp-edit svg{width:12px;height:12px;fill:currentColor}
+
+/* OTP boxes */
+.otp-boxes{
+  display:flex;justify-content:center;gap:9px;
+  margin-top:24px;
+}
+.otp-box{
+  width:46px;height:54px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  font-family:var(--font);font-size:22px;font-weight:800;
+  color:var(--dark);text-align:center;
+  background:white;
+  outline:none;transition:all .2s;
+  caret-color:var(--green);
+}
+.otp-box.filled{
+  border-color:var(--green);background:var(--green-lt);
+}
+.otp-box:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(12,131,31,.12);
+}
+.otp-box.error{
+  border-color:var(--red);background:var(--red-lt);color:var(--red);
+  animation:shake .35s;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+
+.otp-resend{
+  text-align:center;margin-top:18px;
+  font-size:12px;color:var(--gray);font-weight:600;
+}
+.otp-resend .timer{color:var(--orange);font-weight:800}
+.otp-resend .resend-link{
+  color:var(--green);font-weight:800;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.otp-resend .resend-link.disabled{color:var(--gray-lt);cursor:not-allowed}
+
+.otp-help{
+  margin-top:auto;padding:14px;border-radius:11px;
+  background:var(--light);
+  display:flex;align-items:flex-start;gap:10px;
+}
+.otp-help-em{font-size:18px;line-height:1;margin-top:1px;flex-shrink:0}
+.otp-help-text{
+  font-size:11px;color:var(--gray);line-height:1.6;font-weight:500;flex:1;
+}
+.otp-help-text strong{color:var(--dark);font-weight:700}
+
+.otp-footer{
+  flex-shrink:0;padding:12px 22px 22px;
+}
+
+/* ─────────────────────────────────────────────
+   LOCATION SCREEN
+   ───────────────────────────────────────────── */
+.loc-hero{
+  flex-shrink:0;height:42vh;
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#E8F4F0 0%,#F0F5F0 100%);
+}
+
+/* Animated map background */
+.loc-map{
+  position:absolute;inset:0;
+}
+.loc-map svg{width:100%;height:100%}
+
+/* Center pin animation */
+.loc-pin-center{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%, -100%);
+  z-index:5;animation:pinDrop .6s cubic-bezier(.22,1.55,.36,1);
+}
+@keyframes pinDrop{
+  0%{transform:translate(-50%, -150%);opacity:0}
+  100%{transform:translate(-50%, -100%);opacity:1}
+}
+.pin-shadow{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%, 5px);
+  width:36px;height:8px;border-radius:50%;
+  background:rgba(0,0,0,.18);filter:blur(3px);
+  animation:pinShadow 1.6s ease-in-out infinite;
+}
+@keyframes pinShadow{
+  0%,100%{transform:translate(-50%,5px) scale(1);opacity:.4}
+  50%{transform:translate(-50%,5px) scale(.7);opacity:.6}
+}
+.pin-marker{
+  width:38px;height:48px;
+  position:relative;
+  animation:pinFloat 1.6s ease-in-out infinite;
+}
+@keyframes pinFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+.pin-marker svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.15))}
+
+/* Pulse ring */
+.pin-pulse{
+  position:absolute;left:50%;top:calc(50% + 22px);
+  transform:translate(-50%, -50%);
+  width:30px;height:30px;border-radius:50%;
+  background:var(--green);opacity:.25;
+  animation:pulseRing 2s ease-out infinite;
+}
+@keyframes pulseRing{
+  0%{transform:translate(-50%,-50%) scale(.8);opacity:.4}
+  100%{transform:translate(-50%,-50%) scale(3);opacity:0}
+}
+
+.loc-body{
+  flex:1;background:white;
+  border-radius:22px 22px 0 0;
+  margin-top:-22px;position:relative;z-index:10;
+  padding:22px 22px 18px;
+  display:flex;flex-direction:column;
+  box-shadow:0 -8px 24px rgba(0,0,0,.06);
+}
+.loc-handle{
+  width:40px;height:4px;background:var(--border);
+  border-radius:2px;margin:0 auto 14px;
+}
+.loc-title{
+  font-size:18px;font-weight:900;color:var(--dark);
+  letter-spacing:-.3px;line-height:1.2;text-align:center;
+}
+.loc-sub{
+  font-size:12px;color:var(--gray);
+  text-align:center;margin-top:5px;
+  line-height:1.5;font-weight:500;
+}
+
+.loc-actions{
+  display:flex;flex-direction:column;gap:9px;
+  margin-top:18px;
+}
+.loc-btn{
+  background:white;border:1.5px solid var(--border);
+  border-radius:12px;padding:13px;
+  display:flex;align-items:center;gap:11px;
+  cursor:pointer;font-family:var(--font);
+  transition:all .2s;
+}
+.loc-btn:active{transform:scale(.99);background:var(--light)}
+.loc-btn.primary{
+  background:var(--green);border-color:var(--green);color:white;
+  box-shadow:0 4px 12px rgba(12,131,31,.25);
+}
+.loc-btn.primary:active{background:var(--green-dk)}
+.loc-btn-icon{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.loc-btn.primary .loc-btn-icon{background:rgba(255,255,255,.2)}
+.loc-btn-icon svg{width:20px;height:20px;fill:var(--green)}
+.loc-btn.primary .loc-btn-icon svg{fill:white}
+.loc-btn-info{flex:1;text-align:left;min-width:0}
+.loc-btn-title{font-size:13px;font-weight:800;color:var(--dark);letter-spacing:-.1px}
+.loc-btn.primary .loc-btn-title{color:white}
+.loc-btn-sub{font-size:10px;color:var(--gray);margin-top:1px;line-height:1.4}
+.loc-btn.primary .loc-btn-sub{color:rgba(255,255,255,.85)}
+.loc-btn-arr{font-size:16px;color:var(--gray-lt)}
+.loc-btn.primary .loc-btn-arr{color:white}
+
+.serviceable-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--green-lt);color:var(--green);
+  font-size:10px;font-weight:800;
+  padding:5px 10px;border-radius:14px;
+  margin:14px auto 0;
+  width:fit-content;letter-spacing:.2px;
+}
+.serviceable-tag svg{width:11px;height:11px;fill:currentColor}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:absolute;bottom:30px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+
+/* Loader overlay */
+.loader-overlay{
+  position:absolute;inset:0;background:rgba(255,255,255,.92);
+  z-index:100;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.loader-overlay.show{opacity:1;pointer-events:all}
+.spinner{
+  width:42px;height:42px;
+  border:4px solid var(--green-lt);
+  border-top-color:var(--green);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{
+  font-size:13px;font-weight:700;color:var(--dark);
+}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO CONTROLS -->
+  <div class="demo">
+    <div class="demo-label">Login Step</div>
+    <div class="demo-row">
+      <button class="db on" onclick="goStep(0)">Splash</button>
+      <button class="db" onclick="goStep(1)">OTP</button>
+      <button class="db" onclick="goStep(2)">Location</button>
+    </div>
+  </div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1 — SPLASH / PHONE ENTRY
+     ════════════════════════════════════════════ -->
+<div class="screen first" id="screen-splash">
+
+  <!-- HERO with animated products -->
+  <div class="splash-hero">
+    <div class="skip-back" onclick="showToast('Skipping login is disabled')">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+
+    <!-- Row 1 - scrolls right to left -->
+    <div class="marquee-wrap row1">
+      <div class="marquee" id="marquee1"></div>
+    </div>
+
+    <!-- Row 2 - scrolls left to right (reversed) -->
+    <div class="marquee-wrap row2">
+      <div class="marquee slow" id="marquee2"></div>
+    </div>
+  </div>
+
+  <!-- BRAND -->
+  <div class="brand-block">
+    <div class="logo-wrap">S</div>
+    <div class="brand-tag">Where every <span class="green">second</span> counts!</div>
+    <div class="brand-sub">Log in or sign up to continue</div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-area">
+    <div class="phone-row">
+      <div class="country">
+        <span class="flag">🇮🇳</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="phone-input" id="phoneWrap">
+        <span class="phone-prefix">+91</span>
+        <input type="tel" id="phoneNum" maxlength="10" placeholder="Enter mobile number" autocomplete="tel">
+      </div>
+    </div>
+
+    <button class="cta-primary" id="btnWA" disabled onclick="sendOTP('whatsapp')">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Get OTP via WhatsApp
+    </button>
+
+    <button class="cta-secondary" id="btnSMS" disabled onclick="sendOTP('sms')">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      Get OTP via SMS
+    </button>
+
+    <div class="terms">
+      By continuing, you agree to our<br>
+      <a onclick="showToast('Opening terms')">Terms of Service</a> &amp; <a onclick="showToast('Opening privacy')">Privacy Policy</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2 — OTP ENTRY
+     ════════════════════════════════════════════ -->
+<div class="screen" id="screen-otp">
+
+  <div class="otp-hdr">
+    <div class="skip-back" onclick="goStep(0)">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="otp-hdr-title">Verify OTP</div>
+  </div>
+
+  <div class="otp-body">
+    <div class="otp-illust">
+      <span class="ping"></span>
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+    </div>
+
+    <div class="otp-title">Enter 6-digit OTP</div>
+    <div class="otp-sub">
+      We've sent it via <strong id="otpVia">WhatsApp</strong> to<br>
+      <strong>+91 <span id="otpPhone">94878 67816</span></strong>
+      <div class="otp-edit" onclick="goStep(0)">
+        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        Change number
+      </div>
+    </div>
+
+    <!-- OTP boxes -->
+    <div class="otp-boxes" id="otpBoxes">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="0">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="1">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="2">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="3">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="4">
+      <input class="otp-box" maxlength="1" inputmode="numeric" data-i="5">
+    </div>
+
+    <div class="otp-resend">
+      <span id="resendText">Resend OTP in <span class="timer" id="resendTimer">0:30</span></span>
+    </div>
+
+    <div class="otp-help">
+      <div class="otp-help-em">💡</div>
+      <div class="otp-help-text">
+        <strong>Auto-read enabled.</strong> If WhatsApp is installed, OTP will be detected automatically. No need to type.
+      </div>
+    </div>
+  </div>
+
+  <div class="otp-footer">
+    <button class="cta-primary" id="otpVerify" style="background:var(--green);box-shadow:0 4px 12px rgba(12,131,31,.25)" disabled onclick="verifyOTP()">
+      Verify &amp; Continue
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 3 — LOCATION
+     ════════════════════════════════════════════ -->
+<div class="screen" id="screen-loc">
+
+  <!-- Animated map hero -->
+  <div class="loc-hero">
+    <div class="loc-map">
+      <svg viewBox="0 0 360 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="locgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(12,131,31,.06)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#locgrid)"/>
+
+        <!-- Roads -->
+        <rect x="0" y="120" width="360" height="20" fill="rgba(255,255,255,.6)"/>
+        <rect x="160" y="0" width="20" height="280" fill="rgba(255,255,255,.6)"/>
+        <rect x="0" y="220" width="360" height="14" fill="rgba(255,255,255,.5)"/>
+        <rect x="60" y="0" width="14" height="280" fill="rgba(255,255,255,.5)"/>
+        <rect x="280" y="0" width="14" height="280" fill="rgba(255,255,255,.5)"/>
+
+        <!-- Buildings/blocks -->
+        <rect x="14" y="40" width="36" height="68" fill="rgba(12,131,31,.08)" rx="3"/>
+        <rect x="86" y="22" width="60" height="80" fill="rgba(12,131,31,.06)" rx="3"/>
+        <rect x="200" y="36" width="68" height="70" fill="rgba(12,131,31,.07)" rx="3"/>
+        <rect x="306" y="50" width="44" height="58" fill="rgba(12,131,31,.06)" rx="3"/>
+        <rect x="14" y="156" width="36" height="50" fill="rgba(12,131,31,.05)" rx="3"/>
+        <rect x="86" y="156" width="60" height="50" fill="rgba(12,131,31,.07)" rx="3"/>
+        <rect x="200" y="156" width="68" height="50" fill="rgba(12,131,31,.06)" rx="3"/>
+        <rect x="306" y="156" width="44" height="50" fill="rgba(12,131,31,.08)" rx="3"/>
+        <rect x="14" y="246" width="36" height="34" fill="rgba(12,131,31,.05)" rx="3"/>
+        <rect x="200" y="246" width="68" height="34" fill="rgba(12,131,31,.07)" rx="3"/>
+        <rect x="306" y="246" width="44" height="34" fill="rgba(12,131,31,.06)" rx="3"/>
+
+        <!-- Trees -->
+        <circle cx="170" cy="60" r="6" fill="#A5D6A7"/>
+        <circle cx="158" cy="180" r="5" fill="#A5D6A7"/>
+        <circle cx="285" cy="125" r="6" fill="#A5D6A7"/>
+        <circle cx="100" cy="232" r="5" fill="#A5D6A7"/>
+      </svg>
+    </div>
+
+    <!-- Pulse ring at pin location -->
+    <div class="pin-pulse"></div>
+
+    <!-- Pin -->
+    <div class="loc-pin-center">
+      <div class="pin-marker">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0C7.58 0 4 3.58 4 8c0 6 8 16 8 16s8-10 8-16c0-4.42-3.58-8-8-8z" fill="#0C831F"/>
+          <circle cx="12" cy="8" r="3" fill="white"/>
+        </svg>
+      </div>
+      <div class="pin-shadow"></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="loc-body">
+    <div class="loc-handle"></div>
+    <div class="loc-title">Where do we deliver?</div>
+    <div class="loc-sub">We need your location to show available products and delivery times</div>
+
+    <div class="serviceable-tag">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      Currently serving Nagore, Tamil Nadu
+    </div>
+
+    <div class="loc-actions">
+      <button class="loc-btn primary" onclick="finishLogin('current')">
+        <div class="loc-btn-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </div>
+        <div class="loc-btn-info">
+          <div class="loc-btn-title">Use my current location</div>
+          <div class="loc-btn-sub">Allow GPS access for accurate delivery</div>
+        </div>
+        <div class="loc-btn-arr">›</div>
+      </button>
+
+      <button class="loc-btn" onclick="finishLogin('manual')">
+        <div class="loc-btn-icon">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"/></svg>
+        </div>
+        <div class="loc-btn-info">
+          <div class="loc-btn-title">Search address manually</div>
+          <div class="loc-btn-sub">Pick a location on the map</div>
+        </div>
+        <div class="loc-btn-arr">›</div>
+      </button>
+    </div>
+
+    <div style="margin-top:14px;text-align:center;font-size:10.5px;color:var(--gray);font-weight:500;line-height:1.6">
+      We respect your privacy. Location data is only used for delivery purposes.
+    </div>
+  </div>
+</div>
+
+<!-- LOADER OVERLAY -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner"></div>
+  <div class="loader-text" id="loaderText">Sending OTP...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Done</div>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// PRODUCT MARQUEE - populate
+// ══════════════════════════════════════════════
+const PRODUCTS_ROW1 = [
+  {em:'🥛',v:''},{em:'🍞',v:'v1'},{em:'🥚',v:''},{em:'🧈',v:'v3'},
+  {em:'🍅',v:''},{em:'🥕',v:'v4'},{em:'🍌',v:'v1'},{em:'🥦',v:''},
+  {em:'🍫',v:'v2'},{em:'🧴',v:'v5'},{em:'🥤',v:'v3'},{em:'🍿',v:'v4'},
+];
+const PRODUCTS_ROW2 = [
+  {em:'🍎',v:'v2'},{em:'🥔',v:'v4'},{em:'🍪',v:'v1'},{em:'🧂',v:''},
+  {em:'☕',v:'v4'},{em:'🍯',v:'v1'},{em:'🥫',v:'v3'},{em:'🍝',v:''},
+  {em:'🧀',v:'v1'},{em:'🍇',v:'v5'},{em:'🥭',v:'v4'},{em:'🍋',v:'v1'},
+];
+
+function buildMarquee(id, items) {
+  // duplicate for seamless loop
+  const html = [...items, ...items].map(p =>
+    `<div class="prod-tile ${p.v}">${p.em}</div>`
+  ).join('');
+  document.getElementById(id).innerHTML = html;
+}
+buildMarquee('marquee1', PRODUCTS_ROW1);
+buildMarquee('marquee2', PRODUCTS_ROW2);
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+let currentStep = 0;
+const screens = ['splash','otp','loc'];
+
+function goStep(n) {
+  currentStep = n;
+  // demo button toggle
+  document.querySelectorAll('.demo .db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo .db')[n].classList.add('on');
+
+  screens.forEach((s,i) => {
+    const el = document.getElementById('screen-' + s);
+    if (i === n) {
+      el.classList.add('active');
+      el.classList.remove('first');
+    } else if (i < n) {
+      el.classList.remove('active');
+      el.style.transform = 'translateX(-100%)';
+    } else {
+      el.classList.remove('active');
+      el.style.transform = '';
+    }
+  });
+
+  // Auto-focus on OTP screen
+  if (n === 1) {
+    setTimeout(() => {
+      const first = document.querySelector('.otp-box');
+      if (first) first.focus();
+      startResendTimer();
+    }, 400);
+  }
+}
+
+// ══════════════════════════════════════════════
+// PHONE INPUT
+// ══════════════════════════════════════════════
+const phoneInput = document.getElementById('phoneNum');
+const phoneWrap = document.getElementById('phoneWrap');
+const btnWA = document.getElementById('btnWA');
+const btnSMS = document.getElementById('btnSMS');
+
+phoneInput.addEventListener('focus', () => phoneWrap.classList.add('focused'));
+phoneInput.addEventListener('blur', () => phoneWrap.classList.remove('focused'));
+
+phoneInput.addEventListener('input', (e) => {
+  // strip non-digits
+  e.target.value = e.target.value.replace(/\D/g,'').slice(0,10);
+  const valid = e.target.value.length === 10;
+  btnWA.disabled = !valid;
+  btnSMS.disabled = !valid;
+  if (valid) btnWA.style.background = 'var(--whatsapp)';
+});
+
+function sendOTP(via) {
+  const num = phoneInput.value;
+  if (num.length !== 10) {
+    showToast('Enter valid 10-digit number');
+    return;
+  }
+  // show loader
+  document.getElementById('loaderText').textContent =
+    via === 'whatsapp' ? 'Sending OTP via WhatsApp...' : 'Sending OTP via SMS...';
+  document.getElementById('loader').classList.add('show');
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    // populate phone number on OTP screen
+    const formatted = num.slice(0,5) + ' ' + num.slice(5);
+    document.getElementById('otpPhone').textContent = formatted;
+    document.getElementById('otpVia').textContent = via === 'whatsapp' ? 'WhatsApp' : 'SMS';
+    goStep(1);
+  }, 1100);
+}
+
+// ══════════════════════════════════════════════
+// OTP BOXES
+// ══════════════════════════════════════════════
+const otpBoxes = document.querySelectorAll('.otp-box');
+const otpVerifyBtn = document.getElementById('otpVerify');
+
+otpBoxes.forEach((box, i) => {
+  box.addEventListener('input', (e) => {
+    const v = e.target.value.replace(/\D/g,'');
+    e.target.value = v;
+    if (v) {
+      box.classList.add('filled');
+      if (i < otpBoxes.length - 1) otpBoxes[i+1].focus();
+    } else {
+      box.classList.remove('filled');
+    }
+    checkOTPComplete();
+  });
+  box.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !box.value && i > 0) {
+      otpBoxes[i-1].focus();
+      otpBoxes[i-1].value = '';
+      otpBoxes[i-1].classList.remove('filled');
+      checkOTPComplete();
+    }
+  });
+  // paste handler
+  box.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g,'').slice(0,6);
+    pasted.split('').forEach((d, idx) => {
+      if (otpBoxes[idx]) {
+        otpBoxes[idx].value = d;
+        otpBoxes[idx].classList.add('filled');
+      }
+    });
+    checkOTPComplete();
+    if (pasted.length === 6) otpBoxes[5].focus();
+  });
+});
+
+function checkOTPComplete() {
+  const all = Array.from(otpBoxes).every(b => b.value.length === 1);
+  otpVerifyBtn.disabled = !all;
+}
+
+function verifyOTP() {
+  const code = Array.from(otpBoxes).map(b => b.value).join('');
+  document.getElementById('loaderText').textContent = 'Verifying...';
+  document.getElementById('loader').classList.add('show');
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    // Demo: any 6-digit accepted, but 000000 = error
+    if (code === '000000') {
+      otpBoxes.forEach(b => b.classList.add('error'));
+      showToast('Invalid OTP. Try again.');
+      setTimeout(() => {
+        otpBoxes.forEach(b => { b.value=''; b.classList.remove('error','filled') });
+        otpBoxes[0].focus();
+        checkOTPComplete();
+      }, 800);
+    } else {
+      goStep(2);
+    }
+  }, 900);
+}
+
+// ══════════════════════════════════════════════
+// RESEND TIMER
+// ══════════════════════════════════════════════
+let resendInterval;
+function startResendTimer() {
+  clearInterval(resendInterval);
+  let secs = 30;
+  const text = document.getElementById('resendText');
+  const update = () => {
+    if (secs <= 0) {
+      text.innerHTML = `Didn't receive? <span class="resend-link" onclick="resendOTP()">Resend OTP</span>`;
+      clearInterval(resendInterval);
+      return;
+    }
+    const m = Math.floor(secs/60);
+    const s = secs % 60;
+    text.innerHTML = `Resend OTP in <span class="timer">${m}:${s<10?'0':''}${s}</span>`;
+    secs--;
+  };
+  update();
+  resendInterval = setInterval(update, 1000);
+}
+
+function resendOTP() {
+  showToast('OTP resent successfully');
+  startResendTimer();
+  otpBoxes.forEach(b => { b.value=''; b.classList.remove('filled') });
+  otpBoxes[0].focus();
+  checkOTPComplete();
+}
+
+// ══════════════════════════════════════════════
+// LOCATION FINISH
+// ══════════════════════════════════════════════
+function finishLogin(method) {
+  document.getElementById('loaderText').textContent =
+    method === 'current' ? 'Detecting your location...' : 'Opening map...';
+  document.getElementById('loader').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    showToast('🎉 Welcome to Suplaykart!');
+  }, 1200);
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1700);
+}
+</script>
+</body>
+</html>

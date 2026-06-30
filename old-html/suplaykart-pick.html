@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Pick</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF6B00;--orange-dk:#E55F00;
+  --orange-lt:#FFF3E8;--orange-grad:linear-gradient(135deg,#FF6B00 0%,#FF8E3C 100%);
+  --green:#0C831F;--green-lt:#E8F5E9;
+  --red:#EF4444;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--white);box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* ── HEADER ──────────────────────────────────── */
+.hdr{
+  flex-shrink:0;
+  background:var(--orange-grad);
+  padding:44px 16px 14px;
+  position:relative;overflow:hidden;
+  color:white;
+}
+/* subtle pattern */
+.hdr::before{
+  content:'';position:absolute;
+  top:-30px;right:-30px;width:160px;height:160px;
+  background:radial-gradient(circle,rgba(255,255,255,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hdr::after{
+  content:'';position:absolute;
+  bottom:-50px;left:-30px;width:120px;height:120px;
+  background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hdr-row{display:flex;align-items:center;gap:10px;position:relative;z-index:2}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;backdrop-filter:blur(4px);
+}
+.hdr-back svg{width:18px;height:18px;fill:white}
+.hdr-title{flex:1;font-size:18px;font-weight:800;letter-spacing:-.3px}
+.hdr-help{
+  font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.2);
+  padding:6px 12px;border-radius:20px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+
+/* HERO ─ explainer */
+.hero{
+  position:relative;z-index:2;
+  padding:14px 0 8px;
+  display:flex;align-items:center;gap:14px;
+}
+.hero-text{flex:1;min-width:0}
+.hero-title{
+  font-size:22px;font-weight:900;line-height:1.15;
+  letter-spacing:-.6px;
+}
+.hero-sub{
+  font-size:12px;color:rgba(255,255,255,.85);
+  margin-top:6px;line-height:1.5;font-weight:500;
+}
+.hero-price{
+  display:inline-flex;align-items:baseline;gap:6px;
+  margin-top:10px;
+  background:rgba(0,0,0,.18);border-radius:18px;
+  padding:5px 12px;
+}
+.hp-strike{font-size:11px;color:rgba(255,255,255,.55);text-decoration:line-through;font-weight:500}
+.hp-real{font-size:14px;font-weight:800}
+.hp-flat{font-size:9px;font-weight:700;color:#FFE082;letter-spacing:.5px;margin-left:2px}
+
+.hero-art{
+  width:100px;height:84px;flex-shrink:0;
+  position:relative;
+}
+
+/* ── MAIN SCROLL ─────────────────────────────── */
+.main{flex:1;overflow-y:auto;scrollbar-width:none;background:var(--light)}
+.main::-webkit-scrollbar{display:none}
+
+/* ── QUICK SUGGEST CHIPS ─────────────────────── */
+.qs-block{padding:14px 0 6px;background:white}
+.qs-title{font-size:12px;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;padding:0 16px 9px}
+.qs-scroll{overflow-x:auto;scrollbar-width:none;padding:0 16px 12px}
+.qs-scroll::-webkit-scrollbar{display:none}
+.qs-row{display:flex;gap:8px}
+.qs-chip{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;
+  background:var(--orange-lt);border:1px solid #FFD9B0;
+  padding:8px 14px;border-radius:24px;cursor:pointer;
+  transition:transform .15s, background .15s;
+}
+.qs-chip:active{transform:scale(.95);background:#FFE5CC}
+.qs-em{font-size:16px;line-height:1}
+.qs-lbl{font-size:12px;font-weight:600;color:var(--dark);white-space:nowrap}
+
+/* ── SECTION CARD ────────────────────────────── */
+.sec{
+  background:white;margin:0 0 8px;
+  padding:16px;
+}
+.sec-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:12px;
+}
+.sec-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--orange);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;
+  font-family:var(--font);
+}
+.sec-num.done{background:var(--green)}
+.sec-title{font-size:14px;font-weight:800;color:var(--dark);letter-spacing:-.2px}
+.sec-opt{font-size:10px;font-weight:600;color:var(--gray-lt);margin-left:auto}
+
+/* ── LOCATION CARDS ──────────────────────────── */
+.loc-block{position:relative;padding-left:30px}
+.loc-line{
+  position:absolute;left:9px;top:18px;bottom:18px;
+  width:2px;
+  background:repeating-linear-gradient(
+    to bottom,
+    var(--gray-lt) 0,var(--gray-lt) 4px,
+    transparent 4px,transparent 8px
+  );
+}
+.loc-marker{
+  position:absolute;left:0;width:20px;height:20px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:white;
+  font-family:var(--font);
+  border:3px solid white;
+  box-shadow:0 0 0 2px currentColor;
+}
+.loc-marker.pickup{top:6px;background:var(--green);color:var(--green)}
+.loc-marker.pickup::after{content:'';width:8px;height:8px;border-radius:50%;background:white}
+.loc-marker.drop{bottom:6px;background:var(--red);color:var(--red)}
+.loc-marker.drop::after{content:'';width:8px;height:8px;border-radius:50%;background:white}
+
+.loc-card{
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:11px 14px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  transition:all .15s;background:white;
+  margin-bottom:10px;
+}
+.loc-card:active{transform:scale(.98)}
+.loc-card.filled{border-color:var(--orange-lt);background:#FFFBF6}
+.loc-card-info{flex:1;min-width:0}
+.loc-lbl{
+  font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.7px;
+  margin-bottom:2px;
+}
+.loc-card.empty .loc-lbl{color:var(--gray-lt)}
+.loc-card .loc-lbl.green{color:var(--green)}
+.loc-card .loc-lbl.red{color:var(--red)}
+.loc-val{
+  font-size:13px;font-weight:600;color:var(--dark);
+  line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.loc-val.placeholder{color:var(--gray-lt);font-weight:500}
+.loc-sub{
+  font-size:10px;color:var(--gray);font-weight:500;
+  margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.loc-arr{font-size:18px;color:var(--gray-lt);flex-shrink:0}
+.loc-edit{font-size:11px;font-weight:700;color:var(--orange);flex-shrink:0}
+
+.swap-btn{
+  position:absolute;right:14px;top:50%;
+  transform:translate(0,-50%);
+  width:34px;height:34px;border-radius:50%;
+  background:white;border:2px solid var(--orange);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:5;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  transition:transform .25s;
+}
+.swap-btn:active{transform:translate(0,-50%) rotate(180deg) scale(.9)}
+.swap-btn svg{width:16px;height:16px;fill:var(--orange)}
+
+/* Distance/time strip */
+.distance-strip{
+  display:none;align-items:center;justify-content:center;gap:14px;
+  background:var(--orange-lt);
+  border-radius:10px;padding:8px 12px;margin-top:8px;
+}
+.distance-strip.show{display:flex}
+.ds-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--orange-dk)}
+.ds-divider{width:1px;height:14px;background:#FFD9B0}
+
+/* ── ITEM DESCRIPTION ───────────────────────── */
+.field-label{
+  font-size:11px;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.4px;
+  margin-bottom:7px;
+}
+.desc-input{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:12px;padding:11px 14px;
+  font-family:var(--font);font-size:13px;color:var(--dark);
+  background:white;outline:none;resize:none;
+  min-height:64px;
+  transition:border-color .2s;
+}
+.desc-input:focus{border-color:var(--orange)}
+.desc-input::placeholder{color:var(--gray-lt)}
+
+.photo-row{
+  display:flex;align-items:stretch;gap:10px;margin-top:10px;
+}
+.photo-add{
+  flex:0 0 64px;height:64px;border-radius:12px;
+  border:1.5px dashed var(--border);background:var(--light);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;
+}
+.photo-add:active{transform:scale(.95)}
+.photo-add.has{border-style:solid;border-color:var(--orange);background:white}
+.photo-add svg{width:18px;height:18px;fill:var(--gray-lt)}
+.photo-add.has svg{fill:var(--orange)}
+.photo-add small{font-size:8px;font-weight:700;color:var(--gray);margin-top:3px;letter-spacing:.3px}
+.photo-add.has small{color:var(--orange)}
+
+.photo-tip{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  font-size:11px;color:var(--gray);line-height:1.4;
+}
+.photo-tip strong{color:var(--dark);font-size:12px;font-weight:700}
+
+/* Weight info */
+.weight-info{
+  display:flex;align-items:center;gap:9px;
+  background:#FEF7E8;border:1px solid #FCE0A0;
+  padding:9px 12px;border-radius:10px;margin-top:12px;
+}
+.weight-info-em{font-size:14px}
+.weight-info-txt{font-size:11px;color:#92400E;font-weight:600;line-height:1.4}
+
+/* ── RECEIVER ────────────────────────────────── */
+.receiver-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-wrap{position:relative}
+.input-wrap input{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:12px;padding:11px 14px;
+  font-family:var(--font);font-size:13px;color:var(--dark);
+  background:white;outline:none;
+  transition:border-color .2s;
+}
+.input-wrap input:focus{border-color:var(--orange)}
+.input-wrap input::placeholder{color:var(--gray-lt)}
+.input-wrap-prefix input{padding-left:30px}
+.input-prefix{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--gray);font-weight:600;pointer-events:none;
+}
+
+/* Self toggle (use my number) */
+.self-row{
+  display:flex;align-items:center;gap:8px;margin-top:10px;
+  font-size:11px;color:var(--gray);font-weight:500;cursor:pointer;
+}
+.self-check{
+  width:18px;height:18px;border-radius:5px;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.self-check.on{background:var(--orange);border-color:var(--orange)}
+.self-check.on::after{content:'✓';font-size:10px;color:white;font-weight:800}
+
+/* ── CASH COLLECT ────────────────────────────── */
+.cash-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;
+}
+.cash-info{flex:1}
+.cash-title{font-size:13px;font-weight:700;color:var(--dark)}
+.cash-sub{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.4}
+
+/* iOS toggle */
+.toggle{
+  position:relative;width:44px;height:26px;
+  background:#E0E0E0;border-radius:13px;
+  cursor:pointer;transition:background .25s;flex-shrink:0;
+}
+.toggle.on{background:var(--orange)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:white;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:transform .25s;
+}
+.toggle.on::after{transform:translateX(18px)}
+
+.cash-input-wrap{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s, margin-top .3s;
+}
+.cash-input-wrap.show{max-height:80px;margin-top:8px}
+.cash-input{
+  width:100%;border:1.5px solid var(--orange-lt);
+  background:#FFFBF6;border-radius:10px;
+  padding:11px 14px 11px 28px;
+  font-family:var(--font);font-size:14px;font-weight:700;color:var(--dark);
+  outline:none;
+}
+.cash-input:focus{border-color:var(--orange);background:white}
+.cash-input-row{position:relative}
+.cash-input-row::before{
+  content:'₹';position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:14px;font-weight:700;color:var(--gray);
+}
+
+/* ── INSTRUCTIONS (collapsible) ─────────────── */
+.collapse-head{
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+}
+.collapse-head .arr{font-size:14px;color:var(--gray);transition:transform .25s}
+.collapse.open .collapse-head .arr{transform:rotate(180deg)}
+.collapse-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s, margin-top .3s;
+}
+.collapse.open .collapse-body{max-height:200px;margin-top:12px}
+
+/* ── PRICE SUMMARY CARD ──────────────────────── */
+.price-card{
+  background:white;margin:0 0 8px;padding:16px;
+}
+.price-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;font-size:13px;
+}
+.price-row .pr-l{color:var(--gray);font-weight:500}
+.price-row .pr-r{color:var(--dark);font-weight:700}
+.price-row .pr-r .strike{color:var(--gray-lt);text-decoration:line-through;font-weight:500;font-size:11px;margin-right:4px}
+.price-row.discount .pr-r{color:var(--green);font-weight:700}
+.price-divider{border:none;border-top:1px dashed var(--border);margin:8px 0}
+.price-total .pr-l{color:var(--dark);font-weight:800;font-size:14px}
+.price-total .pr-r{color:var(--dark);font-weight:900;font-size:16px}
+.savings-pill{
+  display:inline-block;
+  background:var(--green-lt);color:var(--green);
+  font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:12px;margin-top:6px;
+}
+
+/* Pay info */
+.pay-info{
+  display:flex;align-items:center;gap:9px;
+  background:var(--green-lt);border-radius:10px;
+  padding:9px 12px;margin-top:10px;
+}
+.pi-em{font-size:14px}
+.pi-txt{font-size:11px;color:var(--green);font-weight:600;line-height:1.4}
+.pi-txt strong{font-weight:800}
+
+/* ── STICKY FOOTER ───────────────────────────── */
+.foot{
+  flex-shrink:0;background:white;
+  padding:10px 14px 22px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.06);
+}
+.foot-info{flex:0 0 auto}
+.foot-price{font-size:18px;font-weight:900;color:var(--dark);line-height:1}
+.foot-price .strike{color:var(--gray-lt);text-decoration:line-through;font-weight:500;font-size:11px;margin-right:4px}
+.foot-tag{font-size:9px;color:var(--gray);margin-top:2px}
+.foot-cta{
+  flex:1;background:var(--orange);color:white;
+  border:none;padding:14px;border-radius:11px;
+  font-family:var(--font);font-size:14px;font-weight:800;
+  cursor:pointer;letter-spacing:.3px;
+  transition:transform .15s, opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.foot-cta:active{transform:scale(.97)}
+.foot-cta:disabled{
+  background:#D0D0D0;color:white;cursor:not-allowed;
+}
+.foot-cta svg{width:16px;height:16px;fill:white}
+
+/* ── SHEET ───────────────────────────────────── */
+.sheet-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.sheet-bg.show{opacity:1;pointer-events:all}
+.sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;border-radius:18px 18px 0 0;
+  max-height:80%;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+  display:flex;flex-direction:column;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:#E0E0E0;border-radius:2px;margin:12px auto 12px}
+.sheet-title{font-size:15px;font-weight:800;color:var(--dark);padding:0 18px 14px;border-bottom:1px solid var(--border)}
+.sheet-body{flex:1;overflow-y:auto;padding:8px 0 24px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+
+/* Address picker */
+.ap-search{padding:14px 18px}
+.ap-search-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--light);border-radius:11px;padding:11px 14px;
+}
+.ap-search-bar input{
+  flex:1;border:none;outline:none;background:transparent;
+  font-family:var(--font);font-size:13px;color:var(--dark);
+}
+.ap-search-bar svg{width:16px;height:16px;fill:var(--gray)}
+
+.ap-current{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 18px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+}
+.ap-current:active{background:var(--light)}
+.ap-current-em{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--orange-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ap-current-em svg{width:16px;height:16px;fill:var(--orange)}
+.ap-current-info{flex:1}
+.ap-current-title{font-size:13px;font-weight:700;color:var(--orange)}
+.ap-current-sub{font-size:11px;color:var(--gray);margin-top:1px}
+
+.ap-section-title{
+  font-size:11px;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:14px 18px 8px;
+}
+.ap-item{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:11px 18px;cursor:pointer;
+}
+.ap-item:active{background:var(--light)}
+.ap-em{
+  width:34px;height:34px;border-radius:9px;background:var(--light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.ap-info{flex:1;min-width:0}
+.ap-title{font-size:13px;font-weight:700;color:var(--dark)}
+.ap-sub{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.4}
+
+/* ── SUCCESS MODAL ───────────────────────────── */
+.success-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  z-index:400;opacity:0;pointer-events:none;
+  transition:opacity .3s;display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.success-bg.show{opacity:1;pointer-events:all}
+.success-card{
+  background:white;border-radius:18px;width:100%;max-width:340px;
+  padding:32px 24px 24px;text-align:center;
+  transform:scale(.85);transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.success-bg.show .success-card{transform:scale(1)}
+.success-em{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;margin:0 auto 18px;
+  animation: successPop .6s cubic-bezier(.22,1,.36,1) .15s both;
+}
+@keyframes successPop{
+  0%{transform:scale(0)}
+  60%{transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+.success-title{font-size:18px;font-weight:900;color:var(--dark);margin-bottom:6px}
+.success-sub{font-size:12px;color:var(--gray);line-height:1.5;margin-bottom:18px}
+.success-id{
+  display:inline-block;
+  background:var(--light);font-family:'Courier New',monospace;
+  font-size:11px;color:var(--dark);font-weight:700;
+  padding:5px 11px;border-radius:6px;letter-spacing:.5px;
+  margin-bottom:18px;
+}
+.success-btn{
+  width:100%;background:var(--orange);color:white;
+  border:none;padding:12px;border-radius:11px;
+  font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;
+  margin-bottom:8px;
+}
+.success-btn-2{
+  width:100%;background:white;color:var(--dark);
+  border:1.5px solid var(--border);padding:12px;border-radius:11px;
+  font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;
+}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:absolute;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:60;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-back" onclick="history.back()">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+      <div class="hdr-title">Pick & Drop</div>
+      <div class="hdr-help" onclick="showToast('Help center')">? Help</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-text">
+        <div class="hero-title">Need it picked up?<br>We'll get it.</div>
+        <div class="hero-sub">Anything that fits on a scooter — within Nagore.</div>
+        <div class="hero-price">
+          <span class="hp-strike">₹100</span>
+          <span class="hp-real">₹49</span>
+          <span class="hp-flat">FLAT</span>
+        </div>
+      </div>
+      <div class="hero-art">
+        <svg viewBox="0 0 100 84" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <!-- road -->
+          <line x1="5" y1="68" x2="95" y2="68" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="4 3"/>
+          <!-- scooter body -->
+          <ellipse cx="50" cy="68" rx="6" ry="6" fill="rgba(0,0,0,.25)" stroke="white" stroke-width="2"/>
+          <ellipse cx="72" cy="68" rx="6" ry="6" fill="rgba(0,0,0,.25)" stroke="white" stroke-width="2"/>
+          <path d="M 50 62 L 60 50 L 72 50 L 76 62" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,.2)" stroke-linejoin="round"/>
+          <!-- package -->
+          <rect x="35" y="38" width="20" height="20" rx="2" fill="white" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+          <line x1="35" y1="48" x2="55" y2="48" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+          <line x1="45" y1="38" x2="45" y2="58" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+          <!-- speed lines -->
+          <line x1="15" y1="42" x2="28" y2="42" stroke="white" stroke-width="2" stroke-linecap="round" opacity=".6">
+            <animate attributeName="x1" values="15;5;15" dur="1.2s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="28;18;28" dur="1.2s" repeatCount="indefinite"/>
+          </line>
+          <line x1="20" y1="50" x2="32" y2="50" stroke="white" stroke-width="2" stroke-linecap="round" opacity=".4">
+            <animate attributeName="x1" values="20;10;20" dur="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="32;22;32" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- QUICK SUGGESTIONS -->
+    <div class="qs-block">
+      <div class="qs-title">⚡ Common picks</div>
+      <div class="qs-scroll">
+        <div class="qs-row">
+          <div class="qs-chip" onclick="quickFill('Forgot keys at home — please pick and deliver','keys')"><span class="qs-em">🔑</span><span class="qs-lbl">Forgot keys</span></div>
+          <div class="qs-chip" onclick="quickFill('Pick medicine from pharmacy','medicine')"><span class="qs-em">💊</span><span class="qs-lbl">Get medicine</span></div>
+          <div class="qs-chip" onclick="quickFill('Pick up documents and deliver','documents')"><span class="qs-em">📄</span><span class="qs-lbl">Send documents</span></div>
+          <div class="qs-chip" onclick="quickFill('Buy from a specific shop','shop')"><span class="qs-em">🛒</span><span class="qs-lbl">Buy from shop</span></div>
+          <div class="qs-chip" onclick="quickFill('Pick lunch tiffin from home','tiffin')"><span class="qs-em">🍱</span><span class="qs-lbl">Pick tiffin</span></div>
+          <div class="qs-chip" onclick="quickFill('Send a gift package','gift')"><span class="qs-em">🎁</span><span class="qs-lbl">Send gift</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: LOCATIONS -->
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-num" id="num1">1</div>
+        <div class="sec-title">Pickup & Drop</div>
+      </div>
+      <div class="loc-block">
+        <div class="loc-line"></div>
+        <div class="loc-marker pickup"></div>
+        <div class="loc-marker drop"></div>
+
+        <div class="loc-card empty" id="pickupCard" onclick="openAP('pickup')">
+          <div class="loc-card-info">
+            <div class="loc-lbl green">Pickup from</div>
+            <div class="loc-val placeholder" id="pickupVal">Add pickup address</div>
+            <div class="loc-sub" id="pickupSub" style="display:none"></div>
+          </div>
+          <div class="loc-arr">›</div>
+        </div>
+
+        <div class="loc-card empty" id="dropCard" onclick="openAP('drop')">
+          <div class="loc-card-info">
+            <div class="loc-lbl red">Drop at</div>
+            <div class="loc-val placeholder" id="dropVal">Add drop address</div>
+            <div class="loc-sub" id="dropSub" style="display:none"></div>
+          </div>
+          <div class="loc-arr">›</div>
+        </div>
+
+        <div class="swap-btn" onclick="swapLoc()" title="Swap pickup and drop">
+          <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        </div>
+      </div>
+
+      <div class="distance-strip" id="distStrip">
+        <div class="ds-item">📏 <span id="distVal">3.2 km</span></div>
+        <div class="ds-divider"></div>
+        <div class="ds-item">⏱️ <span id="etaVal">25 mins</span></div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: ITEMS -->
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-num" id="num2">2</div>
+        <div class="sec-title">What to pick up?</div>
+      </div>
+      <textarea class="desc-input" id="itemDesc" placeholder='e.g. "1 black pen drive on study table" or "small parcel from Ramesh Stores"' oninput="checkComplete()"></textarea>
+
+      <div class="photo-row">
+        <div class="photo-add" id="photoBtn" onclick="togglePhoto(this)">
+          <svg viewBox="0 0 24 24"><path d="M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+          <small>ADD PHOTO</small>
+        </div>
+        <div class="photo-tip">
+          <strong>📸 Add a photo</strong>
+          <span>So our rider can identify the item easily</span>
+        </div>
+      </div>
+
+      <div class="weight-info">
+        <div class="weight-info-em">⚠️</div>
+        <div class="weight-info-txt">Items must fit on a scooter & be under 10 kg. No fragile or hazardous items.</div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: RECEIVER -->
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-num" id="num3">3</div>
+        <div class="sec-title">Receiver details</div>
+        <div class="sec-opt">For drop</div>
+      </div>
+      <div class="receiver-grid">
+        <div class="input-wrap">
+          <input type="text" id="recName" placeholder="Receiver's name" oninput="checkComplete()">
+        </div>
+        <div class="input-wrap input-wrap-prefix">
+          <span class="input-prefix">+91</span>
+          <input type="tel" id="recPhone" placeholder="Phone number" maxlength="10" oninput="checkComplete()">
+        </div>
+      </div>
+      <div class="self-row" onclick="toggleSelf()">
+        <div class="self-check" id="selfCheck"></div>
+        <span>Use my number — I'm the receiver</span>
+      </div>
+    </div>
+
+    <!-- SECTION 4: CASH COLLECT -->
+    <div class="sec">
+      <div class="cash-row">
+        <div class="cash-info">
+          <div class="cash-title">💵 Collect cash on delivery</div>
+          <div class="cash-sub">Receiver pays our rider, we pay you back via UPI.</div>
+        </div>
+        <div class="toggle" id="cashToggle" onclick="toggleCash()"></div>
+      </div>
+      <div class="cash-input-wrap" id="cashWrap">
+        <div class="cash-input-row">
+          <input type="number" class="cash-input" id="cashAmt" placeholder="Amount to collect">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: INSTRUCTIONS (collapsible) -->
+    <div class="sec collapse" id="instCollapse">
+      <div class="sec-head collapse-head" onclick="document.getElementById('instCollapse').classList.toggle('open')">
+        <div class="sec-num" id="num5" style="background:var(--gray-lt)">+</div>
+        <div class="sec-title">Special instructions</div>
+        <div class="sec-opt">Optional</div>
+        <div class="arr">▾</div>
+      </div>
+      <div class="collapse-body">
+        <textarea class="desc-input" placeholder='e.g. "Tell guard you are from Suplaykart" or "Knock loudly, doorbell broken"'></textarea>
+      </div>
+    </div>
+
+    <!-- PRICE CARD -->
+    <div class="price-card">
+      <div class="sec-head" style="margin-bottom:8px">
+        <div class="sec-title" style="font-size:13px">💰 Bill summary</div>
+      </div>
+      <div class="price-row">
+        <span class="pr-l">Pick & Drop service</span>
+        <span class="pr-r"><span class="strike">₹100</span>₹49</span>
+      </div>
+      <div class="price-row" id="cashRow" style="display:none">
+        <span class="pr-l">Cash handling</span>
+        <span class="pr-r">₹0</span>
+      </div>
+      <div class="price-row discount">
+        <span class="pr-l">Launch offer</span>
+        <span class="pr-r">−₹51</span>
+      </div>
+      <hr class="price-divider">
+      <div class="price-row price-total">
+        <span class="pr-l">Total</span>
+        <span class="pr-r" id="totalAmt">₹49</span>
+      </div>
+      <div class="savings-pill">🎉 You're saving ₹51 with launch offer</div>
+
+      <div class="pay-info">
+        <div class="pi-em">💳</div>
+        <div class="pi-txt"><strong>Pay on delivery</strong> · Cash or UPI to rider</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- STICKY FOOTER -->
+  <div class="foot">
+    <div class="foot-info">
+      <div class="foot-price"><span class="strike">₹100</span>₹49</div>
+      <div class="foot-tag">Pay on delivery</div>
+    </div>
+    <button class="foot-cta" id="bookBtn" onclick="bookPick()" disabled>
+      <span id="bookText">Add details to book</span>
+      <svg id="bookArr" viewBox="0 0 24 24" style="display:none"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+    </button>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">Saved</div>
+
+  <!-- ADDRESS PICKER SHEET -->
+  <div class="sheet-bg" id="apBg" onclick="closeSheet()">
+    <div class="sheet" id="apSheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" id="apTitle">Choose pickup address</div>
+
+      <div class="sheet-body">
+        <div class="ap-search">
+          <div class="ap-search-bar">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" placeholder="Search area, street, landmark...">
+          </div>
+        </div>
+
+        <div class="ap-current" onclick="pickAddr('Current location','Near Nagore Dargah, Tamil Nadu','📍')">
+          <div class="ap-current-em">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          </div>
+          <div class="ap-current-info">
+            <div class="ap-current-title">Use current location</div>
+            <div class="ap-current-sub">Near Nagore Dargah</div>
+          </div>
+          <div class="loc-arr" style="font-size:18px;color:var(--gray-lt)">›</div>
+        </div>
+
+        <div class="ap-section-title">Saved addresses</div>
+        <div class="ap-item" onclick="pickAddr('Home','3rd floor, 321 C-Block, Nagore Main Road','🏠')">
+          <div class="ap-em">🏠</div>
+          <div class="ap-info">
+            <div class="ap-title">Home</div>
+            <div class="ap-sub">3rd floor, 321 C-Block, Nagore Main Road</div>
+          </div>
+        </div>
+        <div class="ap-item" onclick="pickAddr('Shop','Suplaykart Store, Beach Road, Nagore','🏪')">
+          <div class="ap-em">🏪</div>
+          <div class="ap-info">
+            <div class="ap-title">Shop</div>
+            <div class="ap-sub">Suplaykart Store, Beach Road, Nagore</div>
+          </div>
+        </div>
+        <div class="ap-item" onclick="pickAddr('Office','Tech Park, Nagapattinam','💼')">
+          <div class="ap-em">💼</div>
+          <div class="ap-info">
+            <div class="ap-title">Office</div>
+            <div class="ap-sub">Tech Park, Nagapattinam</div>
+          </div>
+        </div>
+
+        <div class="ap-section-title">Recent</div>
+        <div class="ap-item" onclick="pickAddr('Apollo Pharmacy','Apollo Pharmacy, Nagore Bus Stand','💊')">
+          <div class="ap-em">💊</div>
+          <div class="ap-info">
+            <div class="ap-title">Apollo Pharmacy</div>
+            <div class="ap-sub">Nagore Bus Stand area</div>
+          </div>
+        </div>
+        <div class="ap-item" onclick="pickAddr('Ramesh Stores','Ramesh General Stores, near Mosque','🏪')">
+          <div class="ap-em">🏪</div>
+          <div class="ap-info">
+            <div class="ap-title">Ramesh Stores</div>
+            <div class="ap-sub">Near Mosque, Nagore</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div class="success-bg" id="successBg">
+    <div class="success-card">
+      <div class="success-em">✓</div>
+      <div class="success-title">Pick booked!</div>
+      <div class="success-sub">A rider will be assigned shortly. We'll notify you with updates.</div>
+      <div class="success-id" id="orderId">SP-PK-845721</div>
+      <button class="success-btn" onclick="showToast('Track screen would open');closeSuccess()">Track this pick</button>
+      <button class="success-btn-2" onclick="closeSuccess()">Got it</button>
+    </div>
+  </div>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let pickup = null, drop = null;
+let currentAP = 'pickup';
+let cashOn = false;
+let selfReceiver = false;
+
+// ══════════════════════════════════════════════
+// QUICK FILL CHIPS
+// ══════════════════════════════════════════════
+function quickFill(text, type) {
+  document.getElementById('itemDesc').value = text;
+  // Pre-fill some pickups for context
+  if (type === 'medicine' && !pickup) {
+    pickup = { title: 'Apollo Pharmacy', sub: 'Nagore Bus Stand area' };
+    updateLocCard('pickup');
+  }
+  if (type === 'shop' && !pickup) {
+    pickup = { title: 'Ramesh Stores', sub: 'Near Mosque, Nagore' };
+    updateLocCard('pickup');
+  }
+  if (type === 'tiffin' && !pickup) {
+    pickup = { title: 'Home', sub: '3rd floor, 321 C-Block, Nagore Main Road' };
+    updateLocCard('pickup');
+  }
+  showToast('Item details added');
+  checkComplete();
+}
+
+// ══════════════════════════════════════════════
+// ADDRESS PICKER
+// ══════════════════════════════════════════════
+function openAP(type) {
+  currentAP = type;
+  document.getElementById('apTitle').textContent =
+    type === 'pickup' ? 'Choose pickup address' : 'Choose drop address';
+  document.getElementById('apBg').classList.add('show');
+  document.getElementById('apSheet').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('apBg').classList.remove('show');
+  document.getElementById('apSheet').classList.remove('open');
+}
+function pickAddr(title, sub, em) {
+  if (currentAP === 'pickup') pickup = { title, sub, em };
+  else drop = { title, sub, em };
+  updateLocCard(currentAP);
+  closeSheet();
+  checkComplete();
+}
+function updateLocCard(type) {
+  const card = document.getElementById(type+'Card');
+  const val = document.getElementById(type+'Val');
+  const sub = document.getElementById(type+'Sub');
+  const data = type === 'pickup' ? pickup : drop;
+  if (data) {
+    card.classList.remove('empty');
+    card.classList.add('filled');
+    val.classList.remove('placeholder');
+    val.textContent = data.title;
+    sub.textContent = data.sub;
+    sub.style.display = '';
+  }
+  // Show distance strip if both filled
+  document.getElementById('distStrip').classList.toggle('show', !!(pickup && drop));
+}
+
+function swapLoc() {
+  if (!pickup && !drop) { showToast('Add addresses first'); return; }
+  [pickup, drop] = [drop, pickup];
+  ['pickup','drop'].forEach(t => {
+    const card = document.getElementById(t+'Card');
+    const val = document.getElementById(t+'Val');
+    const sub = document.getElementById(t+'Sub');
+    const data = t === 'pickup' ? pickup : drop;
+    if (data) {
+      card.classList.remove('empty');card.classList.add('filled');
+      val.classList.remove('placeholder');
+      val.textContent = data.title;
+      sub.textContent = data.sub;sub.style.display = '';
+    } else {
+      card.classList.add('empty');card.classList.remove('filled');
+      val.classList.add('placeholder');
+      val.textContent = t === 'pickup' ? 'Add pickup address' : 'Add drop address';
+      sub.style.display = 'none';
+    }
+  });
+  showToast('Addresses swapped');
+}
+
+// ══════════════════════════════════════════════
+// PHOTO TOGGLE
+// ══════════════════════════════════════════════
+function togglePhoto(el) {
+  el.classList.toggle('has');
+  if (el.classList.contains('has')) {
+    el.querySelector('small').textContent = 'PHOTO ✓';
+    el.querySelector('svg').innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+    showToast('📸 Photo added');
+  } else {
+    el.querySelector('small').textContent = 'ADD PHOTO';
+    el.querySelector('svg').innerHTML = '<path d="M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>';
+  }
+}
+
+// ══════════════════════════════════════════════
+// SELF / RECEIVER
+// ══════════════════════════════════════════════
+function toggleSelf() {
+  selfReceiver = !selfReceiver;
+  const check = document.getElementById('selfCheck');
+  check.classList.toggle('on', selfReceiver);
+  if (selfReceiver) {
+    document.getElementById('recName').value = 'Me';
+    document.getElementById('recPhone').value = '9487867816';
+    document.getElementById('recName').disabled = true;
+    document.getElementById('recPhone').disabled = true;
+  } else {
+    document.getElementById('recName').value = '';
+    document.getElementById('recPhone').value = '';
+    document.getElementById('recName').disabled = false;
+    document.getElementById('recPhone').disabled = false;
+  }
+  checkComplete();
+}
+
+// ══════════════════════════════════════════════
+// CASH TOGGLE
+// ══════════════════════════════════════════════
+function toggleCash() {
+  cashOn = !cashOn;
+  document.getElementById('cashToggle').classList.toggle('on', cashOn);
+  document.getElementById('cashWrap').classList.toggle('show', cashOn);
+  document.getElementById('cashRow').style.display = cashOn ? '' : 'none';
+  if (cashOn) document.getElementById('cashAmt').focus();
+}
+
+// ══════════════════════════════════════════════
+// COMPLETION CHECK
+// ══════════════════════════════════════════════
+function checkComplete() {
+  const desc = document.getElementById('itemDesc').value.trim();
+  const recName = document.getElementById('recName').value.trim();
+  const recPhone = document.getElementById('recPhone').value.trim();
+
+  // Mark completed sections
+  document.getElementById('num1').classList.toggle('done', !!(pickup && drop));
+  document.getElementById('num2').classList.toggle('done', desc.length > 3);
+  document.getElementById('num3').classList.toggle('done', recName.length > 0 && recPhone.length === 10);
+
+  const ready = pickup && drop && desc.length > 3 && recName && recPhone.length === 10;
+  const btn = document.getElementById('bookBtn');
+  const txt = document.getElementById('bookText');
+  const arr = document.getElementById('bookArr');
+  if (ready) {
+    btn.disabled = false;
+    txt.textContent = 'Book Pick · ₹49';
+    arr.style.display = '';
+  } else {
+    btn.disabled = true;
+    arr.style.display = 'none';
+    if (!pickup || !drop) txt.textContent = 'Add pickup & drop';
+    else if (desc.length <= 3) txt.textContent = 'Describe what to pick';
+    else if (!recName || recPhone.length !== 10) txt.textContent = 'Add receiver details';
+    else txt.textContent = 'Add details to book';
+  }
+}
+
+// ══════════════════════════════════════════════
+// BOOK
+// ══════════════════════════════════════════════
+function bookPick() {
+  const id = 'SP-PK-' + Math.floor(100000 + Math.random()*900000);
+  document.getElementById('orderId').textContent = id;
+  document.getElementById('successBg').classList.add('show');
+}
+function closeSuccess() {
+  document.getElementById('successBg').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+// init
+checkComplete();
+</script>
+</body>
+</html>

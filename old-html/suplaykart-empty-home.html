@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Out of Service Area</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --whatsapp:#25D366;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* DEMO CONTROLS */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px;flex-wrap:wrap;max-width:140px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 6px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* HEADER */
+.hdr{
+  flex-shrink:0;padding:44px 14px 10px;
+  display:flex;align-items:center;gap:10px;
+  background:white;
+  border-bottom:1px solid var(--border-lt);
+  position:relative;z-index:5;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;transition:transform .15s;
+}
+.hdr-back:active{transform:scale(.92)}
+.hdr-back svg{width:18px;height:18px;fill:var(--dark)}
+.hdr-loc{
+  flex:1;min-width:0;cursor:pointer;
+}
+.hdr-loc-row1{
+  display:flex;align-items:center;gap:5px;
+  font-size:13px;font-weight:800;color:var(--dark);
+  letter-spacing:-.1px;
+}
+.hdr-loc-row1 svg{width:12px;height:12px;fill:var(--orange)}
+.hdr-loc-row1 .chev{font-size:10px;color:var(--gray)}
+.hdr-loc-row2{
+  font-size:10px;color:var(--gray);font-weight:600;
+  margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hdr-help{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;
+}
+.hdr-help svg{width:16px;height:16px;fill:var(--green)}
+
+/* MAIN */
+.main{
+  flex:1;overflow-y:auto;scrollbar-width:none;
+  background:linear-gradient(180deg,#FFF8F0 0%,#FFFEFC 30%,#FFFFFF 100%);
+}
+.main::-webkit-scrollbar{display:none}
+
+/* ── HERO MAP ILLUSTRATION ───────────────────── */
+.hero{
+  position:relative;padding:18px 0 8px;
+  overflow:hidden;
+}
+
+.map-wrap{
+  width:100%;height:240px;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.map-svg{width:100%;height:100%}
+
+/* User pin (red, far away) */
+.user-pin-label{
+  position:absolute;
+  background:white;
+  padding:5px 9px;border-radius:8px;
+  font-size:10px;font-weight:800;color:var(--red);
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+  display:flex;align-items:center;gap:5px;
+  white-space:nowrap;
+  border:1.5px solid var(--red);
+  top:32px;left:18px;
+  z-index:5;
+}
+.user-pin-label::after{
+  content:'';position:absolute;bottom:-7px;left:14px;
+  width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:7px solid var(--red);
+}
+.user-pin-label .udot{
+  width:6px;height:6px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 0 2px rgba(226,55,68,.2);
+  animation:userPing 1.6s ease-in-out infinite;
+}
+@keyframes userPing{
+  0%,100%{box-shadow:0 0 0 2px rgba(226,55,68,.2)}
+  50%{box-shadow:0 0 0 6px rgba(226,55,68,.05)}
+}
+
+/* Service pin (green, our area) */
+.service-pin-label{
+  position:absolute;
+  background:white;
+  padding:6px 10px;border-radius:9px;
+  font-size:11px;font-weight:800;color:var(--green);
+  box-shadow:0 4px 14px rgba(12,131,31,.18);
+  display:flex;align-items:center;gap:6px;
+  white-space:nowrap;
+  border:1.5px solid var(--green);
+  bottom:34px;right:24px;
+  z-index:5;
+}
+.service-pin-label::after{
+  content:'';position:absolute;top:-7px;right:14px;
+  width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-bottom:7px solid var(--green);
+}
+.service-pin-label .ck{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;
+}
+
+/* SAD scooter (animated) */
+.sad-scoot{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:4;
+  animation:scootBounce 2.4s ease-in-out infinite;
+}
+@keyframes scootBounce{
+  0%,100%{transform:translate(-50%,-50%) rotate(-3deg)}
+  50%{transform:translate(-50%,-58%) rotate(3deg)}
+}
+.sad-scoot svg{width:90px;height:90px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.12))}
+
+/* ── CONTENT CARD ────────────────────────────── */
+.content-card{
+  background:white;border-radius:18px;
+  margin:0 14px 12px;padding:20px 18px;
+  text-align:center;
+  box-shadow:0 -4px 14px rgba(0,0,0,.04);
+  position:relative;z-index:3;
+}
+.distance-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--orange-lt);color:var(--orange);
+  font-size:10px;font-weight:800;
+  padding:4px 10px;border-radius:14px;
+  margin-bottom:10px;letter-spacing:.3px;text-transform:uppercase;
+}
+.distance-tag svg{width:11px;height:11px;fill:currentColor}
+
+.headline{
+  font-size:22px;font-weight:900;color:var(--dark);
+  letter-spacing:-.5px;line-height:1.15;
+}
+.headline .strikethru{
+  display:inline-block;color:var(--red);
+  position:relative;
+}
+.subline{
+  font-size:13px;color:var(--gray);font-weight:500;
+  margin-top:8px;line-height:1.55;
+}
+.subline strong{color:var(--dark);font-weight:800}
+
+/* primary actions */
+.actions{
+  display:flex;flex-direction:column;gap:9px;
+  margin-top:18px;
+}
+.act-btn{
+  width:100%;padding:13px;border-radius:12px;
+  font-family:var(--font);font-size:13px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .15s;border:none;
+}
+.act-btn:active{transform:scale(.98)}
+.act-btn svg{width:14px;height:14px;fill:currentColor}
+.act-btn.primary{
+  background:var(--green);color:white;
+  box-shadow:0 4px 12px rgba(12,131,31,.22);
+}
+.act-btn.secondary{
+  background:white;color:var(--green);
+  border:1.5px solid var(--green);
+}
+
+/* ── PINCODE CHECKER ─────────────────────────── */
+.pin-card{
+  background:white;margin:14px 14px 0;
+  border-radius:14px;padding:16px;
+  border:1px solid var(--border-lt);
+}
+.pin-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:800;color:var(--dark);
+  letter-spacing:-.1px;
+}
+.pin-title-em{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:14px;
+}
+.pin-sub{
+  font-size:11px;color:var(--gray);font-weight:500;
+  margin-top:4px;line-height:1.5;
+}
+.pin-input-row{
+  display:flex;gap:8px;margin-top:11px;
+}
+.pin-input{
+  flex:1;background:var(--light);
+  border:1.5px solid var(--border);border-radius:11px;
+  padding:11px 14px;
+  font-family:var(--font);font-size:14px;font-weight:700;
+  color:var(--dark);outline:none;
+  letter-spacing:1.5px;text-align:center;
+  transition:all .2s;
+}
+.pin-input:focus{border-color:var(--green);background:white;letter-spacing:2px}
+.pin-input::placeholder{color:var(--gray-lt);font-weight:500;letter-spacing:1px}
+.pin-check-btn{
+  background:var(--green);color:white;border:none;
+  padding:11px 18px;border-radius:11px;
+  font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;
+  flex-shrink:0;transition:all .15s;
+}
+.pin-check-btn:active{transform:scale(.96)}
+.pin-check-btn:disabled{background:#D0D0D0;cursor:not-allowed}
+
+/* pin result */
+.pin-result{
+  margin-top:11px;padding:11px 12px;border-radius:11px;
+  display:none;align-items:center;gap:9px;
+  font-size:11.5px;font-weight:600;line-height:1.4;
+  animation:slideDown .3s cubic-bezier(.22,1,.36,1);
+}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.pin-result.show{display:flex}
+.pin-result.fail{background:var(--red-lt);color:#9A2A2A}
+.pin-result.fail strong{color:var(--red)}
+.pin-result.success{background:var(--green-lt);color:var(--green-dk)}
+.pin-result.success strong{color:var(--green)}
+.pin-result-em{font-size:18px;flex-shrink:0;line-height:1}
+.pin-result-info{flex:1;min-width:0}
+
+/* ── NOTIFY ME CARD ──────────────────────────── */
+.notify-card{
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  margin:14px 14px 0;border-radius:14px;
+  padding:18px 16px;color:white;
+  position:relative;overflow:hidden;
+  cursor:pointer;
+}
+.notify-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(255,255,255,.13) 0%,transparent 70%);
+  pointer-events:none;
+}
+.notify-card.notified{
+  background:linear-gradient(135deg,#0E5E1B 0%,#054211 100%);
+}
+.notify-row{display:flex;align-items:center;gap:13px;position:relative;z-index:2}
+.notify-em{
+  width:48px;height:48px;border-radius:13px;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:24px;
+  animation:bellRing 3s ease-in-out infinite;
+  transform-origin:top center;
+}
+@keyframes bellRing{
+  0%,90%,100%{transform:rotate(0)}
+  93%{transform:rotate(15deg)}
+  96%{transform:rotate(-12deg)}
+}
+.notify-info{flex:1;min-width:0}
+.notify-tag{
+  display:inline-block;
+  background:rgba(255,255,255,.22);
+  font-size:9px;font-weight:800;letter-spacing:.4px;
+  padding:2px 7px;border-radius:8px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.notify-title{font-size:14px;font-weight:800;letter-spacing:-.2px;line-height:1.2}
+.notify-sub{font-size:11px;color:rgba(255,255,255,.85);margin-top:3px;line-height:1.5;font-weight:500}
+.notify-arr{font-size:18px;color:rgba(255,255,255,.7);flex-shrink:0}
+
+.notify-success-em{
+  width:48px;height:48px;border-radius:50%;
+  background:white;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;flex-shrink:0;
+  animation:none;
+}
+
+/* ── CITIES SECTION ──────────────────────────── */
+.cities-section{margin:18px 14px 0}
+.cities-title{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cities-list{
+  background:white;border-radius:14px;overflow:hidden;
+  border:1px solid var(--border-lt);
+}
+.city-row{
+  display:flex;align-items:center;gap:11px;
+  padding:12px 14px;cursor:pointer;
+  border-top:1px solid var(--border-lt);
+  transition:background .15s;
+}
+.city-row:first-child{border-top:none}
+.city-row:active{background:var(--light)}
+.city-em{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:16px;color:var(--green);
+  position:relative;
+}
+.city-em.future{background:var(--orange-lt);color:var(--orange)}
+.city-em .live-dot{
+  position:absolute;top:2px;right:2px;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 2px white;
+  animation:livePulse 1.8s ease-in-out infinite;
+}
+@keyframes livePulse{
+  0%,100%{box-shadow:0 0 0 2px white,0 0 0 4px rgba(12,131,31,.4)}
+  50%{box-shadow:0 0 0 2px white,0 0 0 6px rgba(12,131,31,.0)}
+}
+.city-info{flex:1;min-width:0}
+.city-row-1{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:800;color:var(--dark);
+  letter-spacing:-.1px;
+}
+.city-tag{
+  font-size:8px;font-weight:800;letter-spacing:.4px;
+  padding:2px 6px;border-radius:6px;text-transform:uppercase;
+}
+.city-tag.live{background:var(--green);color:white}
+.city-tag.soon{background:var(--orange-lt);color:var(--orange)}
+.city-row-2{font-size:10.5px;color:var(--gray);margin-top:1px;font-weight:500}
+.city-arr{font-size:14px;color:var(--gray-lt);flex-shrink:0}
+
+/* ── BROWSE TEASER ───────────────────────────── */
+.teaser-card{
+  background:white;margin:18px 14px 0;
+  border-radius:14px;padding:14px;
+  border:1px solid var(--border-lt);
+  display:flex;align-items:center;gap:11px;
+  cursor:pointer;
+}
+.teaser-em{
+  width:42px;height:42px;border-radius:11px;
+  background:linear-gradient(135deg,#FFF3E0,#FFB74D);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:22px;
+}
+.teaser-info{flex:1;min-width:0}
+.teaser-title{font-size:13px;font-weight:800;color:var(--dark);letter-spacing:-.1px}
+.teaser-sub{font-size:10.5px;color:var(--gray);margin-top:2px;line-height:1.4;font-weight:500}
+.teaser-arr{font-size:14px;color:var(--gray-lt)}
+
+/* ── WHATSAPP CTA ────────────────────────────── */
+.wa-card{
+  background:linear-gradient(135deg,#1DB954 0%,#0FA341 100%);
+  margin:18px 14px 24px;border-radius:14px;
+  padding:14px;color:white;cursor:pointer;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 6px 18px rgba(15,163,65,.25);
+  transition:transform .15s;
+}
+.wa-card:active{transform:scale(.98)}
+.wa-em{
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.wa-em svg{width:22px;height:22px;fill:white}
+.wa-info{flex:1;min-width:0}
+.wa-title{font-size:13px;font-weight:800;letter-spacing:-.1px}
+.wa-sub{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px;line-height:1.4;font-weight:500}
+.wa-arr{font-size:18px;color:rgba(255,255,255,.7)}
+
+/* ── NOTIFY SHEET ────────────────────────────── */
+.sheet-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.55);
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.sheet-bg.show{opacity:1;pointer-events:all}
+.sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;border-radius:18px 18px 0 0;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+  z-index:201;max-height:90%;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:#E0E0E0;border-radius:2px;margin:12px auto 4px}
+.sheet-head{
+  padding:6px 18px 14px;border-bottom:1px solid var(--border-lt);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sheet-title{font-size:15px;font-weight:800;color:var(--dark);letter-spacing:-.2px}
+.sheet-close{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.sheet-close svg{width:14px;height:14px;fill:var(--dark)}
+
+.sheet-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+
+.sheet-illust{
+  width:80px;height:80px;border-radius:20px;
+  background:var(--green-lt);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;font-size:36px;
+}
+
+.sheet-headline{
+  font-size:18px;font-weight:900;color:var(--dark);
+  text-align:center;letter-spacing:-.3px;line-height:1.2;
+}
+.sheet-sub{
+  font-size:12px;color:var(--gray);text-align:center;
+  margin-top:6px;line-height:1.55;font-weight:500;
+}
+
+.form-label{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.4px;
+  margin:18px 0 7px;
+}
+.form-input{
+  width:100%;background:var(--light);
+  border:1.5px solid var(--border);border-radius:11px;
+  padding:12px 14px;
+  font-family:var(--font);font-size:14px;font-weight:600;
+  color:var(--dark);outline:none;
+  transition:all .2s;
+}
+.form-input:focus{border-color:var(--green);background:white}
+.form-input::placeholder{color:var(--gray-lt);font-weight:500}
+
+.form-help{
+  font-size:10.5px;color:var(--gray);font-weight:500;
+  margin-top:6px;line-height:1.5;
+}
+
+/* city pills selector */
+.city-pills{
+  display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;
+}
+.city-pill{
+  background:white;border:1.5px solid var(--border);
+  padding:7px 12px;border-radius:18px;
+  font-family:var(--font);font-size:11px;font-weight:700;color:var(--dark);
+  cursor:pointer;transition:all .15s;
+}
+.city-pill:active{transform:scale(.96)}
+.city-pill.active{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+
+.sheet-footer{
+  flex-shrink:0;padding:12px 18px 22px;
+  border-top:1px solid var(--border-lt);
+  background:white;
+}
+.sheet-cta{
+  width:100%;background:var(--green);color:white;
+  border:none;padding:14px;border-radius:12px;
+  font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:transform .15s;
+}
+.sheet-cta:active{transform:scale(.98)}
+.sheet-cta:disabled{background:#D0D0D0;cursor:not-allowed}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:30px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+
+/* loader */
+.loader-overlay{
+  position:absolute;inset:0;background:rgba(255,255,255,.92);
+  z-index:250;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.loader-overlay.show{opacity:1;pointer-events:all}
+.spinner{
+  width:42px;height:42px;
+  border:4px solid var(--green-lt);
+  border-top-color:var(--green);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-size:13px;font-weight:700;color:var(--dark)}
+
+/* SUCCESS NOTIFIED STATE - hide form */
+.notify-card.notified .notify-em{animation:none}
+.notify-card.notified .notify-arr{display:none}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-label">State</div>
+    <div class="demo-row">
+      <button class="db on" onclick="setState('default')">Default</button>
+      <button class="db" onclick="setState('notified')">Notified</button>
+    </div>
+    <div class="demo-label" style="margin-top:5px">Pin Check</div>
+    <div class="demo-row">
+      <button class="db" onclick="testPin(false)">Fail</button>
+      <button class="db" onclick="testPin(true)">Success</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="hdr-loc" onclick="showToast('Open address picker')">
+      <div class="hdr-loc-row1">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        Coimbatore <span class="chev">▾</span>
+      </div>
+      <div class="hdr-loc-row2">RS Puram, Coimbatore, Tamil Nadu — 641002</div>
+    </div>
+    <div class="hdr-help" onclick="showToast('Help')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO MAP -->
+    <div class="hero">
+      <div class="map-wrap">
+
+        <!-- User pin label -->
+        <div class="user-pin-label">
+          <span class="udot"></span>
+          You are here
+        </div>
+
+        <!-- Service area pin label -->
+        <div class="service-pin-label">
+          <span class="ck">✓</span>
+          Nagore
+        </div>
+
+        <!-- Map SVG -->
+        <svg class="map-svg" viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse">
+              <circle cx="7" cy="7" r="1" fill="rgba(255,107,0,.13)"/>
+            </pattern>
+            <radialGradient id="serviceGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#0C831F" stop-opacity=".25"/>
+              <stop offset="60%" stop-color="#0C831F" stop-opacity=".08"/>
+              <stop offset="100%" stop-color="#0C831F" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="userGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#E23744" stop-opacity=".18"/>
+              <stop offset="60%" stop-color="#E23744" stop-opacity=".05"/>
+              <stop offset="100%" stop-color="#E23744" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Background dots -->
+          <rect width="360" height="240" fill="url(#dots)"/>
+
+          <!-- TamilNadu state outline (stylized) -->
+          <path d="M 50 50 Q 80 35, 130 45 Q 180 30, 230 50 Q 280 60, 310 95
+                   Q 320 140, 305 180 Q 285 215, 240 215 Q 180 220, 120 205
+                   Q 70 195, 55 160 Q 45 110, 50 50 Z"
+                fill="rgba(12,131,31,.04)" stroke="rgba(12,131,31,.15)" stroke-width="1.5"
+                stroke-dasharray="4 3"/>
+
+          <!-- Roads -->
+          <path d="M 60 70 Q 130 90, 200 110 T 320 170" fill="none"
+                stroke="rgba(0,0,0,.04)" stroke-width="20" stroke-linecap="round"/>
+          <path d="M 60 70 Q 130 90, 200 110 T 320 170" fill="none"
+                stroke="white" stroke-width="2" stroke-dasharray="6 4"/>
+
+          <!-- User location glow -->
+          <circle cx="62" cy="68" r="40" fill="url(#userGlow)"/>
+
+          <!-- Service area glow (Nagore) -->
+          <circle cx="298" cy="172" r="55" fill="url(#serviceGlow)">
+            <animate attributeName="r" values="50;65;50" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- Service radius (10km represented) -->
+          <circle cx="298" cy="172" r="34" fill="none"
+                  stroke="#0C831F" stroke-width="2" stroke-dasharray="3 3" opacity=".6"/>
+
+          <!-- Connecting line between user and service -->
+          <line x1="62" y1="68" x2="298" y2="172"
+                stroke="#FF6B00" stroke-width="2" stroke-dasharray="5 5" opacity=".5"/>
+
+          <!-- Distance midpoint badge -->
+          <g transform="translate(180, 120)">
+            <rect x="-22" y="-9" width="44" height="18" rx="9"
+                  fill="#FF6B00" stroke="white" stroke-width="2"/>
+            <text x="0" y="3" text-anchor="middle"
+                  font-family="Poppins" font-size="9" font-weight="800" fill="white">~225 km</text>
+          </g>
+
+          <!-- User dot -->
+          <circle cx="62" cy="68" r="8" fill="white" stroke="#E23744" stroke-width="3"/>
+          <circle cx="62" cy="68" r="3" fill="#E23744"/>
+
+          <!-- Service marker (Nagore, green pin) -->
+          <g transform="translate(298, 172)">
+            <circle r="14" fill="#0C831F" opacity=".15"/>
+            <circle r="9" fill="white" stroke="#0C831F" stroke-width="3"/>
+            <circle r="4" fill="#0C831F"/>
+          </g>
+
+          <!-- Other Tamil Nadu cities (greyed out / coming soon dots) -->
+          <circle cx="135" cy="100" r="3" fill="rgba(255,107,0,.5)"/>
+          <text x="135" y="91" text-anchor="middle" font-family="Poppins"
+                font-size="7" font-weight="700" fill="#FF6B00">Trichy</text>
+
+          <circle cx="220" cy="80" r="3" fill="rgba(255,107,0,.5)"/>
+          <text x="220" y="71" text-anchor="middle" font-family="Poppins"
+                font-size="7" font-weight="700" fill="#FF6B00">Chennai</text>
+
+          <circle cx="225" cy="180" r="3" fill="rgba(255,107,0,.5)"/>
+          <text x="225" y="195" text-anchor="middle" font-family="Poppins"
+                font-size="7" font-weight="700" fill="#FF6B00">Thanjavur</text>
+        </svg>
+
+        <!-- Sad scooter overlay -->
+        <div class="sad-scoot">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sweat drops -->
+            <ellipse cx="32" cy="22" rx="2.5" ry="3.5" fill="#42A5F5" opacity=".7">
+              <animate attributeName="cy" values="22;30;22" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".7;0;.7" dur="1.8s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="68" cy="20" rx="2" ry="3" fill="#42A5F5" opacity=".7">
+              <animate attributeName="cy" values="20;30;20" dur="2.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".7;0;.7" dur="2.2s" repeatCount="indefinite"/>
+            </ellipse>
+
+            <!-- Scooter body -->
+            <line x1="20" y1="78" x2="80" y2="78" stroke="#0C831F" stroke-width="2" stroke-dasharray="3 3" opacity=".3"/>
+
+            <!-- Wheels -->
+            <circle cx="30" cy="76" r="9" fill="white" stroke="#1C1C1C" stroke-width="2.5"/>
+            <circle cx="30" cy="76" r="3" fill="#1C1C1C"/>
+            <circle cx="70" cy="76" r="9" fill="white" stroke="#1C1C1C" stroke-width="2.5"/>
+            <circle cx="70" cy="76" r="3" fill="#1C1C1C"/>
+
+            <!-- Body -->
+            <path d="M 30 67 L 48 50 L 68 50 L 72 67"
+                  stroke="#FF6B00" stroke-width="2.5" fill="#FFF3E8" stroke-linejoin="round"/>
+
+            <!-- Front of scooter -->
+            <rect x="42" y="34" width="18" height="18" rx="3" fill="white" stroke="#1C1C1C" stroke-width="2"/>
+
+            <!-- SAD FACE -->
+            <circle cx="48" cy="41" r="1.5" fill="#1C1C1C"/>
+            <circle cx="54" cy="41" r="1.5" fill="#1C1C1C"/>
+            <path d="M 47 47 Q 51 44, 55 47" stroke="#1C1C1C" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+            <!-- Question mark above -->
+            <text x="80" y="40" font-family="Poppins" font-size="14" font-weight="900" fill="#FF6B00">?</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- INFO CARD -->
+      <div class="content-card">
+        <div class="distance-tag">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          ~225 km from Nagore
+        </div>
+        <div class="headline">Sorry, we don't deliver here yet 😔</div>
+        <div class="subline">
+          Suplaykart is currently a hyperlocal service in <strong>Nagore, Tamil Nadu</strong>. We're growing fast and Coimbatore could be next!
+        </div>
+
+        <div class="actions">
+          <button class="act-btn primary" onclick="showToast('Opening address picker')">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            Try a different address
+          </button>
+          <button class="act-btn secondary" onclick="openNotifySheet()">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            Notify me when you expand
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN CHECKER -->
+    <div class="pin-card">
+      <div style="display:flex;align-items:flex-start;gap:11px">
+        <div class="pin-title-em">📍</div>
+        <div style="flex:1;min-width:0">
+          <div class="pin-title" style="display:block">Check another pincode</div>
+          <div class="pin-sub">Maybe your home or office is closer to Nagore</div>
+        </div>
+      </div>
+      <div class="pin-input-row">
+        <input type="tel" class="pin-input" id="pinInput" maxlength="6" placeholder="Enter 6-digit pincode" oninput="onPinInput(this)">
+        <button class="pin-check-btn" id="pinCheckBtn" disabled onclick="checkPin()">Check</button>
+      </div>
+
+      <!-- pin result -->
+      <div class="pin-result fail" id="pinResultFail">
+        <div class="pin-result-em">😔</div>
+        <div class="pin-result-info">
+          Sorry, <strong id="failPin">641002</strong> is also outside our service area. We're working on expanding!
+        </div>
+      </div>
+      <div class="pin-result success" id="pinResultSuccess">
+        <div class="pin-result-em">🎉</div>
+        <div class="pin-result-info">
+          Great news! <strong id="successPin">611002</strong> is serviceable. <strong style="text-decoration:underline;cursor:pointer" onclick="showToast('Setting as delivery address...')">Use this address</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFY ME CARD -->
+    <div class="notify-card" id="notifyCard" onclick="openNotifySheet()">
+      <div class="notify-row">
+        <div class="notify-em">🔔</div>
+        <div class="notify-info">
+          <span class="notify-tag">Coming Soon</span>
+          <div class="notify-title">Be the first to know when we expand</div>
+          <div class="notify-sub">Get notified when Suplaykart reaches your city</div>
+        </div>
+        <div class="notify-arr">›</div>
+      </div>
+    </div>
+
+    <!-- SUCCESS NOTIFY STATE (hidden by default) -->
+    <div class="notify-card notified" id="notifyCardSuccess" style="display:none">
+      <div class="notify-row">
+        <div class="notify-success-em">✓</div>
+        <div class="notify-info">
+          <span class="notify-tag">You're on the list</span>
+          <div class="notify-title">We'll notify you on expansion</div>
+          <div class="notify-sub" id="notifyConfirmText">via WhatsApp on +91 94878 67816</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CITIES SECTION -->
+    <div class="cities-section">
+      <div class="cities-title">
+        <span>🏙️ Where we deliver</span>
+      </div>
+      <div class="cities-list">
+        <div class="city-row" onclick="showToast('Setting Nagore as location...')">
+          <div class="city-em">
+            <span>🏪</span>
+            <span class="live-dot"></span>
+          </div>
+          <div class="city-info">
+            <div class="city-row-1">
+              Nagore <span class="city-tag live">LIVE</span>
+            </div>
+            <div class="city-row-2">10-min delivery · 500+ products · Restaurants &amp; Pick&amp;Drop</div>
+          </div>
+          <div class="city-arr">›</div>
+        </div>
+
+        <div class="city-row" onclick="showToast('Notify me about Nagapattinam')">
+          <div class="city-em future">📍</div>
+          <div class="city-info">
+            <div class="city-row-1">
+              Nagapattinam <span class="city-tag soon">COMING SOON</span>
+            </div>
+            <div class="city-row-2">Expanding within 6 km radius · Tap to get notified</div>
+          </div>
+          <div class="city-arr">›</div>
+        </div>
+
+        <div class="city-row" onclick="showToast('Notify me about Velankanni')">
+          <div class="city-em future">📍</div>
+          <div class="city-info">
+            <div class="city-row-1">
+              Velankanni <span class="city-tag soon">COMING SOON</span>
+            </div>
+            <div class="city-row-2">Tap to get notified when we launch</div>
+          </div>
+          <div class="city-arr">›</div>
+        </div>
+
+        <div class="city-row" onclick="showToast('Notify me about Karaikal')">
+          <div class="city-em future">📍</div>
+          <div class="city-info">
+            <div class="city-row-1">
+              Karaikal <span class="city-tag soon">COMING SOON</span>
+            </div>
+            <div class="city-row-2">Tap to get notified when we launch</div>
+          </div>
+          <div class="city-arr">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROWSE TEASER -->
+    <div class="teaser-card" onclick="showToast('Browsing in preview mode...')">
+      <div class="teaser-em">👀</div>
+      <div class="teaser-info">
+        <div class="teaser-title">Explore the app anyway</div>
+        <div class="teaser-sub">Browse our products &amp; restaurants. You can't order, but you can see what's coming!</div>
+      </div>
+      <div class="teaser-arr">›</div>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div class="wa-card" onclick="showToast('Opening WhatsApp...')">
+      <div class="wa-em">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </div>
+      <div class="wa-info">
+        <div class="wa-title">Have questions? Chat with us</div>
+        <div class="wa-sub">+91 94878 67816 · WhatsApp · 10am–10pm</div>
+      </div>
+      <div class="wa-arr">›</div>
+    </div>
+
+  </main>
+
+  <!-- NOTIFY SHEET -->
+  <div class="sheet-bg" id="notifySheetBg" onclick="closeNotifySheet()">
+    <div class="sheet" id="notifySheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div class="sheet-title">Notify me on expansion</div>
+        <div class="sheet-close" onclick="closeNotifySheet()">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </div>
+      </div>
+
+      <div class="sheet-body">
+        <div class="sheet-illust">📬</div>
+        <div class="sheet-headline">Don't miss the launch!</div>
+        <div class="sheet-sub">We'll send you a one-time WhatsApp message the day Suplaykart goes live in your city.</div>
+
+        <div class="form-label">Your city *</div>
+        <input type="text" class="form-input" id="notifyCity" value="Coimbatore" placeholder="Which city?">
+
+        <div class="form-label">Pincode (optional)</div>
+        <input type="tel" class="form-input" id="notifyPin" maxlength="6" placeholder="6-digit pincode">
+
+        <div class="form-label">WhatsApp number *</div>
+        <input type="tel" class="form-input" id="notifyPhone" maxlength="10" placeholder="10-digit mobile" oninput="this.value=this.value.replace(/\D/g,'')">
+        <div class="form-help">We'll send a single message — no spam, ever 🤝</div>
+
+        <div class="form-label">What are you most excited about?</div>
+        <div class="city-pills" id="interestPills">
+          <button class="city-pill active" onclick="this.classList.toggle('active')">⚡ 10-min grocery</button>
+          <button class="city-pill" onclick="this.classList.toggle('active')">🍽️ Restaurants</button>
+          <button class="city-pill" onclick="this.classList.toggle('active')">🛵 Pick &amp; Drop</button>
+          <button class="city-pill" onclick="this.classList.toggle('active')">🎟️ Offers &amp; deals</button>
+        </div>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="sheet-cta" onclick="submitNotify()">
+          Notify me 🔔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loaderText">Checking pincode...</div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">Done</div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// PIN CHECK
+// ══════════════════════════════════════════════
+function onPinInput(el) {
+  el.value = el.value.replace(/\D/g,'').slice(0,6);
+  document.getElementById('pinCheckBtn').disabled = el.value.length !== 6;
+  // hide previous result
+  document.getElementById('pinResultFail').classList.remove('show');
+  document.getElementById('pinResultSuccess').classList.remove('show');
+}
+
+function checkPin() {
+  const pin = document.getElementById('pinInput').value;
+  document.getElementById('loaderText').textContent = 'Checking pincode...';
+  document.getElementById('loader').classList.add('show');
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    // Suplaykart serviceable pincodes (Nagore = 611002, Nagapattinam = 611001)
+    const serviceable = ['611002','611001','611003','611103','611106'];
+    if (serviceable.includes(pin)) {
+      document.getElementById('successPin').textContent = pin;
+      document.getElementById('pinResultSuccess').classList.add('show');
+      document.getElementById('pinResultFail').classList.remove('show');
+    } else {
+      document.getElementById('failPin').textContent = pin;
+      document.getElementById('pinResultFail').classList.add('show');
+      document.getElementById('pinResultSuccess').classList.remove('show');
+    }
+  }, 900);
+}
+
+// Demo pin test
+function testPin(success) {
+  document.getElementById('pinInput').value = success ? '611002' : '641002';
+  document.getElementById('pinCheckBtn').disabled = false;
+  checkPin();
+}
+
+// ══════════════════════════════════════════════
+// NOTIFY SHEET
+// ══════════════════════════════════════════════
+function openNotifySheet() {
+  document.getElementById('notifySheetBg').classList.add('show');
+  document.getElementById('notifySheet').classList.add('open');
+}
+
+function closeNotifySheet() {
+  document.getElementById('notifySheetBg').classList.remove('show');
+  document.getElementById('notifySheet').classList.remove('open');
+}
+
+function submitNotify() {
+  const city = document.getElementById('notifyCity').value.trim();
+  const phone = document.getElementById('notifyPhone').value.trim();
+  if (!city) { showToast('Enter your city'); return; }
+  if (phone.length !== 10) { showToast('Enter valid 10-digit number'); return; }
+
+  document.getElementById('loaderText').textContent = 'Adding you to the list...';
+  document.getElementById('loader').classList.add('show');
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.remove('show');
+    closeNotifySheet();
+
+    const formatted = phone.slice(0,5) + ' ' + phone.slice(5);
+    document.getElementById('notifyConfirmText').textContent =
+      `via WhatsApp on +91 ${formatted}`;
+
+    document.getElementById('notifyCard').style.display = 'none';
+    document.getElementById('notifyCardSuccess').style.display = 'block';
+
+    document.querySelectorAll('.demo-row')[0].querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.demo-row')[0].querySelectorAll('.db')[1].classList.add('on');
+
+    showToast('🎉 You\'re on the list!');
+  }, 1100);
+}
+
+// ══════════════════════════════════════════════
+// DEMO STATE
+// ══════════════════════════════════════════════
+function setState(state) {
+  document.querySelectorAll('.demo-row')[0].querySelectorAll('.db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo-row')[0].querySelectorAll('.db')[state === 'default' ? 0 : 1].classList.add('on');
+  if (state === 'default') {
+    document.getElementById('notifyCard').style.display = '';
+    document.getElementById('notifyCardSuccess').style.display = 'none';
+  } else {
+    document.getElementById('notifyCard').style.display = 'none';
+    document.getElementById('notifyCardSuccess').style.display = 'block';
+  }
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1700);
+}
+</script>
+</body>
+</html>

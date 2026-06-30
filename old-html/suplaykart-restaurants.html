@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Restaurants</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-dk:#085316;--green-lt:#E8F5E9;--green-bg:#F1FAF2;
+  --orange:#FF6B00;--orange-lt:#FFF3E8;
+  --red:#E23744;--red-lt:#FEE7E9;
+  --yellow:#FFC107;
+  --gold:#B8893B;--gold-lt:#FFF5DD;
+  --dark:#1C1C1C;--gray:#6B6B6B;--gray-lt:#9CA3AF;
+  --light:#F5F5F5;--border:#E8E8E8;--border-lt:#F0F0F0;
+  --white:#fff;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font);overscroll-behavior:none}
+
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:white;box-shadow:0 0 60px rgba(0,0,0,.6);
+  position:relative;
+}
+
+/* DEMO CONTROLS */
+.demo{
+  position:fixed;top:8px;right:calc(50% - 195px + 6px);
+  z-index:9999;background:rgba(10,10,10,.85);backdrop-filter:blur(8px);
+  border-radius:10px;padding:7px 8px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.demo-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:3px}
+.demo-row{display:flex;gap:3px}
+.db{
+  font-family:var(--font);font-size:8px;font-weight:700;
+  padding:4px 8px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,.15);color:white;opacity:.5;
+}
+.db.on{opacity:1;background:var(--green)}
+
+/* SCREENS */
+.screen{
+  position:absolute;inset:0;
+  background:white;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);
+  z-index:5;
+}
+.screen.active{transform:translateX(0);z-index:6}
+.screen.first{transform:translateX(0)}
+
+/* ═══════════════════════════════════════════════
+   SCREEN 1: RESTAURANTS LISTING
+   ═══════════════════════════════════════════════ */
+
+/* HERO with green gradient */
+.list-hero{
+  flex-shrink:0;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 0%,#1A9F2D 0%,transparent 50%),
+    radial-gradient(circle at 80% 100%,#066b18 0%,transparent 50%),
+    linear-gradient(135deg,var(--green) 0%,var(--green-dk) 100%);
+  padding:44px 0 14px;
+  color:white;
+}
+.list-hero::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-conic-gradient(rgba(255,255,255,.04) 0deg 6deg,transparent 6deg 12deg);
+  pointer-events:none;
+}
+.hero-top{
+  display:flex;align-items:center;gap:10px;
+  padding:0 14px;position:relative;z-index:2;
+  margin-bottom:16px;
+}
+.loc-info{flex:1;min-width:0;cursor:pointer}
+.loc-row1{
+  display:flex;align-items:center;gap:5px;
+  font-size:15px;font-weight:900;letter-spacing:-.2px;
+}
+.loc-row1 svg{width:14px;height:14px;fill:white}
+.loc-row1 .chev{font-size:11px;opacity:.8}
+.loc-row2{font-size:11px;color:rgba(255,255,255,.85);margin-top:1px;font-weight:500}
+.hero-icons{display:flex;gap:8px}
+.hero-icon{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.hero-icon svg{width:16px;height:16px;fill:white}
+.hero-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:white;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;cursor:pointer;
+}
+
+/* SEARCH */
+.search-wrap{padding:0 14px;position:relative;z-index:2;display:flex;gap:9px;align-items:center}
+.search-bar{
+  flex:1;background:white;border-radius:12px;
+  padding:11px 14px;display:flex;align-items:center;gap:9px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);cursor:pointer;
+}
+.search-bar svg{width:16px;height:16px;flex-shrink:0;fill:var(--green)}
+.search-text{
+  flex:1;font-size:13px;color:var(--gray);font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.search-mic{width:1px;height:18px;background:var(--border)}
+.search-bar svg.mic{fill:var(--red);width:14px;height:14px}
+.veg-toggle{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:rgba(255,255,255,.12);padding:7px 8px;border-radius:9px;
+  cursor:pointer;
+}
+.veg-toggle-label{font-size:9px;font-weight:800;color:white;letter-spacing:.5px}
+.veg-switch{
+  width:26px;height:14px;background:rgba(0,0,0,.3);
+  border-radius:7px;position:relative;
+}
+.veg-switch::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:10px;height:10px;border-radius:50%;background:white;
+  transition:all .25s;
+}
+.veg-toggle.on .veg-switch{background:var(--green-dk)}
+.veg-toggle.on .veg-switch::after{transform:translateX(12px);background:#76FF03}
+
+/* PROMO BANNER */
+.promo{
+  position:relative;z-index:2;
+  margin:18px 14px 0;
+  background:linear-gradient(135deg,#FFD54F 0%,#FFA000 100%);
+  border-radius:14px;padding:18px 16px;
+  cursor:pointer;overflow:hidden;
+  box-shadow:0 6px 18px rgba(255,160,0,.25);
+}
+.promo::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.08) 0,rgba(255,255,255,.08) 2px,transparent 2px,transparent 12px);
+  pointer-events:none;
+}
+.promo-row{display:flex;align-items:center;gap:14px;position:relative;z-index:2}
+.promo-info{flex:1;min-width:0}
+.promo-coupon-em{font-size:18px;line-height:1}
+.promo-title{
+  font-size:24px;font-weight:900;color:var(--dark);
+  letter-spacing:-1px;line-height:1;
+  text-shadow:0 2px 0 rgba(255,255,255,.3);
+  margin:6px 0 4px;
+}
+.promo-title .num{
+  color:var(--red);font-size:30px;
+  -webkit-text-stroke:1.5px white;
+  paint-order:stroke fill;
+}
+.promo-cta{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--dark);color:white;
+  font-size:11px;font-weight:800;
+  padding:5px 12px;border-radius:18px;
+  margin-top:6px;
+}
+.promo-cta svg{width:11px;height:11px;fill:white}
+.promo-art{
+  width:78px;height:78px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:42px;line-height:1;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+}
+
+/* MAIN */
+.main{
+  flex:1;overflow-y:auto;scrollbar-width:none;
+  background:white;padding-bottom:90px;
+}
+.main::-webkit-scrollbar{display:none}
+
+/* GOLD BANNER */
+.gold-banner{
+  margin:14px 14px 0;
+  background:linear-gradient(135deg,#FFF5DD 0%,#FFEAB8 100%);
+  border:1px solid #F0D78C;
+  border-radius:11px;padding:11px 14px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+}
+.gold-icon{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#FFD54F,#B8893B);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:white;font-size:14px;
+}
+.gold-text{flex:1;font-size:11.5px;color:#8B6515;font-weight:600;line-height:1.4}
+.gold-text strong{color:#5C4011;font-weight:800}
+.gold-arr{font-size:14px;color:#8B6515}
+
+/* SECTION TITLE */
+.sec-title{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:18px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-title-sub{font-size:13px;font-weight:700;color:var(--dark);letter-spacing:-.1px;text-transform:none}
+
+/* CUISINE CIRCLES */
+.cuisine-scroll{
+  display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;
+  padding:0 14px 6px;
+}
+.cuisine-scroll::-webkit-scrollbar{display:none}
+.cuisine-item{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;width:64px;
+}
+.cuisine-img{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(180deg,#FFF3E0,#FFE0B2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;line-height:1;
+  border:2px solid white;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+.cuisine-img.v2{background:linear-gradient(180deg,#FFEBEE,#FFCDD2)}
+.cuisine-img.v3{background:linear-gradient(180deg,#FFF8E1,#FFE082)}
+.cuisine-img.v4{background:linear-gradient(180deg,#E8F5E9,#A5D6A7)}
+.cuisine-img.v5{background:linear-gradient(180deg,#E1F5FE,#B3E5FC)}
+.cuisine-img.v6{background:linear-gradient(180deg,#F3E5F5,#E1BEE7)}
+.cuisine-img.v7{background:linear-gradient(180deg,#FCE4EC,#F8BBD0)}
+.cuisine-name{
+  font-size:10px;font-weight:700;color:var(--dark);
+  text-align:center;line-height:1.2;
+}
+
+/* FILTER CHIPS */
+.filters-row{
+  display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
+  padding:14px 14px 4px;border-bottom:1px solid var(--border-lt);
+}
+.filters-row::-webkit-scrollbar{display:none}
+.fchip{
+  flex-shrink:0;background:white;border:1.5px solid var(--border);
+  padding:6px 12px;border-radius:18px;
+  font-family:var(--font);font-size:11px;font-weight:700;color:var(--dark);
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;transition:all .15s;
+}
+.fchip:active{transform:scale(.96)}
+.fchip.active{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+.fchip svg{width:11px;height:11px;fill:currentColor}
+.fchip .veg-dot-mini{
+  width:11px;height:11px;border:1.5px solid var(--green);
+  background:white;border-radius:2px;display:flex;
+  align-items:center;justify-content:center;
+}
+.fchip .veg-dot-mini::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+/* RECOMMENDED HORIZONTAL */
+.rec-scroll{
+  display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;
+  padding:0 14px 8px;
+}
+.rec-scroll::-webkit-scrollbar{display:none}
+.rec-card{
+  flex-shrink:0;width:142px;
+  cursor:pointer;
+}
+.rec-img{
+  width:142px;height:115px;border-radius:11px;
+  background:linear-gradient(180deg,#FFE0B2,#FFA000);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:50px;
+}
+.rec-img.v2{background:linear-gradient(180deg,#C5E1A5,#7CB342)}
+.rec-img.v3{background:linear-gradient(180deg,#FFCCBC,#FF7043)}
+.rec-img.v4{background:linear-gradient(180deg,#F8BBD0,#EC407A)}
+.rec-img.v5{background:linear-gradient(180deg,#D7CCC8,#795548)}
+.rec-img.v6{background:linear-gradient(180deg,#FFF3E0,#FFB74D)}
+.rec-offer-tag{
+  position:absolute;top:6px;left:6px;
+  background:rgba(0,0,0,.78);color:white;
+  font-size:9px;font-weight:800;
+  padding:3px 7px;border-radius:5px;
+  letter-spacing:.2px;
+}
+.rec-rating{
+  position:absolute;bottom:6px;left:6px;
+  background:white;
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 6px;border-radius:6px;
+  font-size:10px;font-weight:800;color:var(--dark);
+}
+.rec-rating .star{color:var(--green);font-size:9px}
+.rec-name{
+  font-size:12px;font-weight:800;color:var(--dark);
+  margin-top:7px;letter-spacing:-.1px;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rec-meta{
+  font-size:10px;color:var(--gray);margin-top:2px;
+  display:flex;align-items:center;gap:5px;font-weight:600;
+}
+.rec-meta svg{width:10px;height:10px;fill:currentColor}
+.rec-meta .fast{color:var(--green);font-weight:800}
+.rec-meta .fast svg{fill:var(--green)}
+
+/* EXPLORE MORE */
+.explore-row{
+  display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;
+  padding:0 14px 8px;
+}
+.explore-row::-webkit-scrollbar{display:none}
+.explore-card{
+  flex-shrink:0;width:84px;
+  background:white;border-radius:11px;
+  border:1px solid var(--border-lt);
+  padding:11px 8px;text-align:center;cursor:pointer;
+  transition:transform .15s;
+}
+.explore-card:active{transform:scale(.96)}
+.explore-em{
+  width:48px;height:48px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin:0 auto 6px;
+  background:var(--green-lt);
+}
+.explore-em.blue{background:#E3F2FD}
+.explore-em.purple{background:#F3E5F5}
+.explore-em.orange{background:var(--orange-lt)}
+.explore-em.yellow{background:#FFF8E1}
+.explore-name{font-size:10px;font-weight:700;color:var(--dark);line-height:1.2}
+
+/* RESTAURANTS LIST HEADER */
+.rest-list-head{
+  padding:18px 16px 8px;border-top:8px solid var(--light);margin-top:8px;
+}
+.rest-list-count{
+  font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.6px;
+}
+.rest-list-sub{font-size:13px;color:var(--gray);font-weight:600;margin-top:2px}
+
+/* RESTAURANT CARD */
+.rcard{
+  margin:0 14px 18px;cursor:pointer;
+  transition:transform .15s;
+}
+.rcard:active{transform:scale(.99)}
+.rcard-img-wrap{
+  width:100%;aspect-ratio:16/10;border-radius:14px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#FFE0B2,#FF7043);
+  display:flex;align-items:center;justify-content:center;
+  font-size:90px;line-height:1;
+}
+.rcard-img-wrap.v2{background:linear-gradient(135deg,#FFCCBC,#FF5722)}
+.rcard-img-wrap.v3{background:linear-gradient(135deg,#C5E1A5,#558B2F)}
+.rcard-img-wrap.v4{background:linear-gradient(135deg,#D7CCC8,#5D4037)}
+.rcard-img-wrap.v5{background:linear-gradient(135deg,#FFF59D,#F57F17)}
+.rcard-img-wrap.v6{background:linear-gradient(135deg,#F8BBD0,#C2185B)}
+
+.rcard-bookmark{
+  position:absolute;top:10px;right:10px;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.rcard-bookmark svg{width:16px;height:16px;fill:white}
+.rcard-bookmark.saved svg{fill:var(--yellow)}
+.rcard-offer-banner{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:12px 14px 10px;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.75) 70%);
+  color:white;
+}
+.rcard-offer-text{
+  font-size:13px;font-weight:900;letter-spacing:-.2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.5);
+}
+.rcard-carousel-dots{
+  position:absolute;bottom:7px;right:10px;
+  display:flex;gap:3px;
+}
+.rcard-carousel-dots span{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,.4);
+}
+.rcard-carousel-dots .active{background:white;width:10px;border-radius:3px}
+
+.rcard-info{
+  padding:11px 4px 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+}
+.rcard-left{flex:1;min-width:0}
+.rcard-name{
+  font-size:16px;font-weight:900;color:var(--dark);
+  letter-spacing:-.3px;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rcard-meta{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:var(--gray);font-weight:600;margin-top:5px;
+}
+.rcard-meta-item{display:flex;align-items:center;gap:4px}
+.rcard-meta-item svg{width:11px;height:11px;fill:currentColor}
+.rcard-meta-item.fast{color:var(--green);font-weight:800}
+.rcard-meta-item.fast svg{fill:var(--green)}
+.rcard-cuisine{
+  font-size:11px;color:var(--gray);font-weight:600;
+  margin-top:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rcard-rating-pill{
+  background:var(--green);color:white;
+  display:flex;flex-direction:column;align-items:center;
+  padding:4px 9px;border-radius:7px;flex-shrink:0;
+  min-width:48px;
+}
+.rcard-rating-num{
+  font-size:13px;font-weight:900;line-height:1;
+  display:flex;align-items:center;gap:2px;
+}
+.rcard-rating-num svg{width:10px;height:10px;fill:#FFE082}
+.rcard-rating-by{
+  font-size:8px;color:rgba(255,255,255,.85);
+  margin-top:2px;font-weight:700;
+}
+
+/* BOTTOM NAV */
+.bot-nav{
+  position:absolute;bottom:18px;left:14px;right:14px;
+  display:flex;align-items:center;gap:10px;
+  z-index:50;
+}
+.bot-nav-tabs{
+  flex:1;background:white;
+  border-radius:24px;
+  display:flex;align-items:center;
+  padding:5px;
+  box-shadow:0 6px 20px rgba(0,0,0,.12);
+}
+.bnt{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:9px 0;border-radius:20px;cursor:pointer;
+  font-size:12px;font-weight:800;color:var(--gray);
+  font-family:var(--font);background:transparent;border:none;
+}
+.bnt.on{background:var(--green-lt);color:var(--green)}
+.bnt svg{width:14px;height:14px;fill:currentColor}
+.healthy-fab{
+  background:linear-gradient(135deg,var(--green-dk) 0%,#055214 100%);
+  color:white;border-radius:24px;
+  padding:9px 14px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:800;
+  box-shadow:0 6px 20px rgba(8,83,22,.4);
+  font-family:var(--font);border:none;
+  flex-shrink:0;
+}
+.healthy-fab svg{width:13px;height:13px;fill:#FFD54F}
+
+/* ═══════════════════════════════════════════════
+   SCREEN 2: MENU DETAIL
+   ═══════════════════════════════════════════════ */
+
+.detail-hdr{
+  flex-shrink:0;background:white;
+  padding:44px 14px 12px;
+  display:flex;align-items:center;gap:9px;
+  border-bottom:1px solid var(--border-lt);
+  position:relative;z-index:5;
+}
+.dhi{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0;
+}
+.dhi svg{width:18px;height:18px;fill:var(--dark)}
+.dh-search{
+  flex:1;background:var(--light);border-radius:18px;
+  padding:8px 14px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;
+}
+.dh-search svg{width:14px;height:14px;fill:var(--gray)}
+.dh-search-text{font-size:12px;color:var(--gray);font-weight:600}
+
+/* Restaurant info */
+.detail-main{flex:1;overflow-y:auto;scrollbar-width:none;background:white;padding-bottom:90px;position:relative}
+.detail-main::-webkit-scrollbar{display:none}
+
+.rest-info{
+  padding:14px 16px;border-bottom:1px solid var(--border-lt);
+  position:relative;
+}
+.rest-info-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.rest-info-l{flex:1;min-width:0}
+.rest-info-name{
+  font-size:22px;font-weight:900;color:var(--dark);
+  letter-spacing:-.5px;line-height:1.1;
+  display:flex;align-items:center;gap:6px;
+}
+.rest-info-name .info-i{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--gray);font-weight:800;
+  flex-shrink:0;cursor:pointer;
+}
+.rest-info-meta{
+  font-size:12px;color:var(--gray);
+  margin-top:8px;font-weight:600;line-height:1.6;
+}
+.rest-info-meta svg{width:11px;height:11px;fill:currentColor;margin-right:4px;vertical-align:-1px}
+.rest-info-meta .item{display:flex;align-items:center;gap:5px}
+.rest-info-meta .underline{color:var(--dark);font-weight:700;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.rest-info-meta .chev{font-size:10px}
+.rest-rating-pill{
+  background:var(--green);color:white;
+  display:flex;flex-direction:column;align-items:center;
+  padding:5px 11px;border-radius:8px;flex-shrink:0;
+}
+.rest-rating-pill .num{font-size:14px;font-weight:900;display:flex;align-items:center;gap:3px;line-height:1}
+.rest-rating-pill .num svg{width:11px;height:11px;fill:#FFE082}
+.rest-rating-pill .by{font-size:9px;font-weight:700;margin-top:3px;border-top:1px dashed rgba(255,255,255,.5);padding-top:2px}
+
+/* Offers strip */
+.offers-strip{
+  margin:12px 16px 0;background:var(--green-lt);
+  border-radius:11px;padding:10px 12px;
+  display:flex;align-items:center;gap:9px;cursor:pointer;
+}
+.offers-em{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:13px;
+}
+.offers-em svg{width:13px;height:13px;fill:white}
+.offers-text{flex:1;font-size:12px;color:var(--green);font-weight:800}
+.offers-count{font-size:10px;color:var(--green);font-weight:700}
+.offers-arr{font-size:14px;color:var(--green);transform:rotate(90deg)}
+
+/* Filter row in detail */
+.detail-filters{
+  display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
+  padding:14px 14px 14px;border-bottom:1px solid var(--border-lt);
+}
+.detail-filters::-webkit-scrollbar{display:none}
+
+/* Menu section */
+.menu-section{padding:14px 0 4px;border-bottom:8px solid var(--light)}
+.menu-section:last-child{border-bottom:none}
+.section-head{
+  padding:0 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+}
+.section-name{font-size:16px;font-weight:900;color:var(--dark);letter-spacing:-.3px}
+.section-arr{font-size:12px;color:var(--dark);transition:transform .25s}
+.menu-section.collapsed .section-arr{transform:rotate(-180deg)}
+.menu-section.collapsed .section-items{display:none}
+.section-best{
+  font-size:11px;font-weight:600;color:var(--gray);
+  padding:0 16px 10px;letter-spacing:.2px;
+}
+
+/* Menu Item */
+.mitem{
+  padding:14px 16px;display:flex;gap:12px;
+  border-top:1px solid var(--border-lt);
+  cursor:pointer;
+}
+.mitem:first-child{border-top:none}
+.mitem-info{flex:1;min-width:0}
+.veg-mark{
+  width:14px;height:14px;
+  border:1.5px solid var(--green);
+  background:white;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.veg-mark::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+.veg-mark.nonveg{border-color:#7B3F00}
+.veg-mark.nonveg::after{
+  content:'';width:0;height:0;background:transparent;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-bottom:7px solid #7B3F00;border-radius:0;
+}
+.veg-mark.egg{border-color:#FFB300}
+.veg-mark.egg::after{background:#FFB300}
+
+.mitem-marks{display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.spicy-tag{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;color:var(--red);font-weight:700;
+}
+.bestseller-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--green-lt);color:var(--green);
+  font-size:9px;font-weight:800;
+  padding:2px 6px;border-radius:7px;
+  margin-bottom:5px;
+}
+.bestseller-tag svg{width:10px;height:10px;fill:currentColor}
+
+.mitem-name{
+  font-size:14px;font-weight:800;color:var(--dark);
+  letter-spacing:-.2px;line-height:1.25;margin-bottom:6px;
+}
+.mitem-pricing{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.mitem-strike{
+  font-size:11px;color:var(--gray-lt);
+  text-decoration:line-through;font-weight:600;
+}
+.mitem-price-now{
+  font-size:13px;font-weight:800;color:var(--green);
+}
+.mitem-price-flat{font-size:14px;font-weight:800;color:var(--dark)}
+.mitem-desc{
+  font-size:11px;color:var(--gray);line-height:1.5;
+  font-weight:500;margin-bottom:4px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.mitem-desc .more{color:var(--green);font-weight:800;cursor:pointer}
+.mitem-coupon-note{
+  font-size:9px;color:var(--gray-lt);
+  font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;margin-top:4px;
+}
+.mitem-actions{display:flex;align-items:center;gap:11px;margin-top:10px}
+.mitem-icon-btn{
+  width:28px;height:28px;border-radius:50%;
+  background:white;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .15s;
+}
+.mitem-icon-btn:active{transform:scale(.92)}
+.mitem-icon-btn svg{width:13px;height:13px;fill:var(--gray)}
+.mitem-icon-btn.saved svg{fill:var(--yellow)}
+
+/* Right side: image + ADD */
+.mitem-img-wrap{
+  width:118px;flex-shrink:0;position:relative;
+  display:flex;flex-direction:column;align-items:center;
+}
+.mitem-img{
+  width:118px;height:118px;border-radius:11px;
+  background:linear-gradient(135deg,#FFE0B2,#FF7043);
+  display:flex;align-items:center;justify-content:center;
+  font-size:54px;line-height:1;position:relative;overflow:hidden;
+}
+.mitem-img.v2{background:linear-gradient(135deg,#FFEBEE,#EF5350)}
+.mitem-img.v3{background:linear-gradient(135deg,#FFF8E1,#FFA000)}
+.mitem-img.v4{background:linear-gradient(135deg,#E8F5E9,#43A047)}
+.mitem-img.v5{background:linear-gradient(135deg,#FFCCBC,#FF5722)}
+.mitem-img.v6{background:linear-gradient(135deg,#F3E5F5,#8E24AA)}
+
+.add-btn-overlay{
+  position:absolute;bottom:-12px;left:50%;
+  transform:translateX(-50%);
+  width:78px;height:30px;
+  background:white;border:1.5px solid var(--green);
+  border-radius:8px;
+  font-family:var(--font);font-size:12px;font-weight:900;
+  color:var(--green);cursor:pointer;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  box-shadow:0 4px 10px rgba(12,131,31,.18);
+  transition:transform .12s;z-index:3;
+}
+.add-btn-overlay:active{transform:translateX(-50%) scale(.94)}
+.add-btn-overlay .plus{font-size:10px;color:var(--green);font-weight:700}
+
+/* qty stepper version */
+.qty-overlay{
+  position:absolute;bottom:-12px;left:50%;
+  transform:translateX(-50%);
+  display:none;align-items:center;gap:0;
+  background:var(--green);border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(12,131,31,.25);z-index:3;
+}
+.qty-overlay.show{display:flex}
+.qty-overlay .qb{
+  width:26px;height:30px;background:transparent;border:none;color:white;
+  font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;
+}
+.qty-overlay .qn{
+  min-width:22px;text-align:center;
+  font-size:12px;font-weight:800;color:white;
+}
+
+.customisable-tag{
+  font-size:10px;color:var(--gray);font-weight:600;
+  margin-top:18px;
+}
+
+/* MENU FAB - jumps between sections */
+.menu-fab{
+  position:absolute;right:14px;bottom:90px;
+  z-index:50;
+  background:var(--dark);color:white;
+  border:none;border-radius:22px;
+  padding:9px 14px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--font);font-size:11px;font-weight:800;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+  transition:transform .15s;
+}
+.menu-fab:active{transform:scale(.96)}
+.menu-fab svg{width:13px;height:13px;fill:white}
+
+/* MENU NAV SHEET */
+.menu-nav-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.menu-nav-bg.show{opacity:1;pointer-events:all}
+.menu-nav-sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--dark);
+  border-radius:18px 18px 0 0;
+  max-height:60%;overflow-y:auto;scrollbar-width:none;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+  z-index:201;
+}
+.menu-nav-sheet.open{transform:translateY(0)}
+.menu-nav-sheet::-webkit-scrollbar{display:none}
+.menu-nav-handle{
+  width:36px;height:4px;background:rgba(255,255,255,.3);
+  border-radius:2px;margin:12px auto;
+}
+.menu-nav-title{
+  font-size:13px;font-weight:800;color:white;
+  text-align:center;padding:0 18px 12px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.menu-nav-item{
+  padding:13px 22px;display:flex;align-items:center;justify-content:space-between;
+  color:white;font-family:var(--font);
+  cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.menu-nav-item:active{background:rgba(255,255,255,.05)}
+.menu-nav-name{font-size:13px;font-weight:700}
+.menu-nav-count{
+  font-size:11px;color:rgba(255,255,255,.6);font-weight:600;
+}
+
+/* ITEM CUSTOMIZE SHEET */
+.cust-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.cust-bg.show{opacity:1;pointer-events:all}
+.cust-sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;
+  border-radius:18px 18px 0 0;
+  max-height:88%;overflow:hidden;
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+  z-index:301;
+  display:flex;flex-direction:column;
+}
+.cust-sheet.open{transform:translateY(0)}
+.cust-close{
+  position:absolute;top:14px;left:50%;transform:translate(-50%, -54px);
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(28,28,28,.85);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:5;
+}
+.cust-close svg{width:14px;height:14px;fill:white}
+.cust-body{
+  flex:1;overflow-y:auto;scrollbar-width:none;
+}
+.cust-body::-webkit-scrollbar{display:none}
+.cust-img{
+  width:100%;aspect-ratio:16/9;
+  background:linear-gradient(135deg,#FFE0B2,#FF7043);
+  display:flex;align-items:center;justify-content:center;
+  font-size:120px;line-height:1;
+}
+.cust-content{padding:14px 16px}
+.cust-item-marks{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cust-name-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
+.cust-name{
+  font-size:18px;font-weight:900;color:var(--dark);
+  letter-spacing:-.3px;line-height:1.2;flex:1;
+}
+.cust-icons{display:flex;gap:8px;flex-shrink:0}
+.cust-icon{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.cust-icon svg{width:14px;height:14px;fill:var(--gray)}
+.cust-desc{
+  font-size:12px;color:var(--gray);line-height:1.55;font-weight:500;
+}
+
+/* Customization group */
+.cust-group{
+  padding:14px 16px;background:var(--light);
+  margin-top:8px;
+}
+.cust-group.white{background:white;border-bottom:1px solid var(--border-lt);margin:0}
+.cust-group-title{
+  font-size:14px;font-weight:800;color:var(--dark);
+  letter-spacing:-.1px;
+}
+.cust-group-sub{
+  font-size:10px;color:var(--gray);font-weight:600;
+  margin-top:2px;
+}
+.cust-group-items{
+  background:white;border-radius:11px;margin-top:10px;
+  overflow:hidden;
+}
+.cust-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;cursor:pointer;
+  border-top:1px solid var(--border-lt);
+  position:relative;
+}
+.cust-opt:first-child{border-top:none}
+.cust-opt.most-ordered{background:var(--orange-lt)}
+.most-tag{
+  position:absolute;top:8px;right:14px;
+  background:var(--red);color:white;
+  font-size:8px;font-weight:800;
+  padding:2px 6px;border-radius:6px;
+  letter-spacing:.3px;
+}
+.cust-opt-info{flex:1;min-width:0;display:flex;align-items:center;gap:9px}
+.cust-opt-name{font-size:13px;font-weight:600;color:var(--dark)}
+.cust-opt-price{font-size:13px;font-weight:800;color:var(--dark);flex-shrink:0}
+.cust-opt-strike{font-size:11px;color:var(--gray-lt);text-decoration:line-through;font-weight:600;margin-right:5px}
+
+.cust-radio,.cust-check{
+  width:20px;height:20px;border-radius:50%;
+  border:1.5px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.cust-check{border-radius:5px}
+.cust-opt.selected .cust-radio,
+.cust-opt.selected .cust-check{
+  border-color:var(--green);background:var(--green);
+}
+.cust-opt.selected .cust-radio::after{
+  content:'';width:7px;height:7px;border-radius:50%;background:white;
+}
+.cust-opt.selected .cust-check::after{
+  content:'✓';color:white;font-size:11px;font-weight:900;line-height:1;
+}
+
+/* Cust footer */
+.cust-footer{
+  flex-shrink:0;background:white;
+  padding:10px 14px 18px;
+  border-top:1px solid var(--border);
+  box-shadow:0 -4px 16px rgba(0,0,0,.06);
+  display:flex;align-items:center;gap:10px;
+}
+.cust-qty{
+  display:flex;align-items:center;
+  border:1.5px solid var(--green);
+  border-radius:9px;overflow:hidden;
+  background:white;flex-shrink:0;
+}
+.cust-qty .qb{
+  width:34px;height:42px;background:transparent;border:none;
+  color:var(--green);
+  font-family:var(--font);font-size:18px;font-weight:800;cursor:pointer;
+}
+.cust-qty .qn{
+  min-width:24px;text-align:center;
+  color:var(--green);font-size:14px;font-weight:900;font-family:var(--font);
+}
+.cust-add-btn{
+  flex:1;background:var(--green);color:white;border:none;
+  border-radius:11px;padding:11px;cursor:pointer;
+  font-family:var(--font);font-size:14px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  letter-spacing:-.1px;transition:transform .15s;
+}
+.cust-add-btn:active{transform:scale(.98)}
+.cust-add-strike{font-size:11px;color:rgba(255,255,255,.7);text-decoration:line-through;font-weight:600}
+
+/* STICKY CART (when items added) */
+.sticky-cart{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--green);color:white;
+  padding:12px 16px;
+  display:none;align-items:center;justify-content:space-between;gap:10px;
+  cursor:pointer;
+  box-shadow:0 -6px 18px rgba(12,131,31,.3);
+  z-index:40;
+}
+.sticky-cart.show{display:flex}
+.sticky-cart-l{display:flex;align-items:center;gap:10px}
+.sticky-cart-icons{
+  display:flex;
+}
+.sticky-cart-icons span{
+  width:28px;height:28px;border-radius:50%;
+  background:white;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  border:2px solid var(--green);
+  margin-left:-8px;
+}
+.sticky-cart-icons span:first-child{margin-left:0}
+.sticky-cart-info{display:flex;flex-direction:column;line-height:1.2}
+.sticky-cart-l1{font-size:13px;font-weight:800}
+.sticky-cart-l2{font-size:10px;font-weight:600;color:rgba(255,255,255,.8)}
+.sticky-cart-cta{
+  font-size:13px;font-weight:900;display:flex;align-items:center;gap:5px;
+}
+.sticky-cart-cta svg{width:14px;height:14px;fill:white}
+
+/* TOAST */
+.toast{
+  position:absolute;bottom:90px;left:50%;
+  transform:translate(-50%, 20px);
+  background:var(--dark);color:white;
+  font-size:12px;font-weight:600;
+  padding:9px 16px;border-radius:20px;
+  z-index:400;opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1;transform:translate(-50%, 0)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-label">Screen</div>
+    <div class="demo-row">
+      <button class="db on" onclick="goScreen('list')">Listing</button>
+      <button class="db" onclick="goScreen('detail')">Menu</button>
+    </div>
+  </div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 1: RESTAURANTS LISTING
+     ════════════════════════════════════════════════ -->
+<div class="screen first" id="screen-list">
+
+  <!-- HERO -->
+  <div class="list-hero">
+    <div class="hero-top">
+      <div class="loc-info" onclick="showToast('Change location')">
+        <div class="loc-row1">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          Nagore <span class="chev">▾</span>
+        </div>
+        <div class="loc-row2">Main Road · Nagapattinam</div>
+      </div>
+      <div class="hero-icons">
+        <div class="hero-icon" onclick="showToast('Reorder')">
+          <svg viewBox="0 0 24 24"><path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
+        </div>
+        <div class="hero-icon" onclick="showToast('Wallet')">
+          <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <div class="hero-avatar" onclick="showToast('Profile')">H</div>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-bar" onclick="showToast('Open search')">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <span class="search-text">Search "biryani near me"</span>
+        <div class="search-mic"></div>
+        <svg class="mic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+      </div>
+      <div class="veg-toggle" id="vegToggle" onclick="toggleVeg()">
+        <div class="veg-toggle-label">VEG</div>
+        <div class="veg-switch"></div>
+      </div>
+    </div>
+
+    <!-- PROMO BANNER -->
+    <div class="promo" onclick="showToast('Opening offers')">
+      <div class="promo-row">
+        <div class="promo-info">
+          <div class="promo-coupon-em">🎟️</div>
+          <div class="promo-title">ITEMS AT <span class="num">50%</span> OFF</div>
+          <div class="promo-cta">
+            Order now
+            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+          </div>
+        </div>
+        <div class="promo-art">🍛</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- GOLD BANNER -->
+    <div class="gold-banner" onclick="showToast('Suplaykart Gold')">
+      <div class="gold-icon">👑</div>
+      <div class="gold-text"><strong>Gold members</strong> get FREE delivery on all restaurant orders</div>
+      <div class="gold-arr">›</div>
+    </div>
+
+    <!-- CUISINES -->
+    <div class="sec-title">
+      <div>What's on your mind?</div>
+    </div>
+    <div class="cuisine-scroll">
+      <div class="cuisine-item" onclick="showToast('Filtering Biryani')">
+        <div class="cuisine-img v3">🍛</div>
+        <div class="cuisine-name">Biryani</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Chicken')">
+        <div class="cuisine-img">🍗</div>
+        <div class="cuisine-name">Chicken</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Pizza')">
+        <div class="cuisine-img v2">🍕</div>
+        <div class="cuisine-name">Pizza</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Parotta')">
+        <div class="cuisine-img v4">🫓</div>
+        <div class="cuisine-name">Parotta</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Dosa')">
+        <div class="cuisine-img v3">🥞</div>
+        <div class="cuisine-name">Dosa</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Burger')">
+        <div class="cuisine-img v5">🍔</div>
+        <div class="cuisine-name">Burger</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Meals')">
+        <div class="cuisine-img v6">🍱</div>
+        <div class="cuisine-name">Meals</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Sweets')">
+        <div class="cuisine-img v7">🍮</div>
+        <div class="cuisine-name">Sweets</div>
+      </div>
+      <div class="cuisine-item" onclick="showToast('Filtering Snacks')">
+        <div class="cuisine-img">🍟</div>
+        <div class="cuisine-name">Snacks</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <button class="fchip" onclick="showToast('Open filters')">
+        <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        Filters
+      </button>
+      <button class="fchip active">
+        <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+        Near & Fast
+      </button>
+      <button class="fchip" onclick="this.classList.toggle('active')">New to you</button>
+      <button class="fchip" onclick="this.classList.toggle('active')">🎯 Great offers</button>
+      <button class="fchip" onclick="this.classList.toggle('active')">⭐ Rating 4+</button>
+    </div>
+
+    <!-- RECOMMENDED -->
+    <div class="sec-title">
+      <div class="sec-title-sub">Recommended for you</div>
+    </div>
+    <div class="rec-scroll">
+      <div class="rec-card" onclick="goScreen('detail')">
+        <div class="rec-img v3">🍛</div>
+        <div class="rec-name">Mughal Darbar</div>
+        <div class="rec-meta">
+          <span class="fast"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> Near & Fast</span>
+          <span>·</span>
+          <span>4.6 ★</span>
+        </div>
+      </div>
+      <div class="rec-card" onclick="goScreen('detail')">
+        <div class="rec-img v2">🍕</div>
+        <div class="rec-offer-tag">₹60 OFF above ₹349</div>
+        <div class="rec-name">Domino's Pizza</div>
+        <div class="rec-meta">
+          <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+          25–30 mins
+        </div>
+      </div>
+      <div class="rec-card" onclick="goScreen('detail')">
+        <div class="rec-img">🍗</div>
+        <div class="rec-offer-tag">₹80 OFF above ₹199</div>
+        <div class="rec-name">Hotel Sangeetha</div>
+        <div class="rec-meta">
+          <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+          20–25 mins
+        </div>
+      </div>
+      <div class="rec-card" onclick="goScreen('detail')">
+        <div class="rec-img v6">🥞</div>
+        <div class="rec-name">Hotel Aiswarya</div>
+        <div class="rec-meta">
+          <span class="fast"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> Near & Fast</span>
+        </div>
+      </div>
+      <div class="rec-card" onclick="goScreen('detail')">
+        <div class="rec-img v4">🍔</div>
+        <div class="rec-offer-tag">10% OFF above ₹500</div>
+        <div class="rec-name">SipiVore Cafe</div>
+        <div class="rec-meta">
+          <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10z"/></svg>
+          30–35 mins
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPLORE MORE -->
+    <div class="sec-title">
+      <div class="sec-title-sub">Explore more</div>
+    </div>
+    <div class="explore-row">
+      <div class="explore-card" onclick="showToast('All offers')">
+        <div class="explore-em blue">💸</div>
+        <div class="explore-name">All Offers</div>
+      </div>
+      <div class="explore-card" onclick="showToast('Top rated')">
+        <div class="explore-em yellow">⭐</div>
+        <div class="explore-name">Top Rated</div>
+      </div>
+      <div class="explore-card" onclick="showToast('Late night')">
+        <div class="explore-em purple">🌙</div>
+        <div class="explore-name">Late Night</div>
+      </div>
+      <div class="explore-card" onclick="showToast('Healthy')">
+        <div class="explore-em">🥗</div>
+        <div class="explore-name">Healthy</div>
+      </div>
+      <div class="explore-card" onclick="showToast('Bulk order')">
+        <div class="explore-em orange">🎉</div>
+        <div class="explore-name">Plan Party</div>
+      </div>
+    </div>
+
+    <!-- ALL RESTAURANTS -->
+    <div class="rest-list-head">
+      <div class="rest-list-count">12 RESTAURANTS DELIVERING TO YOU</div>
+      <div class="rest-list-sub">Featured in Nagore</div>
+    </div>
+
+    <!-- Restaurant 1 -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap v3">
+        🍛
+        <div class="rcard-bookmark saved" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-offer-banner">
+          <div class="rcard-offer-text">FLAT ₹80 OFF above ₹199</div>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Mughal Darbar</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item fast">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+              25–30 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">1.2 km</span>
+            <span>·</span>
+            <span class="rcard-meta-item" style="color:var(--green);font-weight:800">FREE delivery</span>
+          </div>
+          <div class="rcard-cuisine">Biryani · Mughlai · North Indian · ₹250 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.6
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 2K+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant 2 -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap">
+        🍗
+        <div class="rcard-bookmark" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-offer-banner">
+          <div class="rcard-offer-text">55% OFF on select items</div>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Hotel Sangeetha</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item fast">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+              20–25 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">0.8 km</span>
+          </div>
+          <div class="rcard-cuisine">South Indian · Chinese · Tandoor · ₹180 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.4
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 4.9K+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant 3 -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap v2">
+        🍕
+        <div class="rcard-bookmark" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-offer-banner">
+          <div class="rcard-offer-text">Buy 1 Get 1 FREE on Mediums</div>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Domino's Pizza</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+              30–35 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">2.1 km</span>
+          </div>
+          <div class="rcard-cuisine">Pizza · Italian · Pastas · ₹400 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.4
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 1K+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant 4 -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap v6">
+        🍮
+        <div class="rcard-bookmark" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-offer-banner">
+          <div class="rcard-offer-text">Free dessert above ₹399</div>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Sri Krishna Sweets</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item fast">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+              15–20 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">1.5 km</span>
+          </div>
+          <div class="rcard-cuisine">Sweets · Bakery · South Indian · ₹150 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.7
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 600+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant 5 -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap v5">
+        🌯
+        <div class="rcard-bookmark" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-offer-banner">
+          <div class="rcard-offer-text">Items starting at ₹89</div>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Al Sham Arabian</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10z"/></svg>
+              30–35 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">3.2 km</span>
+          </div>
+          <div class="rcard-cuisine">Arabian · Shawarma · Grills · ₹220 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.1
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 350+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant 6 (no offer banner) -->
+    <div class="rcard" onclick="goScreen('detail')">
+      <div class="rcard-img-wrap v4">
+        ☕
+        <div class="rcard-bookmark" onclick="event.stopPropagation();this.classList.toggle('saved');showToast('Saved')">
+          <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="rcard-carousel-dots"><span class="active"></span><span></span><span></span></div>
+      </div>
+      <div class="rcard-info">
+        <div class="rcard-left">
+          <div class="rcard-name">Ali Bhai Bakery</div>
+          <div class="rcard-meta">
+            <span class="rcard-meta-item fast">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+              15–20 mins
+            </span>
+            <span>·</span>
+            <span class="rcard-meta-item">1.0 km</span>
+            <span>·</span>
+            <span class="rcard-meta-item" style="color:var(--green);font-weight:800">FREE delivery</span>
+          </div>
+          <div class="rcard-cuisine">Bakery · Coffee · Snacks · ₹100 for one</div>
+        </div>
+        <div class="rcard-rating-pill">
+          <div class="rcard-rating-num">
+            4.4
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="rcard-rating-by">By 220+</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <div class="bot-nav">
+    <div class="bot-nav-tabs">
+      <button class="bnt on">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Delivery
+      </button>
+      <button class="bnt" onclick="showToast('Dine-in coming soon')">
+        <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+        Dining
+      </button>
+    </div>
+    <button class="healthy-fab" onclick="showToast('Healthy Mode')">
+      <svg viewBox="0 0 24 24"><path d="M12 2L9.5 8.5 2 9l5.5 5L6 22l6-3 6 3-1.5-8L22 9l-7.5-.5z"/></svg>
+      Healthy
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 2: RESTAURANT MENU DETAIL
+     ════════════════════════════════════════════════ -->
+<div class="screen" id="screen-detail">
+
+  <!-- HEADER -->
+  <div class="detail-hdr">
+    <div class="dhi" onclick="goScreen('list')">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="dh-search" onclick="showToast('Search in Mughal Darbar')">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <span class="dh-search-text">Search in Mughal Darbar</span>
+    </div>
+    <div class="dhi" onclick="showToast('Share')">
+      <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+    </div>
+    <div class="dhi" onclick="showToast('More options')">
+      <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    </div>
+  </div>
+
+  <main class="detail-main" id="detailMain">
+
+    <!-- Restaurant info -->
+    <div class="rest-info">
+      <div class="rest-info-row">
+        <div class="rest-info-l">
+          <div class="rest-info-name">
+            Mughal Darbar
+            <div class="info-i" onclick="showToast('Restaurant info')">i</div>
+          </div>
+          <div class="rest-info-meta">
+            <div class="item">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+              <span>1.2 km · Main Road, Nagore</span>
+              <span class="chev">▾</span>
+            </div>
+            <div class="item">
+              <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+              <span>25–30 mins · <span class="underline">Schedule for later</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="rest-rating-pill">
+          <div class="num">
+            4.6
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="by">By 2K+</div>
+        </div>
+      </div>
+
+      <div class="offers-strip" onclick="showToast('All offers')">
+        <div class="offers-em">
+          <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42z"/></svg>
+        </div>
+        <div class="offers-text">Items up to 55% off</div>
+        <div class="offers-count">5 offers</div>
+        <div class="offers-arr">›</div>
+      </div>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="detail-filters">
+      <button class="fchip" onclick="showToast('Filters')">
+        <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        Filters
+      </button>
+      <button class="fchip" id="vegOnlyBtn" onclick="filterMenu('veg', this)">
+        <span class="veg-dot-mini"></span>
+        Veg
+      </button>
+      <button class="fchip" id="eggOnlyBtn" onclick="filterMenu('egg', this)">
+        🥚 Egg
+      </button>
+      <button class="fchip" id="nonvegOnlyBtn" onclick="filterMenu('nonveg', this)">
+        <span class="veg-dot-mini" style="border-color:#7B3F00"></span>
+        Non-veg
+      </button>
+      <button class="fchip" onclick="this.classList.toggle('active')">⚡ Bestseller</button>
+    </div>
+
+    <!-- MENU SECTION 1: Biryani -->
+    <div class="menu-section" data-section="biryani">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="section-name">Biryani 🍛</div>
+        <div class="section-arr">▲</div>
+      </div>
+      <div class="section-best">Best in Biryani · Highly reordered</div>
+      <div class="section-items">
+
+        <!-- Item 1: Mughal Special Chicken Biryani -->
+        <div class="mitem" data-type="nonveg" onclick="openCustomize('biryani-special')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark nonveg"></div>
+              <div class="spicy-tag">🌶️ Spicy</div>
+            </div>
+            <div class="bestseller-tag">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              BESTSELLER
+            </div>
+            <div class="mitem-name">Mughal Special Chicken Biryani</div>
+            <div class="mitem-pricing">
+              <span class="mitem-strike">₹325</span>
+              <span class="mitem-price-now">Get for ₹219</span>
+            </div>
+            <div class="mitem-desc">Long grain basmati rice cooked with tender chicken, saffron, and royal spices. Served with raita and salan. <span class="more">more</span></div>
+            <div class="mitem-actions">
+              <div class="mitem-icon-btn" onclick="event.stopPropagation();this.classList.toggle('saved')">
+                <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+              </div>
+              <div class="mitem-icon-btn" onclick="event.stopPropagation();showToast('Share')">
+                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img">🍛</div>
+            <button class="add-btn-overlay" id="addBtn-biryani-special" onclick="event.stopPropagation();quickAdd('biryani-special',219)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-biryani-special">
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-special',-1,219)">−</button>
+              <span class="qn" id="qn-biryani-special">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-special',1,219)">+</button>
+            </div>
+            <div class="customisable-tag">customisable</div>
+          </div>
+        </div>
+
+        <!-- Item 2: Mutton Biryani -->
+        <div class="mitem" data-type="nonveg" onclick="openCustomize('biryani-mutton')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark nonveg"></div>
+            </div>
+            <div class="mitem-name">Hyderabadi Mutton Biryani</div>
+            <div class="mitem-pricing">
+              <span class="mitem-strike">₹399</span>
+              <span class="mitem-price-now">Get for ₹279</span>
+            </div>
+            <div class="mitem-desc">Tender mutton pieces dum-cooked with fragrant basmati rice, slow-cooked in traditional Hyderabadi style. <span class="more">more</span></div>
+            <div class="mitem-coupon-note">Not eligible for coupons</div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v2">🍖</div>
+            <button class="add-btn-overlay" id="addBtn-biryani-mutton" onclick="event.stopPropagation();quickAdd('biryani-mutton',279)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-biryani-mutton">
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-mutton',-1,279)">−</button>
+              <span class="qn" id="qn-biryani-mutton">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-mutton',1,279)">+</button>
+            </div>
+            <div class="customisable-tag">customisable</div>
+          </div>
+        </div>
+
+        <!-- Item 3: Veg Biryani -->
+        <div class="mitem" data-type="veg" onclick="openCustomize('biryani-veg')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark"></div>
+            </div>
+            <div class="mitem-name">Mughlai Vegetable Biryani</div>
+            <div class="mitem-pricing">
+              <span class="mitem-price-flat">₹179</span>
+            </div>
+            <div class="mitem-desc">Aromatic basmati rice with mixed vegetables, paneer, and signature Mughal spices. <span class="more">more</span></div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v3">🥘</div>
+            <button class="add-btn-overlay" id="addBtn-biryani-veg" onclick="event.stopPropagation();quickAdd('biryani-veg',179)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-biryani-veg">
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-veg',-1,179)">−</button>
+              <span class="qn" id="qn-biryani-veg">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('biryani-veg',1,179)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MENU SECTION 2: Starters -->
+    <div class="menu-section" data-section="starters">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="section-name">Starters 🍢</div>
+        <div class="section-arr">▲</div>
+      </div>
+      <div class="section-items">
+
+        <div class="mitem" data-type="nonveg" onclick="openCustomize('starter-tikka')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark nonveg"></div>
+              <div class="spicy-tag">🌶️ Spicy</div>
+            </div>
+            <div class="bestseller-tag">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              BESTSELLER
+            </div>
+            <div class="mitem-name">Chicken Tikka (8 pcs)</div>
+            <div class="mitem-pricing">
+              <span class="mitem-strike">₹279</span>
+              <span class="mitem-price-now">Get for ₹199</span>
+            </div>
+            <div class="mitem-desc">Boneless chicken pieces marinated in yogurt and tandoor spices, grilled to perfection. <span class="more">more</span></div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v5">🍗</div>
+            <button class="add-btn-overlay" id="addBtn-starter-tikka" onclick="event.stopPropagation();quickAdd('starter-tikka',199)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-starter-tikka">
+              <button class="qb" onclick="event.stopPropagation();updateQty('starter-tikka',-1,199)">−</button>
+              <span class="qn" id="qn-starter-tikka">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('starter-tikka',1,199)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mitem" data-type="veg" onclick="openCustomize('starter-paneer')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark"></div>
+            </div>
+            <div class="mitem-name">Paneer Tikka (8 pcs)</div>
+            <div class="mitem-pricing">
+              <span class="mitem-price-flat">₹169</span>
+            </div>
+            <div class="mitem-desc">Cottage cheese cubes marinated in spiced yogurt, char-grilled with bell peppers. <span class="more">more</span></div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v4">🧀</div>
+            <button class="add-btn-overlay" id="addBtn-starter-paneer" onclick="event.stopPropagation();quickAdd('starter-paneer',169)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-starter-paneer">
+              <button class="qb" onclick="event.stopPropagation();updateQty('starter-paneer',-1,169)">−</button>
+              <span class="qn" id="qn-starter-paneer">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('starter-paneer',1,169)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MENU SECTION 3: Breads & Curries -->
+    <div class="menu-section" data-section="breads">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="section-name">Breads &amp; Curries 🫓</div>
+        <div class="section-arr">▲</div>
+      </div>
+      <div class="section-items">
+
+        <div class="mitem" data-type="veg" onclick="openCustomize('bread-butter-naan')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark"></div>
+            </div>
+            <div class="mitem-name">Butter Naan</div>
+            <div class="mitem-pricing">
+              <span class="mitem-price-flat">₹35</span>
+            </div>
+            <div class="mitem-desc">Soft tandoor-baked bread brushed with butter. <span class="more">more</span></div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v3">🫓</div>
+            <button class="add-btn-overlay" id="addBtn-bread-butter-naan" onclick="event.stopPropagation();quickAdd('bread-butter-naan',35)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-bread-butter-naan">
+              <button class="qb" onclick="event.stopPropagation();updateQty('bread-butter-naan',-1,35)">−</button>
+              <span class="qn" id="qn-bread-butter-naan">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('bread-butter-naan',1,35)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mitem" data-type="veg" onclick="openCustomize('curry-paneer-butter')">
+          <div class="mitem-info">
+            <div class="mitem-marks">
+              <div class="veg-mark"></div>
+            </div>
+            <div class="mitem-name">Paneer Butter Masala</div>
+            <div class="mitem-pricing">
+              <span class="mitem-strike">₹249</span>
+              <span class="mitem-price-now">Get for ₹179</span>
+            </div>
+            <div class="mitem-desc">Paneer cubes simmered in rich tomato gravy with cashew paste and butter. <span class="more">more</span></div>
+          </div>
+          <div class="mitem-img-wrap">
+            <div class="mitem-img v5">🍛</div>
+            <button class="add-btn-overlay" id="addBtn-curry-paneer-butter" onclick="event.stopPropagation();quickAdd('curry-paneer-butter',179)">
+              ADD<span class="plus">+</span>
+            </button>
+            <div class="qty-overlay" id="qty-curry-paneer-butter">
+              <button class="qb" onclick="event.stopPropagation();updateQty('curry-paneer-butter',-1,179)">−</button>
+              <span class="qn" id="qn-curry-paneer-butter">1</span>
+              <button class="qb" onclick="event.stopPropagation();updateQty('curry-paneer-butter',1,179)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="height:30px"></div>
+  </main>
+
+  <!-- FLOATING MENU FAB -->
+  <button class="menu-fab" onclick="openMenuNav()">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    Menu
+  </button>
+
+  <!-- MENU NAV SHEET -->
+  <div class="menu-nav-bg" id="menuNavBg" onclick="closeMenuNav()">
+    <div class="menu-nav-sheet" id="menuNavSheet" onclick="event.stopPropagation()">
+      <div class="menu-nav-handle"></div>
+      <div class="menu-nav-title">Menu Navigation</div>
+      <div class="menu-nav-item" onclick="jumpToSection('biryani')">
+        <span class="menu-nav-name">🍛 Biryani</span>
+        <span class="menu-nav-count">3</span>
+      </div>
+      <div class="menu-nav-item" onclick="jumpToSection('starters')">
+        <span class="menu-nav-name">🍢 Starters</span>
+        <span class="menu-nav-count">2</span>
+      </div>
+      <div class="menu-nav-item" onclick="jumpToSection('breads')">
+        <span class="menu-nav-name">🫓 Breads &amp; Curries</span>
+        <span class="menu-nav-count">2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEM CUSTOMIZE SHEET -->
+  <div class="cust-bg" id="custBg" onclick="closeCustomize()">
+    <div class="cust-sheet" id="custSheet" onclick="event.stopPropagation()">
+      <div class="cust-close" onclick="closeCustomize()">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </div>
+      <div class="cust-body">
+        <div class="cust-img" id="custImg">🍛</div>
+        <div class="cust-content">
+          <div class="cust-item-marks">
+            <div class="veg-mark nonveg"></div>
+            <div class="spicy-tag">🌶️ Spicy</div>
+          </div>
+          <div class="cust-name-row">
+            <div class="cust-name" id="custName">Mughal Special Chicken Biryani</div>
+            <div class="cust-icons">
+              <div class="cust-icon" onclick="this.classList.toggle('saved');showToast('Saved')">
+                <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+              </div>
+              <div class="cust-icon" onclick="showToast('Share')">
+                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="cust-desc">Long grain basmati rice cooked with tender chicken, saffron, and royal Mughlai spices. Served with raita, mirchi salan, and onion rings. NO MSG.</div>
+        </div>
+
+        <!-- Customization 1: Add Extras -->
+        <div class="cust-group">
+          <div class="cust-group-title">Add Extra to Your Bowl</div>
+          <div class="cust-group-sub">Select up to 3 options</div>
+          <div class="cust-group-items">
+            <div class="cust-opt most-ordered" data-type="check" data-price="30" data-name="Boiled Egg" onclick="toggleCheck(this,30)">
+              <span class="most-tag">Most Ordered</span>
+              <div class="cust-opt-info">
+                <div class="veg-mark egg"></div>
+                <span class="cust-opt-name">Boiled Egg One Serve</span>
+              </div>
+              <span class="cust-opt-price">₹30</span>
+              <div class="cust-check"></div>
+            </div>
+            <div class="cust-opt" data-type="check" data-price="50" data-name="Extra Chicken" onclick="toggleCheck(this,50)">
+              <div class="cust-opt-info">
+                <div class="veg-mark nonveg"></div>
+                <span class="cust-opt-name">Extra Chicken (3 pcs)</span>
+              </div>
+              <span class="cust-opt-price">₹50</span>
+              <div class="cust-check"></div>
+            </div>
+            <div class="cust-opt" data-type="check" data-price="40" data-name="Raita" onclick="toggleCheck(this,40)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Cucumber Raita</span>
+              </div>
+              <span class="cust-opt-price">₹40</span>
+              <div class="cust-check"></div>
+            </div>
+            <div class="cust-opt" data-type="check" data-price="35" data-name="Salan" onclick="toggleCheck(this,35)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Mirchi Ka Salan</span>
+              </div>
+              <span class="cust-opt-price">₹35</span>
+              <div class="cust-check"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customization 2: Combo upgrade -->
+        <div class="cust-group">
+          <div class="cust-group-title">Add 1 More @ 38% Off + ₹20</div>
+          <div class="cust-group-sub">Select up to 1 option</div>
+          <div class="cust-group-items">
+            <div class="cust-opt" data-type="radio" data-group="combo" data-price="199" data-name="Mutton Biryani Combo" onclick="toggleRadio(this,'combo',199)">
+              <div class="cust-opt-info">
+                <div class="veg-mark nonveg"></div>
+                <span class="cust-opt-name">Hyderabadi Mutton Biryani</span>
+              </div>
+              <span class="cust-opt-strike">₹279</span>
+              <span class="cust-opt-price">₹199</span>
+              <div class="cust-radio"></div>
+            </div>
+            <div class="cust-opt" data-type="radio" data-group="combo" data-price="119" data-name="Veg Biryani Combo" onclick="toggleRadio(this,'combo',119)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Mughlai Veg Biryani</span>
+              </div>
+              <span class="cust-opt-strike">₹179</span>
+              <span class="cust-opt-price">₹119</span>
+              <div class="cust-radio"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customization 3: Beverages -->
+        <div class="cust-group">
+          <div class="cust-group-title">Add Beverages</div>
+          <div class="cust-group-sub">Select up to 1 option</div>
+          <div class="cust-group-items">
+            <div class="cust-opt" data-type="radio" data-group="bev" data-price="40" data-name="Buttermilk" onclick="toggleRadio(this,'bev',40)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Salted Buttermilk</span>
+              </div>
+              <span class="cust-opt-price">₹40</span>
+              <div class="cust-radio"></div>
+            </div>
+            <div class="cust-opt" data-type="radio" data-group="bev" data-price="60" data-name="Lassi" onclick="toggleRadio(this,'bev',60)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Sweet Lassi</span>
+              </div>
+              <span class="cust-opt-price">₹60</span>
+              <div class="cust-radio"></div>
+            </div>
+            <div class="cust-opt" data-type="radio" data-group="bev" data-price="20" data-name="Water" onclick="toggleRadio(this,'bev',20)">
+              <div class="cust-opt-info">
+                <div class="veg-mark"></div>
+                <span class="cust-opt-name">Mineral Water 1L</span>
+              </div>
+              <span class="cust-opt-price">₹20</span>
+              <div class="cust-radio"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:14px"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="cust-footer">
+        <div class="cust-qty">
+          <button class="qb" onclick="custChangeQty(-1)">−</button>
+          <span class="qn" id="custQty">1</span>
+          <button class="qb" onclick="custChangeQty(1)">+</button>
+        </div>
+        <button class="cust-add-btn" onclick="addCustomized()">
+          Add item · <span class="cust-add-strike" id="custStrike">₹325</span>
+          <span id="custTotal">₹219</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STICKY CART -->
+  <div class="sticky-cart" id="stickyCart" onclick="showToast('Opening cart...')">
+    <div class="sticky-cart-l">
+      <div class="sticky-cart-icons" id="cartIcons">
+        <span>🍛</span>
+      </div>
+      <div class="sticky-cart-info">
+        <div class="sticky-cart-l1"><span id="cartItemCount">1</span> item · ₹<span id="cartItemTotal">219</span></div>
+        <div class="sticky-cart-l2">From Mughal Darbar</div>
+      </div>
+    </div>
+    <div class="sticky-cart-cta">
+      View cart
+      <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Done</div>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// SCREEN NAV
+// ══════════════════════════════════════════════
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('.demo .db').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.demo .db')[id === 'list' ? 0 : 1].classList.add('on');
+}
+
+// ══════════════════════════════════════════════
+// VEG TOGGLE
+// ══════════════════════════════════════════════
+function toggleVeg() {
+  document.getElementById('vegToggle').classList.toggle('on');
+  showToast(document.getElementById('vegToggle').classList.contains('on') ? 'Veg only' : 'All items');
+}
+
+// ══════════════════════════════════════════════
+// MENU FILTERS
+// ══════════════════════════════════════════════
+let activeFilter = null;
+function filterMenu(type, btn) {
+  if (activeFilter === type) {
+    activeFilter = null;
+    btn.classList.remove('active');
+  } else {
+    document.querySelectorAll('.detail-filters .fchip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = type;
+  }
+  document.querySelectorAll('.mitem').forEach(item => {
+    if (!activeFilter) {
+      item.style.display = '';
+    } else {
+      item.style.display = item.dataset.type === activeFilter ? '' : 'none';
+    }
+  });
+  // Hide empty sections
+  document.querySelectorAll('.menu-section').forEach(s => {
+    const visible = Array.from(s.querySelectorAll('.mitem')).filter(i => i.style.display !== 'none').length;
+    s.style.display = visible > 0 ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════
+// CART STATE
+// ══════════════════════════════════════════════
+const cart = {}; // {itemId: {qty, price, em}}
+const itemEmojis = {
+  'biryani-special':'🍛','biryani-mutton':'🍖','biryani-veg':'🥘',
+  'starter-tikka':'🍗','starter-paneer':'🧀',
+  'bread-butter-naan':'🫓','curry-paneer-butter':'🍛'
+};
+
+function quickAdd(id, price) {
+  cart[id] = { qty:1, price, em:itemEmojis[id] };
+  document.getElementById('addBtn-' + id).style.display = 'none';
+  document.getElementById('qty-' + id).classList.add('show');
+  document.getElementById('qn-' + id).textContent = '1';
+  updateStickyCart();
+  showToast('Added to cart');
+}
+
+function updateQty(id, delta, price) {
+  if (!cart[id]) return;
+  cart[id].qty = Math.max(0, cart[id].qty + delta);
+  if (cart[id].qty === 0) {
+    delete cart[id];
+    document.getElementById('addBtn-' + id).style.display = '';
+    document.getElementById('qty-' + id).classList.remove('show');
+  } else {
+    document.getElementById('qn-' + id).textContent = cart[id].qty;
+  }
+  updateStickyCart();
+}
+
+function updateStickyCart() {
+  const items = Object.values(cart);
+  const total = items.reduce((s,x)=>s + x.qty*x.price, 0);
+  const count = items.reduce((s,x)=>s + x.qty, 0);
+  const sticky = document.getElementById('stickyCart');
+  if (count === 0) {
+    sticky.classList.remove('show');
+    return;
+  }
+  sticky.classList.add('show');
+  document.getElementById('cartItemCount').textContent = count;
+  document.getElementById('cartItemTotal').textContent = total;
+  // Update icons (max 3)
+  const iconsEl = document.getElementById('cartIcons');
+  iconsEl.innerHTML = items.slice(0,3).map(x => `<span>${x.em}</span>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// MENU NAV SHEET
+// ══════════════════════════════════════════════
+function openMenuNav() {
+  document.getElementById('menuNavBg').classList.add('show');
+  document.getElementById('menuNavSheet').classList.add('open');
+}
+function closeMenuNav() {
+  document.getElementById('menuNavBg').classList.remove('show');
+  document.getElementById('menuNavSheet').classList.remove('open');
+}
+function jumpToSection(name) {
+  closeMenuNav();
+  setTimeout(() => {
+    const sec = document.querySelector(`.menu-section[data-section="${name}"]`);
+    if (sec) {
+      const main = document.getElementById('detailMain');
+      main.scrollTo({top: sec.offsetTop - 60, behavior:'smooth'});
+    }
+  }, 200);
+}
+
+// ══════════════════════════════════════════════
+// CUSTOMIZE SHEET
+// ══════════════════════════════════════════════
+const ITEM_DATA = {
+  'biryani-special': { name:'Mughal Special Chicken Biryani', em:'🍛', price:219, strike:325, type:'nonveg', spicy:true },
+  'biryani-mutton': { name:'Hyderabadi Mutton Biryani', em:'🍖', price:279, strike:399, type:'nonveg', spicy:false },
+  'biryani-veg': { name:'Mughlai Vegetable Biryani', em:'🥘', price:179, strike:0, type:'veg', spicy:false },
+  'starter-tikka': { name:'Chicken Tikka (8 pcs)', em:'🍗', price:199, strike:279, type:'nonveg', spicy:true },
+  'starter-paneer': { name:'Paneer Tikka (8 pcs)', em:'🧀', price:169, strike:0, type:'veg', spicy:false },
+  'bread-butter-naan': { name:'Butter Naan', em:'🫓', price:35, strike:0, type:'veg', spicy:false },
+  'curry-paneer-butter': { name:'Paneer Butter Masala', em:'🍛', price:179, strike:249, type:'veg', spicy:false },
+};
+
+let custCurrentItem = null;
+let custQty = 1;
+let custBasePrice = 219;
+let custBaseStrike = 325;
+let custExtras = 0;
+
+function openCustomize(id) {
+  const it = ITEM_DATA[id];
+  if (!it) return;
+  custCurrentItem = id;
+  custQty = 1;
+  custExtras = 0;
+  custBasePrice = it.price;
+  custBaseStrike = it.strike;
+
+  document.getElementById('custImg').textContent = it.em;
+  document.getElementById('custName').textContent = it.name;
+  document.getElementById('custQty').textContent = '1';
+
+  // Reset selections
+  document.querySelectorAll('.cust-opt').forEach(o => o.classList.remove('selected'));
+
+  // Update marks
+  const marksWrap = document.querySelector('.cust-item-marks');
+  marksWrap.innerHTML = `<div class="veg-mark ${it.type === 'nonveg' ? 'nonveg' : ''}"></div>` +
+    (it.spicy ? `<div class="spicy-tag">🌶️ Spicy</div>` : '');
+
+  recomputeCust();
+  document.getElementById('custBg').classList.add('show');
+  document.getElementById('custSheet').classList.add('open');
+}
+
+function closeCustomize() {
+  document.getElementById('custBg').classList.remove('show');
+  document.getElementById('custSheet').classList.remove('open');
+}
+
+function custChangeQty(delta) {
+  custQty = Math.max(1, custQty + delta);
+  document.getElementById('custQty').textContent = custQty;
+  recomputeCust();
+}
+
+function toggleCheck(el, price) {
+  // Max 3
+  const selectedChecks = document.querySelectorAll('.cust-opt[data-type="check"].selected').length;
+  if (!el.classList.contains('selected') && selectedChecks >= 3) {
+    showToast('Max 3 extras');
+    return;
+  }
+  el.classList.toggle('selected');
+  recomputeCustExtras();
+}
+
+function toggleRadio(el, group, price) {
+  document.querySelectorAll(`.cust-opt[data-group="${group}"]`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  recomputeCustExtras();
+}
+
+function recomputeCustExtras() {
+  let extras = 0;
+  document.querySelectorAll('.cust-opt.selected').forEach(o => {
+    extras += parseInt(o.dataset.price || 0);
+  });
+  custExtras = extras;
+  recomputeCust();
+}
+
+function recomputeCust() {
+  const total = (custBasePrice + custExtras) * custQty;
+  const totalStrike = custBaseStrike > 0 ? (custBaseStrike + custExtras) * custQty : 0;
+  document.getElementById('custTotal').textContent = '₹' + total;
+  const strikeEl = document.getElementById('custStrike');
+  if (totalStrike > 0) {
+    strikeEl.style.display = '';
+    strikeEl.textContent = '₹' + totalStrike;
+  } else {
+    strikeEl.style.display = 'none';
+  }
+}
+
+function addCustomized() {
+  const it = ITEM_DATA[custCurrentItem];
+  if (!it) return;
+  cart[custCurrentItem] = { qty:custQty, price:custBasePrice + custExtras, em:it.em };
+  document.getElementById('addBtn-' + custCurrentItem).style.display = 'none';
+  document.getElementById('qty-' + custCurrentItem).classList.add('show');
+  document.getElementById('qn-' + custCurrentItem).textContent = custQty;
+  updateStickyCart();
+  closeCustomize();
+  showToast(custQty + ' added to cart');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+</script>
+</body>
+</html>

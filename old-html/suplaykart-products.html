@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Products</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-lt:#E8F5E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;
+  --light:#F2F2F2;--border:#EBEBEB;
+  --white:#fff;--red:#E23744;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font)}
+
+/* ── SHELL ───────────────────────────────────── */
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--light);box-shadow:0 0 60px rgba(0,0,0,.6);
+}
+
+/* ── TOP BAR ─────────────────────────────────── */
+.topbar{
+  background:white;padding:44px 14px 10px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.tb-back{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--light);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+}
+.tb-back svg{width:18px;height:18px;fill:var(--dark)}
+.tb-info{flex:1;min-width:0}
+.tb-title{font-size:15px;font-weight:800;color:var(--dark);letter-spacing:-.2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-sub{font-size:10px;color:var(--gray);margin-top:1px}
+.tb-icons{display:flex;gap:8px;flex-shrink:0}
+.tb-icon{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--light);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;
+}
+.tb-icon svg{width:18px;height:18px;fill:var(--dark)}
+.t-badge{
+  position:absolute;top:-2px;right:-2px;
+  background:var(--red);color:white;font-family:var(--font);
+  font-size:7px;font-weight:800;min-width:14px;height:14px;
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  padding:0 3px;border:1.5px solid white;
+}
+
+/* ── SEARCH ──────────────────────────────────── */
+.srch-wrap{
+  background:white;padding:8px 14px 10px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.srch-bar{
+  display:flex;align-items:center;gap:9px;
+  background:var(--light);border-radius:12px;padding:9px 13px;
+}
+.srch-bar input{
+  flex:1;border:none;outline:none;
+  font-family:var(--font);font-size:13px;color:var(--dark);background:transparent;
+}
+.srch-bar input::placeholder{color:#ABABAB}
+.si{fill:#9E9E9E;flex-shrink:0}
+
+/* ── FILTER PILLS ────────────────────────────── */
+.filter-bar{
+  background:white;padding:8px 0 8px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.filter-scroll{overflow-x:auto;scrollbar-width:none;padding:0 14px}
+.filter-scroll::-webkit-scrollbar{display:none}
+.filter-row{display:flex;gap:7px;white-space:nowrap}
+
+.fpill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--light);border:1.5px solid var(--border);
+  border-radius:20px;padding:5px 11px;
+  font-size:11px;font-weight:600;color:var(--dark);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+  font-family:var(--font);
+}
+.fpill.active{background:var(--dark);border-color:var(--dark);color:white}
+.fpill.sort{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+.fpill svg{width:11px;height:11px;fill:currentColor}
+
+/* ── MAIN SCROLL ─────────────────────────────── */
+.main{flex:1;overflow-y:auto;scrollbar-width:none;background:var(--light)}
+.main::-webkit-scrollbar{display:none}
+
+/* ── SECTION TITLE ───────────────────────────── */
+.sec-title{
+  font-size:15px;font-weight:800;color:var(--dark);
+  padding:14px 14px 10px;letter-spacing:-.2px;
+}
+.sec-count{font-size:11px;font-weight:500;color:var(--gray);margin-left:6px}
+
+/* ── PRODUCT GRID ────────────────────────────── */
+.prod-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;padding:0 8px 8px;
+}
+
+/* ── PRODUCT CARD ────────────────────────────── */
+.pcard{
+  background:white;border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;
+  cursor:pointer;position:relative;
+  transition:transform .1s;
+}
+.pcard:active{transform:scale(.97)}
+
+/* image area */
+.pcard-img{
+  position:relative;
+  background:#F7F7F7;
+  aspect-ratio:1;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.pcard-em{font-size:46px;line-height:1;user-select:none}
+
+/* veg / non-veg dot */
+.veg-dot{
+  position:absolute;bottom:5px;right:5px;
+  width:14px;height:14px;border-radius:2px;
+  border:1.5px solid currentColor;
+  display:flex;align-items:center;justify-content:center;
+}
+.veg-dot::after{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:currentColor;display:block;
+}
+.veg-dot.veg{color:var(--green)}
+.veg-dot.nonveg{color:var(--red)}
+
+/* wishlist */
+.wish{
+  position:absolute;top:5px;right:5px;
+  width:24px;height:24px;border-radius:50%;
+  background:rgba(255,255,255,.85);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;transition:all .2s;
+}
+.wish svg{width:13px;height:13px;fill:none;stroke:#9E9E9E;stroke-width:2;transition:all .2s}
+.wish.on svg{fill:var(--red);stroke:var(--red)}
+
+/* product badge */
+.pbadge{
+  position:absolute;top:5px;left:5px;
+  font-size:8px;font-weight:800;
+  padding:2px 5px;border-radius:4px;z-index:2;
+  font-family:var(--font);
+}
+.pbadge-g{background:var(--green);color:white}
+.pbadge-r{background:var(--red);color:white}
+.pbadge-b{background:#1565C0;color:white}
+.pbadge-o{background:#E65100;color:white}
+
+/* dots indicator */
+.img-dots{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;gap:3px;
+}
+.img-dot{width:4px;height:4px;border-radius:2px;background:rgba(0,0,0,.2)}
+.img-dot.on{width:10px;background:rgba(0,0,0,.45)}
+
+/* weight + add row inside image */
+.img-bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:5px 6px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(transparent,rgba(255,255,255,.95) 55%);
+}
+.pcard-wt{font-size:9px;font-weight:600;color:var(--gray)}
+.add-btn{
+  background:white;border:1.5px solid var(--green);
+  color:var(--green);font-family:var(--font);
+  font-size:10px;font-weight:800;
+  padding:4px 9px;border-radius:7px;
+  cursor:pointer;letter-spacing:.2px;
+  transition:all .15s;flex-shrink:0;
+}
+.add-btn.added{background:var(--green);color:white}
+.add-btn.has-opts{display:flex;flex-direction:column;align-items:center;padding:3px 7px}
+.add-btn .opts{font-size:7.5px;font-weight:500;color:inherit;margin-top:1px}
+
+/* card body */
+.pcard-body{padding:6px 8px 9px}
+.pcard-price{
+  font-size:15px;font-weight:800;color:var(--dark);
+  display:flex;align-items:baseline;gap:5px;
+}
+.pcard-og{font-size:10px;color:var(--gray);text-decoration:line-through;font-weight:400}
+.pcard-off{font-size:9px;color:var(--green);font-weight:700}
+.pcard-name{
+  font-size:11px;color:var(--dark);font-weight:500;
+  line-height:1.4;margin-top:4px;
+  display:-webkit-box;-webkit-line-clamp:3;
+  -webkit-box-orient:vertical;overflow:hidden;
+}
+.pcard-rating{
+  display:flex;align-items:center;gap:3px;
+  margin-top:5px;
+}
+.stars{font-size:9px;color:#FFA000;letter-spacing:.5px}
+.rating-count{font-size:9px;color:var(--gray);font-weight:500}
+
+/* ── SEE ALL STRIP ───────────────────────────── */
+.see-all{
+  margin:4px 8px 16px;
+  background:white;border:1.5px solid var(--border);
+  border-radius:10px;padding:12px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;
+}
+.see-all-em{font-size:22px}
+.see-all-txt{font-size:13px;font-weight:700;color:var(--green)}
+.see-all-arr{font-size:16px;color:var(--green)}
+
+/* ── EMPTY STATE ─────────────────────────────── */
+.empty{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;padding:48px 24px;text-align:center;
+}
+.empty.show{display:flex}
+.empty-em{font-size:64px;margin-bottom:14px}
+.empty-title{font-size:16px;font-weight:800;color:var(--dark)}
+.empty-sub{font-size:13px;color:var(--gray);margin-top:5px}
+
+/* ── BOTTOM NAV ──────────────────────────────── */
+.bnav{
+  flex-shrink:0;background:white;
+  border-top:1px solid var(--border);
+  display:flex;padding:8px 0 18px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.05);
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nav-svg{width:22px;height:22px;fill:#9E9E9E;transition:all .2s}
+.nav-item.active .nav-svg{fill:var(--green);transform:scale(1.1)}
+.nav-item.nav-pick.active .nav-svg{fill:#FF6B00}
+.nav-lbl{font-size:10px;font-weight:600;color:#9E9E9E}
+.nav-item.active .nav-lbl{color:var(--green)}
+.nav-item.nav-pick.active .nav-lbl{color:#FF6B00}
+
+/* ── SORT SHEET ──────────────────────────────── */
+.sheet-bg{
+  position:absolute;inset:0;background:rgba(0,0,0,.4);
+  z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.sheet-bg.show{opacity:1;pointer-events:all}
+.sheet{
+  position:absolute;bottom:0;left:0;right:0;
+  background:white;border-radius:18px 18px 0 0;
+  padding:0 0 30px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  max-height:65%;overflow-y:auto;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:#E0E0E0;border-radius:2px;margin:12px auto 16px}
+.sheet-title{font-size:15px;font-weight:800;color:var(--dark);padding:0 18px 12px;border-bottom:1px solid var(--border)}
+.sort-opt{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;cursor:pointer;transition:background .15s;
+}
+.sort-opt:active{background:var(--light)}
+.sort-opt-txt{font-size:13px;font-weight:600;color:var(--dark)}
+.sort-opt-check{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.sort-opt.selected .sort-opt-check{background:var(--green);border-color:var(--green)}
+.sort-opt.selected .sort-opt-check::after{content:'✓';font-size:10px;color:white;font-weight:800}
+.sort-opt.selected .sort-opt-txt{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="tb-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <div class="tb-info">
+      <div class="tb-title" id="pageTitle">Chips & Namkeen</div>
+      <div class="tb-sub" id="pageCount">24 products</div>
+    </div>
+    <div class="tb-icons">
+      <div class="tb-icon" style="position:relative">
+        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0021.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span class="t-badge" id="cartBadge">0</span>
+      </div>
+      <div class="tb-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="srch-wrap">
+    <div class="srch-bar">
+      <svg class="si" width="16" height="16" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" id="srchInput" placeholder='Search in Chips & Namkeen...'>
+      <svg class="si" width="16" height="16" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <div class="filter-scroll">
+      <div class="filter-row" id="filterRow">
+        <button class="fpill sort" onclick="openSort()">
+          <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+          Sort
+        </button>
+        <button class="fpill active" onclick="setFilter(this,'all')">All</button>
+        <button class="fpill" onclick="setFilter(this,'veg')">🟢 Veg only</button>
+        <button class="fpill" onclick="setFilter(this,'offer')">🏷️ On offer</button>
+        <button class="fpill" onclick="setFilter(this,'brand-lays')">Lay's</button>
+        <button class="fpill" onclick="setFilter(this,'brand-kurkure')">Kurkure</button>
+        <button class="fpill" onclick="setFilter(this,'brand-bingo')">Bingo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCROLL -->
+  <main class="main" id="mainScroll">
+
+    <div class="sec-title" id="secTitle">
+      Stock up on crunchy snacks <span class="sec-count" id="secCount">24 items</span>
+    </div>
+
+    <div class="prod-grid" id="prodGrid"></div>
+
+    <div class="empty" id="emptyState">
+      <div class="empty-em">🔍</div>
+      <div class="empty-title">No products found</div>
+      <div class="empty-sub">Try a different search or filter</div>
+    </div>
+
+    <div class="see-all" id="seeAll">
+      <div class="see-all-em">🥔</div>
+      <div class="see-all-txt">See all products</div>
+      <div class="see-all-arr">▶</div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="nav-lbl">Home</span>
+    </div>
+    <div class="nav-item active" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-1.66 0-3-1.34-3-3h2c0 .55.45 1 1 1s1-.45 1-1h2c0 1.66-1.34 3-3 3z"/></svg>
+      <span class="nav-lbl">Shop</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2z"/></svg>
+      <span class="nav-lbl">Category</span>
+    </div>
+    <div class="nav-item nav-pick" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <span class="nav-lbl">Pick</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-3.87-3.12-6-7.51-6C4.09 8.99 1 11.12 1 14.99v1H16.03v-1z"/></svg>
+      <span class="nav-lbl">Restaurants</span>
+    </div>
+  </nav>
+
+  <!-- SORT SHEET -->
+  <div class="sheet-bg" id="sheetBg" onclick="closeSort()">
+    <div class="sheet" id="sortSheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Sort by</div>
+      <div id="sortOpts"></div>
+    </div>
+  </div>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// DATA — Chips & Namkeen (24 products)
+// ══════════════════════════════════════════════
+const PRODUCTS = [
+  { id:1, em:'🥔', name:"Lay's West Indies Hot n Sweet Chilli Flavour Potato Chips", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.3, reviews:'2.7 lac', veg:true, badge:null, opts:0 },
+  { id:2, em:'🥔', name:"Lay's India's Magic Masala Potato Chips", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.4, reviews:'4.3 lac', veg:true, badge:null, opts:2 },
+  { id:3, em:'🌽', name:"Kurkure Masala Munch Crisps", brand:'kurkure', wt:'75 g', price:20, og:25, off:20, rating:4.5, reviews:'5.3 lac', veg:true, badge:'20% OFF', opts:2 },
+  { id:4, em:'🥔', name:"Lay's Chile Limon Flavour Potato Chips", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.2, reviews:'1.9 lac', veg:true, badge:null, opts:0 },
+  { id:5, em:'🥔', name:"Lay's American Style Cream & Onion Potato Chips", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.4, reviews:'3.2 lac', veg:true, badge:null, opts:2 },
+  { id:6, em:'🌽', name:"Kurkure Puffcorn Yummy Cheese Puffs", brand:'kurkure', wt:'58 g', price:20, og:25, off:20, rating:4.3, reviews:'2.5 lac', veg:true, badge:'20% OFF', opts:2 },
+  { id:7, em:'🌶️', name:"Bingo Mad Angles Achari Masti", brand:'bingo', wt:'64 g', price:20, og:22, off:9, rating:4.2, reviews:'1.1 lac', veg:true, badge:null, opts:0 },
+  { id:8, em:'🥜', name:"Haldiram's Aloo Bhujia 400g", brand:'haldiram', wt:'400 g', price:130, og:150, off:13, rating:4.5, reviews:'89k', veg:true, badge:'BESTSELLER', opts:0 },
+  { id:9, em:'🌽', name:"Kurkure Triangles Chilli Chatka", brand:'kurkure', wt:'65 g', price:20, og:0, off:0, rating:4.1, reviews:'78k', veg:true, badge:null, opts:0 },
+  { id:10, em:'🥔', name:"Lay's Simply Salted Potato Chips", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.3, reviews:'2.1 lac', veg:true, badge:null, opts:0 },
+  { id:11, em:'🌶️', name:"Bingo Tedhe Medhe Masala Tadka", brand:'bingo', wt:'55 g', price:15, og:20, off:25, rating:4.0, reviews:'55k', veg:true, badge:'25% OFF', opts:0 },
+  { id:12, em:'🥜', name:"Haldiram's Moong Dal Namkeen 350g", brand:'haldiram', wt:'350 g', price:110, og:130, off:15, rating:4.4, reviews:'45k', veg:true, badge:null, opts:0 },
+  { id:13, em:'🥔', name:"Uncle Chipps Spicy Treat Flavour", brand:'uncle', wt:'50 g', price:20, og:0, off:0, rating:4.2, reviews:'38k', veg:true, badge:null, opts:0 },
+  { id:14, em:'🌽', name:"Kurkure Naughty Tomatoes Flavour", brand:'kurkure', wt:'50 g', price:10, og:0, off:0, rating:4.0, reviews:'22k', veg:true, badge:null, opts:0 },
+  { id:15, em:'🥔', name:"Lay's Maxx Double Decker Cheese & Herb", brand:'lays', wt:'70 g', price:30, og:35, off:14, rating:4.3, reviews:'67k', veg:true, badge:'NEW', opts:0 },
+  { id:16, em:'🌶️', name:"Bingo Original Style Spanish Tomato Treat", brand:'bingo', wt:'53 g', price:20, og:0, off:0, rating:4.1, reviews:'41k', veg:true, badge:null, opts:0 },
+  { id:17, em:'🥜', name:"Haldiram's Peri Peri Mixture 150g", brand:'haldiram', wt:'150 g', price:70, og:80, off:12, rating:4.3, reviews:'31k', veg:true, badge:null, opts:0 },
+  { id:18, em:'🌽', name:"Kurkure Solid Masti Corn Puffs", brand:'kurkure', wt:'90 g', price:30, og:35, off:14, rating:4.2, reviews:'28k', veg:true, badge:null, opts:0 },
+  { id:19, em:'🌶️', name:"Bingo Yumitos Chilli Sprinkled", brand:'bingo', wt:'70 g', price:20, og:0, off:0, rating:4.0, reviews:'19k', veg:true, badge:null, opts:0 },
+  { id:20, em:'🥔', name:"Lay's West Indies Hot n Sweet Chilli 100g", brand:'lays', wt:'100 g', price:40, og:45, off:11, rating:4.3, reviews:'12k', veg:true, badge:'OFFER', opts:0 },
+  { id:21, em:'🥜', name:"Haldiram's Khatta Meetha Namkeen 400g", brand:'haldiram', wt:'400 g', price:125, og:140, off:10, rating:4.4, reviews:'67k', veg:true, badge:null, opts:0 },
+  { id:22, em:'🌽', name:"Kurkure Masala Munch 114g", brand:'kurkure', wt:'114 g', price:35, og:40, off:12, rating:4.5, reviews:'1.2 lac', veg:true, badge:'BESTSELLER', opts:0 },
+  { id:23, em:'🥔', name:"Lay's Wafer Style Chips Cream & Onion", brand:'lays', wt:'52.9 g', price:25, og:0, off:0, rating:4.2, reviews:'44k', veg:true, badge:null, opts:0 },
+  { id:24, em:'🌶️', name:"Bingo Mad Angles Schezwan Style", brand:'bingo', wt:'64 g', price:20, og:22, off:9, rating:4.1, reviews:'33k', veg:true, badge:null, opts:0 },
+];
+
+const SORT_OPTIONS = [
+  { id:'rel', label:'Relevance (default)' },
+  { id:'price-asc', label:'Price — Low to High' },
+  { id:'price-desc', label:'Price — High to Low' },
+  { id:'rating', label:'Rating' },
+  { id:'discount', label:'Biggest Discount' },
+];
+
+let cartCount = 0;
+let wished = new Set();
+let activeFilter = 'all';
+let activeSort = 'rel';
+let searchQ = '';
+
+// ── RENDER GRID ───────────────────────────────
+function renderGrid() {
+  let list = [...PRODUCTS];
+
+  // filter
+  if (activeFilter === 'veg') list = list.filter(p => p.veg);
+  if (activeFilter === 'offer') list = list.filter(p => p.off > 0);
+  if (activeFilter.startsWith('brand-')) {
+    const b = activeFilter.replace('brand-','');
+    list = list.filter(p => p.brand === b);
+  }
+
+  // search
+  if (searchQ) list = list.filter(p => p.name.toLowerCase().includes(searchQ));
+
+  // sort
+  if (activeSort === 'price-asc') list.sort((a,b) => a.price - b.price);
+  if (activeSort === 'price-desc') list.sort((a,b) => b.price - a.price);
+  if (activeSort === 'rating') list.sort((a,b) => b.rating - a.rating);
+  if (activeSort === 'discount') list.sort((a,b) => b.off - a.off);
+
+  const grid = document.getElementById('prodGrid');
+  const empty = document.getElementById('emptyState');
+  const seeAll = document.getElementById('seeAll');
+  const count = document.getElementById('secCount');
+
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.classList.add('show');
+    seeAll.style.display = 'none';
+    count.textContent = '0 items';
+    return;
+  }
+  empty.classList.remove('show');
+  seeAll.style.display = 'flex';
+  count.textContent = list.length + ' items';
+
+  grid.innerHTML = list.map(p => {
+    const hasOff = p.off > 0;
+    const isWished = wished.has(p.id);
+    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+    const badgeHTML = p.badge
+      ? `<div class="pbadge ${p.badge==='NEW'?'pbadge-b':p.badge==='BESTSELLER'?'pbadge-o':'pbadge-g'}">${p.badge}</div>`
+      : '';
+
+    return `<div class="pcard" id="pc-${p.id}">
+      <div class="pcard-img">
+        ${badgeHTML}
+        <div class="wish${isWished?' on':''}" onclick="toggleWish(event,${p.id})">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <div class="pcard-em">${p.em}</div>
+        <div class="veg-dot veg"></div>
+        <div class="img-dots">
+          <div class="img-dot on"></div><div class="img-dot"></div><div class="img-dot"></div>
+        </div>
+        <div class="img-bottom">
+          <div class="pcard-wt">${p.wt}</div>
+          <button class="add-btn${p.opts>0?' has-opts':''}" onclick="addToCart(event,${p.id},this)">
+            ADD${p.opts>0?`<div class="opts">${p.opts} options</div>`:''}
+          </button>
+        </div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-price">
+          ₹${p.price}
+          ${hasOff ? `<span class="pcard-og">₹${p.og}</span>` : ''}
+        </div>
+        ${hasOff ? `<div class="pcard-off">${p.off}% OFF on MRP</div>` : ''}
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-rating">
+          <span class="stars">${stars.slice(0,5)}</span>
+          <span class="rating-count">${p.rating} · ${p.reviews}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CART ──────────────────────────────────────
+function addToCart(e, id, btn) {
+  e.stopPropagation();
+  cartCount++;
+  document.getElementById('cartBadge').textContent = cartCount;
+  btn.textContent = '✓ ADDED';
+  btn.classList.add('added');
+  setTimeout(() => {
+    btn.textContent = 'ADD';
+    btn.classList.remove('added');
+    const p = PRODUCTS.find(x=>x.id===id);
+    if (p && p.opts > 0) {
+      btn.innerHTML = `ADD<div class="opts">${p.opts} options</div>`;
+      btn.classList.add('has-opts');
+    }
+  }, 1200);
+}
+
+// ── WISHLIST ──────────────────────────────────
+function toggleWish(e, id) {
+  e.stopPropagation();
+  if (wished.has(id)) wished.delete(id);
+  else wished.add(id);
+  renderGrid();
+}
+
+// ── FILTER ────────────────────────────────────
+function setFilter(btn, key) {
+  activeFilter = key;
+  document.querySelectorAll('.fpill:not(.sort)').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+}
+
+// ── SORT ──────────────────────────────────────
+function openSort() {
+  document.getElementById('sheetBg').classList.add('show');
+  document.getElementById('sortSheet').classList.add('open');
+  document.getElementById('sortOpts').innerHTML = SORT_OPTIONS.map(o =>
+    `<div class="sort-opt${o.id===activeSort?' selected':''}" onclick="applySort('${o.id}')">
+      <span class="sort-opt-txt">${o.label}</span>
+      <div class="sort-opt-check"></div>
+    </div>`
+  ).join('');
+}
+function closeSort() {
+  document.getElementById('sheetBg').classList.remove('show');
+  document.getElementById('sortSheet').classList.remove('open');
+}
+function applySort(id) {
+  activeSort = id;
+  closeSort();
+  renderGrid();
+}
+
+// ── SEARCH ────────────────────────────────────
+document.getElementById('srchInput').addEventListener('input', function() {
+  searchQ = this.value.toLowerCase().trim();
+  renderGrid();
+});
+
+// ── NAV ───────────────────────────────────────
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── INIT ──────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>

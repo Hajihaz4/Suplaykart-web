@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Suplaykart – Categories</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0C831F;--green-lt:#E8F5E9;
+  --dark:#1C1C1C;--gray:#6B6B6B;
+  --light:#F2F2F2;--border:#EBEBEB;
+  --white:#fff;--red:#E23744;
+  --font:'Poppins',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#2a2a2a;font-family:var(--font)}
+
+/* ── SHELL ───────────────────────────────────── */
+.shell{
+  max-width:390px;height:100vh;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--light);box-shadow:0 0 60px rgba(0,0,0,.6);
+}
+
+/* ── TOP BAR ─────────────────────────────────── */
+.topbar{
+  background:white;padding:44px 16px 10px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.topbar-title{flex:1;font-size:18px;font-weight:900;color:var(--dark);letter-spacing:-.3px}
+.topbar-icon{
+  width:36px;height:36px;border-radius:50%;background:var(--light);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;
+}
+.topbar-icon svg{width:20px;height:20px;fill:var(--dark)}
+.t-badge{
+  position:absolute;top:-2px;right:-2px;
+  background:var(--red);color:white;font-family:var(--font);
+  font-size:8px;font-weight:800;min-width:15px;height:15px;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  padding:0 3px;border:1.5px solid white;
+}
+
+/* ── SEARCH ──────────────────────────────────── */
+.srch-wrap{
+  background:white;padding:8px 16px 10px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.srch-bar{
+  display:flex;align-items:center;gap:9px;
+  background:var(--light);border-radius:12px;padding:10px 14px;
+}
+.srch-bar input{flex:1;border:none;outline:none;font-family:var(--font);font-size:14px;color:var(--dark);background:transparent}
+.srch-bar input::placeholder{color:#ABABAB}
+.si{fill:#9E9E9E;flex-shrink:0;width:17px;height:17px}
+
+/* ── TWO-COLUMN LAYOUT ───────────────────────── */
+.body-area{flex:1;display:flex;overflow:hidden}
+
+/* ── LEFT SIDEBAR ────────────────────────────── */
+.sidebar{
+  width:54px;background:white;
+  border-right:1px solid var(--border);
+  overflow-y:auto;scrollbar-width:none;flex-shrink:0;
+}
+.sidebar::-webkit-scrollbar{display:none}
+
+.sb-item{
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 4px 10px;cursor:pointer;position:relative;
+  border-left:3px solid transparent;
+  transition:all .2s;
+}
+.sb-item::after{
+  content:'';position:absolute;bottom:0;left:8px;right:8px;
+  height:1px;background:var(--border);
+}
+.sb-item:last-child::after{display:none}
+.sb-item.active{border-left-color:var(--green);background:#F3FFF5}
+.sb-em{font-size:20px;line-height:1;margin-bottom:4px}
+.sb-lbl{
+  font-size:8px;font-weight:700;color:#AAAAAA;
+  text-align:center;line-height:1.25;word-break:break-word;
+}
+.sb-item.active .sb-lbl{color:var(--green)}
+.sb-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--green);margin-top:3px;
+  opacity:0;transition:opacity .2s;
+}
+.sb-item.active .sb-dot{opacity:1}
+
+/* ── RIGHT CONTENT ───────────────────────────── */
+.content{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:16px}
+.content::-webkit-scrollbar{display:none}
+
+/* ── CATEGORY SECTION ────────────────────────── */
+.cat-sec{background:white;margin-bottom:8px}
+.cat-sec-hd{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 12px 10px;
+}
+.cat-sec-title{font-size:14px;font-weight:800;color:var(--dark);letter-spacing:-.2px}
+.cat-sec-sub{font-size:10px;color:var(--gray);font-weight:500}
+
+/* 4-per-row tile grid */
+.tile-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:5px;padding:0 8px 12px;
+}
+.tile{
+  display:flex;flex-direction:column;align-items:center;
+  cursor:pointer;border-radius:10px;padding:4px 2px 6px;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.tile:active{background:rgba(0,0,0,.04)}
+.tile-img{
+  width:100%;aspect-ratio:1;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin-bottom:5px;overflow:hidden;
+  position:relative;
+}
+/* Arrow badge on hover/tap */
+.tile-img::after{
+  content:'›';
+  position:absolute;bottom:3px;right:5px;
+  font-size:12px;font-weight:800;color:rgba(0,0,0,.25);
+}
+.tile-name{
+  font-size:9.5px;font-weight:600;color:var(--dark);
+  text-align:center;line-height:1.3;
+}
+
+/* Tile background palette */
+.bg1{background:#E1F0E4} .bg2{background:#FEF3E2}
+.bg3{background:#E2ECFD} .bg4{background:#FEE5EA}
+.bg5{background:#EEE5FD} .bg6{background:#E2F5FB}
+.bg7{background:#FEF9E2} .bg8{background:#F0ECE6}
+.bg9{background:#FDECEA} .bg10{background:#E8F5E9}
+.bg11{background:#FFF3E0} .bg12{background:#E8EAF6}
+
+/* ── STORES IN SPOTLIGHT ─────────────────────── */
+.spot-sec{background:white;margin-bottom:8px}
+.spot-scroll{overflow-x:auto;scrollbar-width:none;padding:0 10px 16px}
+.spot-scroll::-webkit-scrollbar{display:none}
+.spot-row{display:flex;gap:9px}
+.spot-card{
+  min-width:124px;height:96px;border-radius:14px;
+  overflow:hidden;position:relative;cursor:pointer;flex-shrink:0;
+}
+.sp1{background:linear-gradient(135deg,#BBDEFB,#64B5F6)}
+.sp2{background:linear-gradient(135deg,#F8BBD0,#F48FB1)}
+.sp3{background:linear-gradient(135deg,#C8E6C9,#81C784)}
+.sp4{background:linear-gradient(135deg,#FFE0B2,#FFAB40)}
+.sp5{background:linear-gradient(135deg,#E1BEE7,#BA68C8)}
+.sp6{background:linear-gradient(135deg,#B2EBF2,#4DD0E1)}
+.spot-name{
+  position:absolute;top:9px;left:10px;
+  font-size:11px;font-weight:800;color:var(--dark);
+  line-height:1.3;
+}
+.spot-em{
+  position:absolute;bottom:7px;right:8px;
+  font-size:34px;line-height:1;
+}
+
+/* ── BOTTOM NAV ──────────────────────────────── */
+.bnav{
+  flex-shrink:0;background:white;
+  border-top:1px solid var(--border);
+  display:flex;padding:8px 0 18px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.05);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;gap:3px;cursor:pointer;
+}
+.nav-svg{width:22px;height:22px;fill:#9E9E9E;transition:all .2s}
+.nav-item.active .nav-svg{fill:var(--green);transform:scale(1.1)}
+.nav-item.nav-pick.active .nav-svg{fill:#FF6B00}
+.nav-lbl{font-size:10px;font-weight:600;color:#9E9E9E}
+.nav-item.active .nav-lbl{color:var(--green)}
+.nav-item.nav-pick.active .nav-lbl{color:#FF6B00}
+
+/* ── PRODUCT LISTING OVERLAY ─────────────────── */
+.overlay{
+  position:absolute;inset:0;background:white;
+  z-index:200;display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.overlay.open{transform:translateX(0)}
+.ov-head{
+  padding:44px 16px 14px;background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.ov-back{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--light);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.ov-back svg{width:20px;height:20px;fill:var(--dark)}
+.ov-title{font-size:16px;font-weight:800;color:var(--dark);flex:1}
+.ov-body{flex:1;overflow-y:auto;padding:16px}
+.sub-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.sub-card{
+  border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;cursor:pointer;background:white;
+  transition:transform .15s;
+}
+.sub-card:active{transform:scale(.96)}
+.sub-img{
+  height:80px;display:flex;align-items:center;justify-content:center;
+  font-size:38px;
+}
+.sub-name{
+  padding:6px 6px 8px;font-size:10px;font-weight:600;
+  color:var(--dark);text-align:center;line-height:1.3;
+}
+.sub-count{font-size:9px;color:var(--gray);margin-top:1px}
+
+/* ── SCROLL INDICATOR LINE (sidebar) ────────── */
+.sb-progress{
+  position:absolute;left:0;top:0;width:3px;
+  background:var(--green);border-radius:0 3px 3px 0;
+  transition:height .2s, top .2s;
+  pointer-events:none;
+}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-title">Categories</div>
+    <div class="topbar-icon" style="position:relative">
+      <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0021.46 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      <span class="t-badge">3</span>
+    </div>
+    <div class="topbar-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="srch-wrap">
+    <div class="srch-bar">
+      <svg class="si" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" id="srchInput" placeholder='Search categories...'>
+      <svg class="si" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </div>
+  </div>
+
+  <!-- BODY: SIDEBAR + CONTENT -->
+  <div class="body-area">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div class="content" id="content">
+      <!-- filled by JS -->
+
+      <!-- PRODUCT OVERLAY (slides in from right) -->
+      <div class="overlay" id="overlay">
+        <div class="ov-head">
+          <div class="ov-back" onclick="closeOverlay()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </div>
+          <div class="ov-title" id="ov-title">Category</div>
+        </div>
+        <div class="ov-body">
+          <div class="sub-grid" id="sub-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end body-area -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="nav-lbl">Home</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-1.66 0-3-1.34-3-3h2c0 .55.45 1 1 1s1-.45 1-1h2c0 1.66-1.34 3-3 3z"/></svg>
+      <span class="nav-lbl">Shop</span>
+    </div>
+    <div class="nav-item active" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2z"/></svg>
+      <span class="nav-lbl">Category</span>
+    </div>
+    <div class="nav-item nav-pick" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <span class="nav-lbl">Pick</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg class="nav-svg" viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-3.87-3.12-6-7.51-6C4.09 8.99 1 11.12 1 14.99v1H16.03v-1z"/></svg>
+      <span class="nav-lbl">Restaurants</span>
+    </div>
+  </nav>
+
+</div><!-- shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const SECTIONS = [
+  {
+    id: 'grocery',
+    em: '🥗', label: 'Grocery',
+    title: 'Grocery & Kitchen', count: '8 categories',
+    items: [
+      { name:'Vegetables & Fruits', em:'🥦', bg:'bg1', subs:[{n:'Tomatoes',e:'🍅',c:'bg4'},{n:'Bananas',e:'🍌',c:'bg2'},{n:'Onions',e:'🧅',c:'bg8'},{n:'Spinach',e:'🥬',c:'bg1'},{n:'Apples',e:'🍎',c:'bg4'},{n:'Carrots',e:'🥕',c:'bg2'}] },
+      { name:'Atta, Rice & Dal', em:'🌾', bg:'bg2', subs:[{n:'Ponni Rice 5kg',e:'🍚',c:'bg7'},{n:'Aashirvaad Atta',e:'🌾',c:'bg2'},{n:'Toor Dal',e:'🫘',c:'bg8'},{n:'Maida',e:'🥣',c:'bg7'},{n:'Moong Dal',e:'🫘',c:'bg1'},{n:'Idli Rice',e:'🍚',c:'bg2'}] },
+      { name:'Oil, Ghee & Masala', em:'🫙', bg:'bg3', subs:[{n:'Fortune Oil 1L',e:'🫙',c:'bg7'},{n:'Amul Ghee',e:'🧈',c:'bg2'},{n:'Tikhalal Chilli',e:'🌶️',c:'bg9'},{n:'MDH Masala',e:'🌿',c:'bg1'},{n:'Turmeric 100g',e:'🟡',c:'bg7'},{n:'Coriander Powder',e:'🌿',c:'bg1'}] },
+      { name:'Dairy, Bread & Eggs', em:'🥚', bg:'bg4', subs:[{n:'Aavin Milk 1L',e:'🥛',c:'bg6'},{n:'Amul Butter',e:'🧈',c:'bg7'},{n:'Eggs (12)',e:'🥚',c:'bg4'},{n:'Bread Loaf',e:'🍞',c:'bg2'},{n:'Curd 500g',e:'🥣',c:'bg6'},{n:'Cheese Slices',e:'🧀',c:'bg7'}] },
+      { name:'Bakery & Biscuits', em:'🍞', bg:'bg5', subs:[{n:'Parle-G 800g',e:'🍪',c:'bg7'},{n:'Hide & Seek',e:'🍪',c:'bg5'},{n:'Cream Crackers',e:'🫓',c:'bg2'},{n:'Bourbon',e:'🍫',c:'bg8'},{n:'Rusks',e:'🥐',c:'bg7'},{n:'Butter Cookies',e:'🍪',c:'bg2'}] },
+      { name:'Dry Fruits & Cereals', em:'🧆', bg:'bg7', subs:[{n:'Kellogg\'s Cornflakes',e:'🥣',c:'bg7'},{n:'Cashews 250g',e:'🥜',c:'bg2'},{n:'Almonds 250g',e:'🌰',c:'bg8'},{n:'Raisins 200g',e:'🍇',c:'bg5'},{n:'Oats 500g',e:'🥣',c:'bg7'},{n:'Muesli',e:'🥣',c:'bg2'}] },
+      { name:'Chicken, Meat & Fish', em:'🥩', bg:'bg6', subs:[{n:'Chicken 1kg',e:'🍗',c:'bg9'},{n:'Mutton 500g',e:'🥩',c:'bg4'},{n:'Prawns 500g',e:'🦐',c:'bg9'},{n:'Fish Fillet',e:'🐟',c:'bg3'},{n:'Eggs (6)',e:'🥚',c:'bg4'},{n:'Keema 500g',e:'🥩',c:'bg9'}] },
+      { name:'Kitchenware', em:'🍳', bg:'bg8', subs:[{n:'Pressure Cooker',e:'🫕',c:'bg8'},{n:'Kadai',e:'🍳',c:'bg8'},{n:'Steel Plates',e:'🍽️',c:'bg6'},{n:'Water Bottle',e:'🍶',c:'bg3'},{n:'Tiffin Box',e:'📦',c:'bg2'},{n:'Mixer Jar',e:'⚙️',c:'bg8'}] },
+    ]
+  },
+  {
+    id: 'snacks',
+    em: '🍟', label: 'Snacks',
+    title: 'Snacks & Drinks', count: '8 categories',
+    items: [
+      { name:'Chips & Namkeen', em:'🥔', bg:'bg2', subs:[{n:'Lays Classic',e:'🥔',c:'bg2'},{n:'Kurkure',e:'🍿',c:'bg2'},{n:'Haldiram Mix',e:'🧂',c:'bg8'},{n:'Bingo Tedhe',e:'🥨',c:'bg2'},{n:'Bhujia 500g',e:'🌾',c:'bg7'},{n:'Monaco Biscuit',e:'🫓',c:'bg7'}] },
+      { name:'Sweets & Chocolates', em:'🍫', bg:'bg4', subs:[{n:'Dairy Milk',e:'🍫',c:'bg4'},{n:'KitKat',e:'🍫',c:'bg4'},{n:'Gulab Jamun',e:'🧆',c:'bg2'},{n:'Rasgulla',e:'⚪',c:'bg6'},{n:'Motichoor Ladoo',e:'🟡',c:'bg2'},{n:'5 Star',e:'⭐',c:'bg7'}] },
+      { name:'Drinks & Juices', em:'🥤', bg:'bg6', subs:[{n:'Coca-Cola 750ml',e:'🥤',c:'bg9'},{n:'Pepsi 750ml',e:'🥤',c:'bg3'},{n:'Minute Maid',e:'🧃',c:'bg2'},{n:'Frooti 200ml',e:'🧃',c:'bg2'},{n:'Sprite 250ml',e:'🥤',c:'bg1'},{n:'7UP 350ml',e:'🥤',c:'bg1'}] },
+      { name:'Tea, Coffee & Milk Drinks', em:'☕', bg:'bg8', subs:[{n:'Tata Tea 500g',e:'🍵',c:'bg8'},{n:'Nescafé 200g',e:'☕',c:'bg8'},{n:'Bru Coffee',e:'☕',c:'bg7'},{n:'Horlicks 500g',e:'🥛',c:'bg2'},{n:'Boost 500g',e:'🥛',c:'bg4'},{n:'Cocoa Powder',e:'🍫',c:'bg8'}] },
+      { name:'Noodles & Pasta', em:'🍜', bg:'bg5', subs:[{n:'Maggi 12-pack',e:'🍜',c:'bg7'},{n:'Top Ramen Curry',e:'🍜',c:'bg2'},{n:'Sunfeast Pasta',e:'🍝',c:'bg3'},{n:'Ching\'s Noodles',e:'🍜',c:'bg4'},{n:'Samyang Ramen',e:'🍜',c:'bg9'},{n:'Cup Noodles',e:'☕',c:'bg8'}] },
+      { name:'Sauces & Spreads', em:'🫙', bg:'bg1', subs:[{n:'Kissan Ketchup',e:'🍅',c:'bg4'},{n:'Maggi Sauce',e:'🫙',c:'bg4'},{n:'Nutella 200g',e:'🍫',c:'bg8'},{n:'Peanut Butter',e:'🥜',c:'bg2'},{n:'Jam 200g',e:'🫙',c:'bg4'},{n:'Mayonnaise',e:'🫙',c:'bg7'}] },
+      { name:'Ice Creams & More', em:'🍦', bg:'bg3', subs:[{n:'Amul Vanilla 1L',e:'🍦',c:'bg6'},{n:'Kwality Walls',e:'🍨',c:'bg4'},{n:'Cornetto',e:'🍦',c:'bg2'},{n:'Magnum',e:'🍫',c:'bg8'},{n:'Choco Bar',e:'🍫',c:'bg4'},{n:'Popsicle',e:'🍭',c:'bg5'}] },
+      { name:'Instant Food', em:'🍱', bg:'bg7', subs:[{n:'MTR Upma Mix',e:'🍱',c:'bg2'},{n:'Idli Mix 500g',e:'🫓',c:'bg7'},{n:'Poha 500g',e:'🍚',c:'bg7'},{n:'Vermicelli',e:'🍜',c:'bg7'},{n:'Rava 1kg',e:'🌾',c:'bg8'},{n:'Sabudana',e:'⚪',c:'bg6'}] },
+    ]
+  },
+  {
+    id: 'beauty',
+    em: '💄', label: 'Beauty',
+    title: 'Beauty & Personal Care', count: '7 categories',
+    items: [
+      { name:'Bath & Body', em:'🧴', bg:'bg4', subs:[{n:'Dove Soap',e:'🧼',c:'bg6'},{n:'Mysore Sandal',e:'🧼',c:'bg7'},{n:'Dettol 75g',e:'🧼',c:'bg1'},{n:'Pears Soap',e:'🧼',c:'bg4'},{n:'Lux Soap',e:'🧼',c:'bg4'},{n:'Body Lotion',e:'🧴',c:'bg4'}] },
+      { name:'Hair Care', em:'💆', bg:'bg5', subs:[{n:'Clinic Plus 340ml',e:'💆',c:'bg5'},{n:'Pantene 180ml',e:'💆',c:'bg5'},{n:'Head & Shoulders',e:'🧴',c:'bg3'},{n:'Coconut Oil',e:'🫙',c:'bg1'},{n:'Hair Conditioner',e:'🧴',c:'bg5'},{n:'Amla Hair Oil',e:'🫙',c:'bg1'}] },
+      { name:'Skin & Face', em:'🌿', bg:'bg1', subs:[{n:'Cetaphil Face Wash',e:'🌿',c:'bg1'},{n:'Lakme Sunscreen',e:'🧴',c:'bg4'},{n:'Face Mask',e:'🧖',c:'bg4'},{n:'Moisturizer',e:'🧴',c:'bg6'},{n:'Nivea Cream',e:'🧴',c:'bg3'},{n:'Toner',e:'💧',c:'bg3'}] },
+      { name:'Beauty & Cosmetics', em:'💋', bg:'bg4', subs:[{n:'Lakme Lipstick',e:'💄',c:'bg4'},{n:'Foundation',e:'🪞',c:'bg2'},{n:'Kajal',e:'🖋️',c:'bg8'},{n:'Eyeliner',e:'✏️',c:'bg8'},{n:'Compact Powder',e:'🪞',c:'bg7'},{n:'Nail Polish',e:'💅',c:'bg4'}] },
+      { name:'Feminine Hygiene', em:'🌸', bg:'bg4', subs:[{n:'Whisper Ultra',e:'🌸',c:'bg4'},{n:'Veet Hair Removal',e:'🌸',c:'bg4'},{n:'Feminine Wash',e:'💧',c:'bg3'},{n:'Stayfree',e:'🌸',c:'bg4'},{n:'Pee-Safe Wipes',e:'🌿',c:'bg1'},{n:'Cotton',e:'☁️',c:'bg6'}] },
+      { name:'Baby Care', em:'👶', bg:'bg6', subs:[{n:'Pampers M 56pcs',e:'👶',c:'bg4'},{n:'Johnson\'s Powder',e:'☁️',c:'bg6'},{n:'Baby Lotion',e:'🧴',c:'bg4'},{n:'Baby Soap',e:'🧼',c:'bg6'},{n:'Baby Wipes',e:'🤲',c:'bg6'},{n:'Gripe Water',e:'💧',c:'bg3'}] },
+      { name:'Health & Pharma', em:'💊', bg:'bg3', subs:[{n:'Dolo 650',e:'💊',c:'bg3'},{n:'Vicks VapoRub',e:'🫙',c:'bg3'},{n:'Bandages',e:'🩹',c:'bg9'},{n:'Thermometer',e:'🌡️',c:'bg9'},{n:'Glucon-D',e:'🟡',c:'bg7'},{n:'Vitamin C',e:'🟠',c:'bg2'}] },
+    ]
+  },
+  {
+    id: 'household',
+    em: '🏠', label: 'Household',
+    title: 'Household Essentials', count: '6 categories',
+    items: [
+      { name:'Home & Lifestyle', em:'🛋️', bg:'bg8', subs:[{n:'Bed Sheets',e:'🛏️',c:'bg3'},{n:'Pillow Covers',e:'💤',c:'bg5'},{n:'Floor Mat',e:'🟫',c:'bg8'},{n:'Hangers',e:'🪝',c:'bg8'},{n:'Dustbin',e:'🗑️',c:'bg8'},{n:'Wall Clock',e:'🕐',c:'bg8'}] },
+      { name:'Cleaners & Repellents', em:'🧹', bg:'bg1', subs:[{n:'Harpic 1L',e:'🧹',c:'bg1'},{n:'Surf Excel 1kg',e:'🫧',c:'bg3'},{n:'Vim Dishwash',e:'🫧',c:'bg1'},{n:'Good Knight',e:'🦟',c:'bg2'},{n:'HIT Spray',e:'🌿',c:'bg1'},{n:'Phenyl 500ml',e:'🧴',c:'bg3'}] },
+      { name:'Electronics', em:'📱', bg:'bg3', subs:[{n:'USB-C Cable',e:'🔌',c:'bg3'},{n:'Earphones',e:'🎧',c:'bg8'},{n:'Phone Charger',e:'⚡',c:'bg7'},{n:'Power Bank',e:'🔋',c:'bg8'},{n:'LED Bulb',e:'💡',c:'bg7'},{n:'Extension Box',e:'🔌',c:'bg8'}] },
+      { name:'Stationery & Games', em:'✏️', bg:'bg7', subs:[{n:'Classmate Notebook',e:'📓',c:'bg7'},{n:'Reynolds Pen',e:'✒️',c:'bg3'},{n:'Pencil Box',e:'📦',c:'bg2'},{n:'Sketch Pens',e:'🖍️',c:'bg5'},{n:'UNO Cards',e:'🃏',c:'bg9'},{n:'Glue Stick',e:'🖇️',c:'bg7'}] },
+      { name:'Pooja & Spiritual', em:'🪔', bg:'bg2', subs:[{n:'Agarbatti',e:'🪔',c:'bg7'},{n:'Camphor',e:'⚪',c:'bg6'},{n:'Kumkum',e:'🔴',c:'bg4'},{n:'Flowers (Dry)',e:'🌸',c:'bg4'},{n:'Coconut Oil',e:'🫙',c:'bg1'},{n:'Puja Thali',e:'🫙',c:'bg7'}] },
+      { name:'Pet Supplies', em:'🐾', bg:'bg5', subs:[{n:'Pedigree Dog Food',e:'🐕',c:'bg8'},{n:'Whiskas Cat Food',e:'🐈',c:'bg5'},{n:'Pet Shampoo',e:'🧴',c:'bg4'},{n:'Dog Treats',e:'🦴',c:'bg2'},{n:'Cat Litter',e:'📦',c:'bg8'},{n:'Pet Bowl',e:'🥣',c:'bg7'}] },
+    ]
+  }
+];
+
+const SPOTLIGHT = [
+  { name:'Ice Cream\nStore', em:'🍦', cl:'sp1' },
+  { name:'Fresh\nVegetables', em:'🥦', cl:'sp3' },
+  { name:'Pharma\nStore', em:'💊', cl:'sp2' },
+  { name:'Festival\nSpecials', em:'🎉', cl:'sp4' },
+  { name:'Kitchen\nEssentials', em:'🍳', cl:'sp5' },
+  { name:'Quick\nBreakfast', em:'🥣', cl:'sp6' },
+];
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+function render() {
+  const sb = document.getElementById('sidebar');
+  const ct = document.getElementById('content');
+  let sbHTML = '', ctHTML = '';
+
+  SECTIONS.forEach((sec, i) => {
+    // Sidebar item
+    sbHTML += `
+      <div class="sb-item${i===0?' active':''}" id="sb-${sec.id}" onclick="jumpTo('${sec.id}')">
+        <div class="sb-em">${sec.em}</div>
+        <div class="sb-lbl">${sec.label}</div>
+        <div class="sb-dot"></div>
+      </div>`;
+
+    // Category section
+    let tilesHTML = sec.items.map(it => `
+      <div class="tile" onclick="openOverlay('${sec.title} › ${it.name}', ${JSON.stringify(it.subs).replace(/"/g,'&quot;')})">
+        <div class="tile-img ${it.bg}">${it.em}</div>
+        <div class="tile-name">${it.name}</div>
+      </div>`).join('');
+
+    ctHTML += `
+      <div class="cat-sec" id="sec-${sec.id}" data-id="${sec.id}">
+        <div class="cat-sec-hd">
+          <div class="cat-sec-title">${sec.em} ${sec.title}</div>
+          <div class="cat-sec-sub">${sec.count}</div>
+        </div>
+        <div class="tile-grid">${tilesHTML}</div>
+      </div>`;
+  });
+
+  // Spotlight section
+  sbHTML += `
+    <div class="sb-item" id="sb-spotlight" onclick="jumpTo('spotlight')">
+      <div class="sb-em">⭐</div>
+      <div class="sb-lbl">Spotlight</div>
+      <div class="sb-dot"></div>
+    </div>`;
+
+  let spotHTML = SPOTLIGHT.map(s => `
+    <div class="spot-card ${s.cl}">
+      <div class="spot-name">${s.name.replace('\n','<br>')}</div>
+      <div class="spot-em">${s.em}</div>
+    </div>`).join('');
+
+  ctHTML += `
+    <div class="cat-sec spot-sec" id="sec-spotlight" data-id="spotlight">
+      <div class="cat-sec-hd">
+        <div class="cat-sec-title">⭐ Stores in Spotlight</div>
+        <div class="cat-sec-sub">Curated picks</div>
+      </div>
+      <div class="spot-scroll">
+        <div class="spot-row">${spotHTML}</div>
+      </div>
+    </div>`;
+
+  // Overlay placeholder (keeps it in DOM)
+  ctHTML += `<div class="overlay" id="overlay">
+    <div class="ov-head">
+      <div class="ov-back" onclick="closeOverlay()">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#1C1C1C"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+      <div class="ov-title" id="ov-title">Category</div>
+    </div>
+    <div class="ov-body"><div class="sub-grid" id="sub-grid"></div></div>
+  </div>`;
+
+  sb.innerHTML = sbHTML;
+  ct.innerHTML = ctHTML;
+}
+
+// ══════════════════════════════════════════════
+// INTERSECTION OBSERVER → active sidebar
+// ══════════════════════════════════════════════
+function setupObserver() {
+  const content = document.getElementById('content');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
+        const id = entry.target.dataset.id;
+        document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+        const sbItem = document.getElementById('sb-' + id);
+        if (sbItem) {
+          sbItem.classList.add('active');
+          sbItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+    });
+  }, {
+    root: content,
+    threshold: 0.15,
+    rootMargin: '-20px 0px -60% 0px'
+  });
+
+  document.querySelectorAll('[data-id]').forEach(el => observer.observe(el));
+}
+
+// ══════════════════════════════════════════════
+// JUMP TO SECTION
+// ══════════════════════════════════════════════
+function jumpTo(id) {
+  const el = document.getElementById('sec-' + id);
+  const content = document.getElementById('content');
+  if (el) content.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════
+// SUBCATEGORY OVERLAY
+// ══════════════════════════════════════════════
+function openOverlay(title, subs) {
+  document.getElementById('ov-title').textContent = title;
+  const grid = document.getElementById('sub-grid');
+  grid.innerHTML = subs.map(s => `
+    <div class="sub-card">
+      <div class="sub-img ${s.c}">${s.e}</div>
+      <div class="sub-name">${s.n}</div>
+    </div>`).join('');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// SEARCH FILTER
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+  setupObserver();
+
+  document.getElementById('srchInput').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.cat-sec').forEach(sec => {
+      if (!q) { sec.style.display = ''; return; }
+      const title = sec.querySelector('.cat-sec-title').textContent.toLowerCase();
+      const tiles = sec.querySelectorAll('.tile-name');
+      let match = title.includes(q);
+      tiles.forEach(t => { if (t.textContent.toLowerCase().includes(q)) match = true; });
+      sec.style.display = match ? '' : 'none';
+    });
+  });
+});
+
+// ══════════════════════════════════════════════
+// BOTTOM NAV
+// ══════════════════════════════════════════════
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
