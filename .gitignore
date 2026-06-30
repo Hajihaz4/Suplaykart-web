@@ -14,6 +14,8 @@ build/
 .env
 .env.local
 .env.*.local
+.env*.save
+*.local.save
 
 # embedded-postgres verification data dir
 .pgdata-verify/
