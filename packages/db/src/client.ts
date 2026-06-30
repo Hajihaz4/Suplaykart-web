@@ -1,18 +1,33 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 
 /**
- * Drizzle client backed by Neon's serverless HTTP driver.
+ * Drizzle client backed by node-postgres (pg).
  *
- * `DATABASE_URL` must be the POOLED Neon connection string. The client is
- * constructed lazily-safe: `neon("")` does not throw at import time, only on
- * the first query — so importing the schema never requires the env var.
+ * Chosen over the neon-http driver because the Phase-1 order/inventory
+ * lifecycles need **interactive transactions** (reserve-all-or-fail), which
+ * neon-http does not support. `pg` works against Neon's POOLED endpoint
+ * (TCP+TLS) on a Node.js runtime (Vercel Fluid Compute) and against any
+ * standard Postgres locally.
+ *
+ * `DATABASE_URL` must be the pooled connection string in production. The Pool
+ * connects lazily (first query), so importing this module never requires the
+ * env var to be set. A dev-only global singleton avoids pool leaks under HMR.
  */
-const connectionString = process.env.DATABASE_URL;
+const globalForDb = globalThis as unknown as { __suplaykartPool?: Pool };
 
-const sql = neon(connectionString ?? "");
+const pool =
+  globalForDb.__suplaykartPool ??
+  new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: process.env.DB_POOL_MAX ? Number(process.env.DB_POOL_MAX) : 10,
+  });
 
-export const db = drizzle(sql, { schema, casing: "snake_case" });
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.__suplaykartPool = pool;
+}
 
+export const db = drizzle(pool, { schema, casing: "snake_case" });
 export type DB = typeof db;
+export { pool };

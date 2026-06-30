@@ -5,6 +5,7 @@ packages:
 # Native postinstall scripts approved to run (pnpm ignores them by default).
 allowBuilds:
   '@clerk/shared': true
+  '@embedded-postgres/darwin-arm64': true
   esbuild: true
   sharp: true
   unrs-resolver: true

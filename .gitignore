@@ -15,6 +15,9 @@ build/
 .env.local
 .env.*.local
 
+# embedded-postgres verification data dir
+.pgdata-verify/
+
 # misc
 .DS_Store
 *.log
