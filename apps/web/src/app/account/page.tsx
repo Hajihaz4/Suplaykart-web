@@ -6,6 +6,7 @@ import {
   HelpCircle,
   LogOut,
   MapPin,
+  Package,
   Ticket,
   User as UserIcon,
 } from "lucide-react";
@@ -31,6 +32,12 @@ export default async function AccountPage() {
   ).toUpperCase();
 
   const menu = [
+    {
+      icon: <Package className="size-[18px]" />,
+      label: "My Orders",
+      href: "/account/orders",
+      badge: undefined,
+    },
     {
       icon: <MapPin className="size-[18px]" />,
       label: "Saved Addresses",

@@ -8,4 +8,5 @@ export * from "./address-chip";
 export * from "./search-header";
 export * from "./section-header";
 export * from "./store-status-banner";
+export * from "./order-status-badge";
 export * from "./app-shell";
