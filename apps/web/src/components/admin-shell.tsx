@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Bell,
   Boxes,
   FolderTree,
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/addresses", label: "Addresses", icon: MapPin },
   { href: "/admin/serviceability", label: "Serviceability", icon: MapPinned },

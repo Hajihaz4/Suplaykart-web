@@ -16,3 +16,4 @@ export * from "./serviceability";
 export * from "./notifications";
 export * from "./wishlist";
 export * from "./payments";
+export * from "./analytics";
