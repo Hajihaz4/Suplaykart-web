@@ -2,8 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Badge, ProductCard, discountPct, formatINR } from "@suplaykart/ui";
+import {
+  db,
+  getProductDetailBySlug,
+  listFeaturedProducts,
+  requireDefaultSupplier,
+} from "@suplaykart/db";
 import { AddToCartBar } from "@/components/add-to-cart-bar";
-import { PRODUCTS, getProductBySlug } from "@/lib/mock-data";
+import { toProductCard } from "@/lib/mappers";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({
   params,
@@ -11,11 +19,14 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const supplier = await requireDefaultSupplier(db);
+  const product = await getProductDetailBySlug(db, supplier.id, slug);
   if (!product) notFound();
 
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
-  const similar = PRODUCTS.filter((p) => p.id !== product.id).slice(0, 6);
+  const similar = (await listFeaturedProducts(db, supplier.id, 8))
+    .filter((p) => p.id !== product.id)
+    .slice(0, 6);
 
   return (
     <div className="min-h-screen bg-surface pb-24">
@@ -28,7 +39,7 @@ export default async function ProductPage({
           <ArrowLeft className="size-4 text-ink" />
         </Link>
         <span className="truncate text-sm font-extrabold text-ink">
-          {product.brand ?? "Product"}
+          {product.brand ?? product.categoryName ?? "Product"}
         </span>
       </header>
 
@@ -49,7 +60,7 @@ export default async function ProductPage({
           <div className="mt-1 text-xs font-semibold text-muted">
             {product.unit}
             {product.rating
-              ? ` · ★ ${product.rating} (${product.ratingCount})`
+              ? ` · ★ ${product.rating}${product.ratingCount ? ` (${product.ratingCount})` : ""}`
               : ""}
           </div>
           <div className="mt-3 flex items-baseline gap-2">
@@ -66,26 +77,28 @@ export default async function ProductPage({
             ) : null}
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Inclusive of all taxes. This is mock product copy for the Phase 1C UI
-            foundation — real product details arrive in a later phase.
+            {product.description ??
+              "Inclusive of all taxes. Fresh from the Suplaykart store."}
           </p>
         </div>
 
-        <div className="border-t-8 border-surface-alt p-4">
-          <h2 className="mb-3 text-base font-extrabold text-ink">
-            Similar products
-          </h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {similar.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                href={`/products/${p.slug}`}
-                linkComponent={Link}
-              />
-            ))}
+        {similar.length > 0 ? (
+          <div className="border-t-8 border-surface-alt p-4">
+            <h2 className="mb-3 text-base font-extrabold text-ink">
+              Similar products
+            </h2>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+              {similar.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={toProductCard(p)}
+                  href={`/products/${p.slug}`}
+                  linkComponent={Link}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <AddToCartBar price={product.price} />

@@ -1,6 +1,7 @@
-// Data-access layer (Phase-1B) — pure typed queries over the schema.
-// Each function takes a `DB` instance (dependency injection) so it works with
-// the app singleton and with isolated test/verification connections.
+// Data-access layer — pure typed queries over the schema (DI: each fn takes DB).
+export * from "./types";
 export * from "./health";
 export * from "./users";
+export * from "./suppliers";
 export * from "./store";
+export * from "./catalog";

@@ -1,16 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { DB } from "../client";
-import { suppliers, serviceableAreas } from "../schema";
-
-/** The single-tenant default supplier (the multi-supplier seam). */
-export async function getDefaultSupplier(db: DB) {
-  const rows = await db
-    .select()
-    .from(suppliers)
-    .where(eq(suppliers.isDefault, true))
-    .limit(1);
-  return rows[0] ?? null;
-}
+import { serviceableAreas } from "../schema";
 
 export async function getServiceableArea(db: DB, pincode: string) {
   const rows = await db
