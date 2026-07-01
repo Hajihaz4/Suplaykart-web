@@ -7,3 +7,5 @@ export * from "./suppliers";
 export * from "./store";
 export * from "./catalog";
 export * from "./cart";
+export * from "./inventory";
+export * from "./orders";

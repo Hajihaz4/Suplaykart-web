@@ -1,6 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import type { DB } from "./client";
-import { categories, productImages, productVariants, products } from "./schema";
+import {
+  categories,
+  inventory,
+  productImages,
+  productVariants,
+  products,
+} from "./schema";
 
 /**
  * Phase-1D catalog seed (idempotent) — realistic storefront content.
@@ -135,5 +141,27 @@ export async function seedCatalog(db: DB, supplierId: string) {
     created++;
   }
 
-  return { categories: CATEGORIES.length, productsCreated: created };
+  // 3) ensure an inventory row for every variant (idempotent on variant unique)
+  const variantRows = await db
+    .select({ id: productVariants.id })
+    .from(productVariants)
+    .innerJoin(products, eq(products.id, productVariants.productId))
+    .where(eq(products.supplierId, supplierId));
+  let stocked = 0;
+  for (const v of variantRows) {
+    const r = await db
+      .insert(inventory)
+      .values({
+        variantId: v.id,
+        supplierId,
+        quantityOnHand: 50,
+        quantityReserved: 0,
+        lowStockThreshold: 5,
+      })
+      .onConflictDoNothing()
+      .returning({ id: inventory.id });
+    if (r[0]) stocked++;
+  }
+
+  return { categories: CATEGORIES.length, productsCreated: created, stocked };
 }
