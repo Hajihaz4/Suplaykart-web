@@ -20,6 +20,7 @@
     "verify:addresses": "tsx scripts/verify-addresses.ts",
     "verify:cart": "tsx scripts/verify-cart.ts",
     "verify:orders": "tsx scripts/verify-orders.ts",
+    "promote": "tsx scripts/promote-admin.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

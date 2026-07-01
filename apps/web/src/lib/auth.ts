@@ -34,3 +34,18 @@ export async function requireCurrentUser(): Promise<User> {
   if (!user) redirect("/");
   return user;
 }
+
+/** True for any staff tier (support/ops/admin/owner) — not a customer. */
+export function isStaff(user: User): boolean {
+  return user.role !== "customer";
+}
+
+/**
+ * Gate for the admin area. Requires a signed-in staff user; customers are
+ * redirected home. Defense-in-depth on top of the middleware auth check.
+ */
+export async function requireAdmin(): Promise<User> {
+  const user = await requireCurrentUser();
+  if (!isStaff(user)) redirect("/");
+  return user;
+}
