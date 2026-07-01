@@ -30,6 +30,24 @@ export const notifications = pgTable(
 );
 
 /** §1.8 — per-user notification toggles. */
+/** Phase 2 — Web Push subscriptions (one per browser/device endpoint). */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    endpoint: text().notNull().unique(),
+    p256dh: text().notNull(),
+    auth: text().notNull(),
+    userAgent: text(),
+    ...timestamps,
+  },
+  (t) => [index("push_subscriptions_user_idx").on(t.userId)],
+);
+
+/** §1.8 — per-user notification toggles. */
 export const notificationPreferences = pgTable("notification_preferences", {
   id: uuid().primaryKey().defaultRandom(),
   userId: uuid()

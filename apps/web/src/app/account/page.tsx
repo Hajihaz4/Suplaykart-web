@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@clerk/nextjs";
 import {
+  Bell,
   ChevronRight,
   FileText,
   HelpCircle,
@@ -45,6 +46,7 @@ export default async function AccountPage() {
       badge: addresses.length ? String(addresses.length) : undefined,
     },
     { icon: <UserIcon className="size-[18px]" />, label: "Profile", href: "/account/profile" },
+    { icon: <Bell className="size-[18px]" />, label: "Notifications", href: "/account/notifications" },
     { icon: <Ticket className="size-[18px]" />, label: "Coupons & Offers", href: "/account" },
     { icon: <HelpCircle className="size-[18px]" />, label: "Help & Support", href: "/account" },
     { icon: <FileText className="size-[18px]" />, label: "Policies & Info", href: "/account" },

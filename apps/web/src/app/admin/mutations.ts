@@ -4,6 +4,7 @@ import {
   InvalidTransitionError,
   adjustInventory,
   adminSetOrderStatus,
+  createNotification,
   db,
   requireDefaultSupplier,
   setCategoryActive,
@@ -12,6 +13,48 @@ import {
   type OrderStatus,
 } from "@suplaykart/db";
 import { requireAdmin } from "@/lib/auth";
+import { pushToUsers } from "@/lib/push";
+
+const STATUS_MESSAGE: Record<OrderStatus, string> = {
+  placed: "placed",
+  confirmed: "confirmed",
+  packed: "packed and ready",
+  out_for_delivery: "out for delivery",
+  delivered: "delivered",
+  cancelled: "cancelled",
+};
+
+async function notifyOrderStatus(
+  userId: string,
+  orderNumber: string,
+  status: OrderStatus,
+  orderId: string,
+) {
+  const phrase = STATUS_MESSAGE[status];
+  const title = `Order ${orderNumber} ${phrase}`;
+  const body =
+    status === "delivered"
+      ? "Your order has been delivered. Enjoy!"
+      : status === "cancelled"
+        ? "Your order was cancelled."
+        : `Your order is now ${phrase}.`;
+  await createNotification(db, {
+    userId,
+    type:
+      status === "out_for_delivery" || status === "delivered"
+        ? "delivery"
+        : "order",
+    title,
+    body,
+    data: { orderId },
+  });
+  await pushToUsers([userId], {
+    title,
+    body,
+    url: `/account/orders/${orderId}`,
+    tag: `order-${orderId}`,
+  });
+}
 
 /**
  * Non-validated admin mutations (toggles / status / adjust / block).
@@ -31,7 +74,8 @@ export async function setOrderStatusAction(
 ): Promise<void> {
   const admin = await requireAdmin();
   try {
-    await adminSetOrderStatus(db, admin.id, orderId, status);
+    const order = await adminSetOrderStatus(db, admin.id, orderId, status);
+    await notifyOrderStatus(order.userId, order.orderNumber, status, orderId);
   } catch (e) {
     if (!(e instanceof InvalidTransitionError)) throw e;
   }

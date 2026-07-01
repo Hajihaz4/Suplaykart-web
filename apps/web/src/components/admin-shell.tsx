@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bell,
   Boxes,
   FolderTree,
   LayoutDashboard,
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/addresses", label: "Addresses", icon: MapPin },
   { href: "/admin/serviceability", label: "Serviceability", icon: MapPinned },
+  { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
