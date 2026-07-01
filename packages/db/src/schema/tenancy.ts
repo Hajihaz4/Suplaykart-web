@@ -1,4 +1,10 @@
-import { pgTable, uuid, text, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  boolean,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { timestamps } from "./_helpers";
 import { userRole } from "./enums";
 
@@ -33,3 +39,24 @@ export const users = pgTable("users", {
   defaultAddressId: uuid(),
   ...timestamps,
 });
+
+/**
+ * Phase 2J — supplier ↔ staff membership (the multi-supplier permission seam).
+ * In single-tenant mode every staff user maps to the one default supplier; the
+ * mapping makes supplier-scoped access an additive, non-destructive change.
+ */
+export const supplierUsers = pgTable(
+  "supplier_users",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    supplierId: uuid()
+      .notNull()
+      .references(() => suppliers.id, { onDelete: "cascade" }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: userRole().notNull().default("ops"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("supplier_users_uq").on(t.supplierId, t.userId)],
+);
