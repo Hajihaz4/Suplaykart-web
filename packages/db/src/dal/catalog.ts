@@ -1,14 +1,4 @@
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  ilike,
-  inArray,
-  or,
-  sql,
-  type SQL,
-} from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import type { DB } from "../client";
 import { categories, productImages, productVariants, products } from "../schema";
 import type {
@@ -203,33 +193,141 @@ export function listProductsByCategory(
   );
 }
 
-/** Search by product name, brand, or category name (ILIKE). */
+// ── full-text search (Postgres FTS + ranking + synonyms + prefix) ───────────
+
+/** Small hand-curated synonym set for grocery search. */
+const SYNONYMS: Record<string, string[]> = {
+  coke: ["cola", "coca"],
+  cola: ["coke", "coca"],
+  atta: ["flour", "wheat"],
+  flour: ["atta"],
+  curd: ["yogurt", "dahi"],
+  dahi: ["curd", "yogurt"],
+  chips: ["namkeen", "wafers"],
+  soap: ["bathing"],
+  oil: ["ghee"],
+  noodles: ["maggi", "ramen"],
+  biscuit: ["cookie", "biscuits"],
+};
+
+const SEARCH_VECTOR = sql`to_tsvector('english', coalesce(${products.name}, '') || ' ' || coalesce(${products.brand}, '') || ' ' || coalesce(${products.description}, ''))`;
+
+/** Build a safe to_tsquery string: prefix (:*) per token, synonyms OR-ed. */
+function buildTsQuery(query: string): string {
+  const tokens = query
+    .toLowerCase()
+    .split(/\s+/)
+    .map((t) => t.replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean)
+    .slice(0, 6);
+  if (tokens.length === 0) return "";
+  return tokens
+    .map((tok) => {
+      const group = [tok, ...(SYNONYMS[tok] ?? [])];
+      return `(${group.map((g) => `${g}:*`).join(" | ")})`;
+    })
+    .join(" & ");
+}
+
+export type SearchSort = "relevance" | "price_asc" | "price_desc" | "rating";
+
+export interface SearchOptions {
+  categorySlug?: string;
+  sort?: SearchSort;
+  limit?: number;
+}
+
 export async function searchProducts(
   db: DB,
   supplierId: string,
   query: string,
-  limit = 30,
+  options: SearchOptions = {},
 ): Promise<ProductSummary[]> {
-  const q = `%${query}%`;
+  const tsq = buildTsQuery(query);
+  if (!tsq) return [];
+  const limit = options.limit ?? 30;
+
+  const conds = [
+    eq(products.supplierId, supplierId),
+    eq(products.isActive, true),
+    sql`${SEARCH_VECTOR} @@ to_tsquery('english', ${tsq})`,
+  ];
+  if (options.categorySlug) conds.push(eq(categories.slug, options.categorySlug));
+
+  const orderBy =
+    options.sort === "price_asc"
+      ? asc(productVariants.price)
+      : options.sort === "price_desc"
+        ? desc(productVariants.price)
+        : options.sort === "rating"
+          ? desc(products.ratingAvg)
+          : desc(sql`ts_rank(${SEARCH_VECTOR}, to_tsquery('english', ${tsq}))`);
+
   const rows = await db
     .select(summaryCols)
     .from(products)
     .innerJoin(productVariants, defaultVariantJoin)
     .leftJoin(categories, eq(categories.id, products.categoryId))
+    .where(and(...conds))
+    .orderBy(orderBy)
+    .limit(limit);
+  return rows.map(mapSummary);
+}
+
+export interface SearchFacet {
+  slug: string;
+  name: string;
+  count: number;
+}
+
+/** Category facets (counts) for a search query. */
+export async function searchFacets(
+  db: DB,
+  supplierId: string,
+  query: string,
+): Promise<SearchFacet[]> {
+  const tsq = buildTsQuery(query);
+  if (!tsq) return [];
+  return db
+    .select({
+      slug: categories.slug,
+      name: categories.name,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(products)
+    .innerJoin(categories, eq(categories.id, products.categoryId))
     .where(
       and(
         eq(products.supplierId, supplierId),
         eq(products.isActive, true),
-        or(
-          ilike(products.name, q),
-          ilike(products.brand, q),
-          ilike(categories.name, q),
-        ),
+        sql`${SEARCH_VECTOR} @@ to_tsquery('english', ${tsq})`,
       ),
     )
-    .orderBy(asc(products.name))
+    .groupBy(categories.slug, categories.name)
+    .orderBy(desc(sql`count(*)`));
+}
+
+/** Lightweight as-you-type suggestions (product names). */
+export async function searchSuggestions(
+  db: DB,
+  supplierId: string,
+  query: string,
+  limit = 6,
+): Promise<{ name: string; slug: string }[]> {
+  const tsq = buildTsQuery(query);
+  if (!tsq) return [];
+  return db
+    .select({ name: products.name, slug: products.slug })
+    .from(products)
+    .where(
+      and(
+        eq(products.supplierId, supplierId),
+        eq(products.isActive, true),
+        sql`${SEARCH_VECTOR} @@ to_tsquery('english', ${tsq})`,
+      ),
+    )
+    .orderBy(desc(sql`ts_rank(${SEARCH_VECTOR}, to_tsquery('english', ${tsq}))`))
     .limit(limit);
-  return rows.map(mapSummary);
 }
 
 /** Products for a list of slugs, preserving the given order (recently viewed). */
