@@ -76,6 +76,17 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-2">
         <div className="text-2xs font-semibold text-muted">{product.unit}</div>
+        {product.available != null && product.available <= 5 ? (
+          <div
+            className={`text-2xs font-bold ${
+              product.available <= 0 ? "text-danger" : "text-accent"
+            }`}
+          >
+            {product.available <= 0
+              ? "Out of stock"
+              : `Only ${product.available} left`}
+          </div>
+        ) : null}
         <Media
           {...mediaProps}
           className="mt-0.5 line-clamp-2 min-h-8 text-xs font-medium text-ink"

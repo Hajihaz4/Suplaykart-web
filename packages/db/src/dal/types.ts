@@ -34,6 +34,8 @@ export interface ProductSummary {
   image: string;
   /** primary product image URL (R2), or null → falls back to emoji */
   imageUrl: string | null;
+  /** available stock for the default variant (on-hand − reserved), or null */
+  available: number | null;
   veg: boolean | null;
   rating: number | null;
   ratingCount: string | null;
@@ -50,6 +52,8 @@ export interface ProductVariantSummary {
 
 export interface ProductDetail extends ProductSummary {
   description: string | null;
+  badges: string[];
+  categoryId: string;
   categoryName: string | null;
   variants: ProductVariantSummary[];
   images: { url: string; alt: string | null }[];

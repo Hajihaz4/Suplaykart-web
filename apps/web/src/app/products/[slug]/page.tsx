@@ -6,13 +6,13 @@ import { Badge, ProductCard, discountPct, formatINR } from "@suplaykart/ui";
 import {
   db,
   getProductDetailBySlug,
-  listFeaturedProducts,
+  listRelatedProducts,
   requireDefaultSupplier,
 } from "@suplaykart/db";
 import { AddToCartBar } from "@/components/add-to-cart-bar";
 import { CartControl } from "@/components/cart-control";
 import { WishlistHeart } from "@/components/wishlist-heart";
-import { HeroImage } from "@/components/hero-image";
+import { ProductGallery } from "@/components/product-gallery";
 import { RecordView } from "@/components/record-view";
 import { toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
@@ -53,12 +53,13 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
-  const [similarAll, { quantities }, wishlist] = await Promise.all([
-    listFeaturedProducts(db, supplier.id, 8),
+  const [related, { quantities }, wishlist] = await Promise.all([
+    listRelatedProducts(db, supplier.id, product.categoryId, product.id, 8),
     currentCart(),
     currentWishlist(),
   ]);
-  const similar = similarAll.filter((p) => p.id !== product.id).slice(0, 6);
+  const similar = related.slice(0, 6);
+  const low = product.available != null && product.available <= 5;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -98,20 +99,29 @@ export default async function ProductPage({
       </header>
 
       <main className="mx-auto w-full max-w-3xl">
-        <div className="grid place-items-center bg-surface-alt py-8">
-          <HeroImage
-            src={product.imageUrl}
-            emoji={product.image}
-            alt={product.name}
-          />
-        </div>
+        <ProductGallery
+          images={product.images}
+          emoji={product.image}
+          alt={product.name}
+        />
 
         <div className="p-4">
-          {product.badge ? (
-            <Badge variant="brand" size="sm">
-              {product.badge}
-            </Badge>
-          ) : null}
+          <div className="flex flex-wrap gap-1.5">
+            {product.badges.map((b) => (
+              <Badge key={b} variant="brand" size="sm">
+                {b}
+              </Badge>
+            ))}
+            {product.available != null && product.available <= 0 ? (
+              <Badge variant="danger" size="sm">
+                Out of stock
+              </Badge>
+            ) : low ? (
+              <Badge variant="accent" size="sm">
+                Only {product.available} left
+              </Badge>
+            ) : null}
+          </div>
           <h1 className="mt-2 text-lg font-extrabold leading-snug text-ink">
             {product.name}
           </h1>
@@ -143,7 +153,7 @@ export default async function ProductPage({
         {similar.length > 0 ? (
           <div className="border-t-8 border-surface-alt p-4">
             <h2 className="mb-3 text-base font-extrabold text-ink">
-              Similar products
+              You may also like
             </h2>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
               {similar.map((p) => (

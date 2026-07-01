@@ -16,6 +16,8 @@ export interface ProductCardData {
   image: string;
   /** real product image URL (R2); falls back to `image` when absent/broken */
   imageUrl?: string;
+  /** available stock (default variant); drives low-stock/out-of-stock badges */
+  available?: number | null;
   veg?: boolean;
   rating?: number;
   ratingCount?: string;

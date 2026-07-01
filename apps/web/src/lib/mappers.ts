@@ -14,6 +14,7 @@ export function toProductCard(s: ProductSummary): ProductCardData {
     unit: s.unit,
     image: s.image,
     imageUrl: s.imageUrl ?? undefined,
+    available: s.available,
     veg: s.veg ?? undefined,
     rating: s.rating ?? undefined,
     ratingCount: s.ratingCount ?? undefined,

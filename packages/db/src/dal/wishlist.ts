@@ -1,6 +1,12 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { DB } from "../client";
-import { productImages, productVariants, products, wishlistItems } from "../schema";
+import {
+  inventory,
+  productImages,
+  productVariants,
+  products,
+  wishlistItems,
+} from "../schema";
 import type { ProductSummary } from "./types";
 
 function formatCount(n: number): string {
@@ -91,6 +97,10 @@ export async function listWishlist(
       vLabel: productVariants.label,
       vPrice: productVariants.price,
       vMrp: productVariants.mrp,
+      available: sql<number | null>`(
+        select ${inventory.quantityOnHand} - ${inventory.quantityReserved}
+        from ${inventory} where ${inventory.variantId} = ${productVariants.id}
+      )`,
       imageUrl: sql<string | null>`(
         select ${productImages.url} from ${productImages}
         where ${productImages.productId} = ${products.id}
@@ -120,6 +130,7 @@ export async function listWishlist(
       unit: r.vLabel,
       image: attrs.emoji ?? "📦",
       imageUrl: r.imageUrl,
+      available: r.available,
       veg: r.isVeg,
       rating: r.ratingAvg != null ? Number(r.ratingAvg) : null,
       ratingCount: formatCount(r.ratingCount),

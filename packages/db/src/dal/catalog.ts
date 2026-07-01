@@ -1,6 +1,12 @@
-import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql, type SQL } from "drizzle-orm";
 import type { DB } from "../client";
-import { categories, productImages, productVariants, products } from "../schema";
+import {
+  categories,
+  inventory,
+  productImages,
+  productVariants,
+  products,
+} from "../schema";
 import type {
   CategorySummary,
   CategoryTone,
@@ -47,6 +53,11 @@ const summaryCols = {
   vLabel: productVariants.label,
   vPrice: productVariants.price,
   vMrp: productVariants.mrp,
+  available: sql<number | null>`(
+    select ${inventory.quantityOnHand} - ${inventory.quantityReserved}
+    from ${inventory}
+    where ${inventory.variantId} = ${productVariants.id}
+  )`,
   imageUrl: sql<string | null>`(
     select ${productImages.url}
     from ${productImages}
@@ -70,6 +81,7 @@ type SummaryRow = {
   vLabel: string;
   vPrice: number;
   vMrp: number;
+  available: number | null;
   imageUrl: string | null;
 };
 
@@ -87,6 +99,7 @@ function mapSummary(r: SummaryRow): ProductSummary {
     unit: r.vLabel,
     image: attrs.emoji ?? "📦",
     imageUrl: r.imageUrl,
+    available: r.available,
     veg: r.isVeg,
     rating: r.ratingAvg != null ? Number(r.ratingAvg) : null,
     ratingCount: formatCount(r.ratingCount),
@@ -189,6 +202,27 @@ export function listProductsByCategory(
       eq(products.categoryId, categoryId),
     ),
     asc(products.name),
+    limit,
+  );
+}
+
+/** Related products from the same category (excludes the product itself). */
+export function listRelatedProducts(
+  db: DB,
+  supplierId: string,
+  categoryId: string,
+  excludeProductId: string,
+  limit = 8,
+): Promise<ProductSummary[]> {
+  return queryProducts(
+    db,
+    and(
+      eq(products.supplierId, supplierId),
+      eq(products.isActive, true),
+      eq(products.categoryId, categoryId),
+      ne(products.id, excludeProductId),
+    ),
+    desc(products.ratingCount),
     limit,
   );
 }
@@ -386,6 +420,7 @@ export async function getProductDetailBySlug(
       isVeg: products.isVeg,
       ratingAvg: products.ratingAvg,
       ratingCount: products.ratingCount,
+      categoryId: products.categoryId,
       categoryName: categories.name,
     })
     .from(products)
@@ -424,6 +459,18 @@ export async function getProductDetailBySlug(
   const attrs = (p.attributes ?? {}) as { emoji?: string };
   const badges = Array.isArray(p.badges) ? (p.badges as string[]) : [];
 
+  let available: number | null = null;
+  if (def) {
+    const [av] = await db
+      .select({
+        a: sql<number>`(${inventory.quantityOnHand} - ${inventory.quantityReserved})::int`,
+      })
+      .from(inventory)
+      .where(eq(inventory.variantId, def.id))
+      .limit(1);
+    available = av?.a ?? null;
+  }
+
   return {
     id: p.id,
     slug: p.slug,
@@ -436,10 +483,13 @@ export async function getProductDetailBySlug(
     unit: def?.label ?? "",
     image: attrs.emoji ?? "📦",
     imageUrl: imgs[0]?.url ?? null,
+    available,
     veg: p.isVeg,
     rating: p.ratingAvg != null ? Number(p.ratingAvg) : null,
     ratingCount: formatCount(p.ratingCount),
     badge: badges[0] ?? null,
+    badges,
+    categoryId: p.categoryId,
     categoryName: p.categoryName,
     variants: variants.map((v) => ({
       id: v.id,
