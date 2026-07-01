@@ -14,6 +14,8 @@ export interface ProductCardProps {
   className?: string;
   /** Live cart control (ADD / stepper). Falls back to a local demo stepper. */
   cartControl?: React.ReactNode;
+  /** Wishlist heart, overlaid on the image. */
+  wishlistControl?: React.ReactNode;
 }
 
 export function ProductCard({
@@ -22,6 +24,7 @@ export function ProductCard({
   linkComponent: Link = "a",
   className,
   cartControl,
+  wishlistControl,
 }: ProductCardProps) {
   const [qty, setQty] = React.useState(0);
   const [imgError, setImgError] = React.useState(false);
@@ -33,10 +36,13 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface",
+        "relative flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface",
         className,
       )}
     >
+      {wishlistControl ? (
+        <div className="absolute right-1.5 top-1.5 z-10">{wishlistControl}</div>
+      ) : null}
       <Media
         {...mediaProps}
         aria-label={href ? product.name : undefined}

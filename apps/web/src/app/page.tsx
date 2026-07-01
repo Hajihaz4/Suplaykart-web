@@ -19,8 +19,10 @@ import {
 } from "@suplaykart/db";
 import { StoreShell } from "@/components/store-shell";
 import { CartControl } from "@/components/cart-control";
+import { WishlistHeart } from "@/components/wishlist-heart";
 import { toCategoryCard, toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
+import { currentWishlist } from "@/lib/wishlist";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -36,15 +38,17 @@ const orgJsonLd = {
 export default async function HomePage() {
   const supplier = await requireDefaultSupplier(db);
   const snacks = await getCategoryBySlug(db, supplier.id, "chips-namkeen");
-  const [cats, featured, newArrivals, snackProducts, cart] = await Promise.all([
-    listCategories(db, supplier.id),
-    listFeaturedProducts(db, supplier.id, 6),
-    listNewArrivals(db, supplier.id, 6),
-    snacks
-      ? listProductsByCategory(db, supplier.id, snacks.id, 6)
-      : Promise.resolve([]),
-    currentCart(),
-  ]);
+  const [cats, featured, newArrivals, snackProducts, cart, wishlist] =
+    await Promise.all([
+      listCategories(db, supplier.id),
+      listFeaturedProducts(db, supplier.id, 6),
+      listNewArrivals(db, supplier.id, 6),
+      snacks
+        ? listProductsByCategory(db, supplier.id, snacks.id, 6)
+        : Promise.resolve([]),
+      currentCart(),
+      currentWishlist(),
+    ]);
   const { count: cartCount, quantities } = cart;
 
   const sections = [
@@ -139,6 +143,14 @@ export default async function HomePage() {
                             variantId={p.variantId}
                             initialQty={quantities[p.variantId] ?? 0}
                           />
+                        }
+                        wishlistControl={
+                          wishlist.authed ? (
+                            <WishlistHeart
+                              variantId={p.variantId}
+                              initial={wishlist.ids.has(p.variantId)}
+                            />
+                          ) : undefined
                         }
                       />
                     ))}

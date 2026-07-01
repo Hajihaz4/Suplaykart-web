@@ -11,9 +11,11 @@ import {
 } from "@suplaykart/db";
 import { AddToCartBar } from "@/components/add-to-cart-bar";
 import { CartControl } from "@/components/cart-control";
+import { WishlistHeart } from "@/components/wishlist-heart";
 import { HeroImage } from "@/components/hero-image";
 import { toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
+import { currentWishlist } from "@/lib/wishlist";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -50,9 +52,10 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
-  const [similarAll, { quantities }] = await Promise.all([
+  const [similarAll, { quantities }, wishlist] = await Promise.all([
     listFeaturedProducts(db, supplier.id, 8),
     currentCart(),
+    currentWishlist(),
   ]);
   const similar = similarAll.filter((p) => p.id !== product.id).slice(0, 6);
 
@@ -153,6 +156,14 @@ export default async function ProductPage({
                       variantId={p.variantId}
                       initialQty={quantities[p.variantId] ?? 0}
                     />
+                  }
+                  wishlistControl={
+                    wishlist.authed ? (
+                      <WishlistHeart
+                        variantId={p.variantId}
+                        initial={wishlist.ids.has(p.variantId)}
+                      />
+                    ) : undefined
                   }
                 />
               ))}
