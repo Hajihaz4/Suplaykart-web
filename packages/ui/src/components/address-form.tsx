@@ -29,6 +29,8 @@ export interface AddressFormProps {
   ) => Promise<AddressFormState>;
   defaultValues?: AddressFormValues;
   submitLabel?: string;
+  /** Optional location capture (map picker / geolocation) rendered in-form. */
+  locationSlot?: React.ReactNode;
 }
 
 const LABELS: { value: AddressLabel; icon: string; text: string }[] = [
@@ -41,6 +43,7 @@ export function AddressForm({
   action,
   defaultValues = {},
   submitLabel = "Save address",
+  locationSlot,
 }: AddressFormProps) {
   const [state, formAction, pending] = React.useActionState(action, {});
   const [label, setLabel] = React.useState<AddressLabel>(
@@ -53,6 +56,7 @@ export function AddressForm({
   return (
     <form action={formAction} className="space-y-4 p-4">
       <input type="hidden" name="label" value={label} />
+      {locationSlot}
 
       <div>
         <FieldLabel>Save as</FieldLabel>

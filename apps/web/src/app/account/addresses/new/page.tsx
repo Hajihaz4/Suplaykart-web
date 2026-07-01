@@ -1,5 +1,6 @@
 import { AddressForm } from "@suplaykart/ui";
 import { AccountHeader } from "@/components/account-header";
+import { AddressLocationField } from "@/components/address-location-field";
 import { requireCurrentUser } from "@/lib/auth";
 import { createAddressAction } from "../actions";
 
@@ -15,6 +16,7 @@ export default async function NewAddressPage() {
           action={createAddressAction}
           submitLabel="Save address"
           defaultValues={{ label: "home", city: "Nagore", state: "Tamil Nadu" }}
+          locationSlot={<AddressLocationField />}
         />
       </main>
     </div>

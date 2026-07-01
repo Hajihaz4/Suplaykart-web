@@ -54,6 +54,8 @@ export async function placeOrderAction(
   if (!address) return { error: "Delivery address not found." };
   const svc = await checkServiceability(db, supplier.id, {
     pincode: address.pincode,
+    lat: address.lat != null ? Number(address.lat) : null,
+    lng: address.lng != null ? Number(address.lng) : null,
   });
   if (!svc.serviceable) {
     logger.warn("order.not_serviceable", {

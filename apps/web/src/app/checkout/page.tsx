@@ -45,7 +45,11 @@ export default async function CheckoutPage() {
 
   const service = await Promise.all(
     addresses.map((a) =>
-      checkServiceability(db, supplier.id, { pincode: a.pincode }),
+      checkServiceability(db, supplier.id, {
+        pincode: a.pincode,
+        lat: a.lat != null ? Number(a.lat) : null,
+        lng: a.lng != null ? Number(a.lng) : null,
+      }),
     ),
   );
 

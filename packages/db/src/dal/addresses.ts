@@ -16,6 +16,8 @@ export type AddressInput = {
   pincode: string;
   city: string;
   state: string;
+  lat?: number | null;
+  lng?: number | null;
   isDefault?: boolean;
 };
 
@@ -64,6 +66,8 @@ function editableFields(input: AddressInput) {
     pincode: input.pincode,
     city: input.city,
     state: input.state,
+    lat: input.lat != null ? String(input.lat) : null,
+    lng: input.lng != null ? String(input.lng) : null,
   };
 }
 

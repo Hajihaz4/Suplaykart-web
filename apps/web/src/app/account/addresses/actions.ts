@@ -12,6 +12,16 @@ import {
 } from "@suplaykart/db";
 import type { AddressFormState } from "@suplaykart/ui";
 import { requireCurrentUser } from "@/lib/auth";
+import { reverseGeocode, type ReverseGeoResult } from "@/lib/maps";
+
+export async function reverseGeocodeAction(
+  lat: number,
+  lng: number,
+): Promise<ReverseGeoResult | null> {
+  await requireCurrentUser();
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return reverseGeocode(lat, lng);
+}
 
 const schema = z.object({
   label: z.enum(["home", "work", "other"]),
@@ -28,10 +38,18 @@ const schema = z.object({
   pincode: z.string().trim().regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
   city: z.string().trim().min(1, "City is required").max(60),
   state: z.string().trim().min(1, "State is required").max(60),
+  lat: z.string().optional(),
+  lng: z.string().optional(),
   isDefault: z.boolean(),
 });
 
 const s = (v: FormDataEntryValue | null) => (typeof v === "string" ? v : "");
+
+function coord(raw: string | undefined, max: number): number | null {
+  if (!raw || raw.trim() === "") return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && Math.abs(n) <= max ? n : null;
+}
 
 function readForm(formData: FormData) {
   return {
@@ -46,6 +64,8 @@ function readForm(formData: FormData) {
     pincode: s(formData.get("pincode")),
     city: s(formData.get("city")),
     state: s(formData.get("state")),
+    lat: s(formData.get("lat")),
+    lng: s(formData.get("lng")),
     isDefault: formData.get("isDefault") === "on",
   };
 }
@@ -63,6 +83,8 @@ function toInput(data: z.infer<typeof schema>): AddressInput {
     pincode: data.pincode,
     city: data.city.trim(),
     state: data.state.trim(),
+    lat: coord(data.lat, 90),
+    lng: coord(data.lng, 180),
     isDefault: data.isDefault,
   };
 }

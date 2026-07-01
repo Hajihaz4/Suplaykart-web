@@ -71,6 +71,19 @@ describe("address DAL", () => {
     expect(await deleteAddress(t.db, B, a!.id)).toBeNull();
   });
 
+  it("stores and reads coordinates", async () => {
+    const withGeo = await createAddress(t.db, B, {
+      label: "home",
+      ...base,
+      lat: 10.822,
+      lng: 79.842,
+    });
+    expect(Number(withGeo.lat)).toBeCloseTo(10.822, 3);
+    expect(Number(withGeo.lng)).toBeCloseTo(79.842, 3);
+    const noGeo = await createAddress(t.db, B, { label: "work", ...base });
+    expect(noGeo.lat).toBeNull();
+  });
+
   it("promotes another default when the default is deleted", async () => {
     const before = await listAddresses(t.db, A);
     const currentDefault = before.find((x) => x.isDefault)!;

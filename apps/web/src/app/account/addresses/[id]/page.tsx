@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AddressForm } from "@suplaykart/ui";
 import { db, getAddressById } from "@suplaykart/db";
 import { AccountHeader } from "@/components/account-header";
+import { AddressLocationField } from "@/components/address-location-field";
 import { requireCurrentUser } from "@/lib/auth";
 import { updateAddressAction } from "../actions";
 
@@ -38,6 +39,12 @@ export default async function EditAddressPage({
             state: address.state,
             isDefault: address.isDefault,
           }}
+          locationSlot={
+            <AddressLocationField
+              defaultLat={address.lat}
+              defaultLng={address.lng}
+            />
+          }
         />
       </main>
     </div>

@@ -27,12 +27,15 @@ export const env = createEnv({
     NEXT_PUBLIC_R2_PUBLIC_URL: z.string().url().optional(),
     // VAPID public key (needed client-side to subscribe to push).
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
+    // Mapbox public token for the address map picker / static maps (Phase 2B).
+    NEXT_PUBLIC_MAPBOX_TOKEN: z.string().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
