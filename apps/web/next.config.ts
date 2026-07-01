@@ -15,11 +15,25 @@ const securityHeaders = [
   },
 ];
 
+// Allow next/image to serve from the configured R2 public host (Phase 2a).
+const r2Host = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+  ? new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_URL).hostname
+  : null;
+
 const nextConfig: NextConfig = {
   // Transpile the workspace DB package (ships TypeScript source).
   transpilePackages: ["@suplaykart/db", "@suplaykart/ui"],
-  // Keep node-postgres out of the bundle (native/server-only dependency).
-  serverExternalPackages: ["pg"],
+  // Keep server-only native/large deps out of the bundle.
+  serverExternalPackages: [
+    "pg",
+    "@aws-sdk/client-s3",
+    "@aws-sdk/s3-request-presigner",
+  ],
+  images: {
+    remotePatterns: r2Host
+      ? [{ protocol: "https", hostname: r2Host }]
+      : [],
+  },
   // Portable build artifact (per ADR 0001), even though Vercel is the default host.
   output: "standalone",
   poweredByHeader: false,

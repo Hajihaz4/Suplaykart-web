@@ -24,9 +24,11 @@ export function ProductCard({
   cartControl,
 }: ProductCardProps) {
   const [qty, setQty] = React.useState(0);
+  const [imgError, setImgError] = React.useState(false);
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
   const Media: React.ElementType = href ? Link : "div";
   const mediaProps = href ? { href } : {};
+  const showImage = Boolean(product.imageUrl) && !imgError;
 
   return (
     <div
@@ -47,7 +49,18 @@ export function ProductCard({
             </Badge>
           </span>
         ) : null}
-        <span aria-hidden>{product.image}</span>
+        {showImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="size-full object-contain"
+          />
+        ) : (
+          <span aria-hidden>{product.image}</span>
+        )}
         {product.veg ? (
           <span className="absolute bottom-1.5 right-1.5 grid size-3.5 place-items-center rounded-[3px] border-[1.5px] border-brand bg-white">
             <span className="size-1.5 rounded-full bg-brand" />

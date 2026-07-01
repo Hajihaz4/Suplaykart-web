@@ -12,8 +12,10 @@ export interface ProductCardData {
   /** MRP in paise */
   mrp?: number;
   unit: string;
-  /** emoji or image url */
+  /** emoji fallback (always set) */
   image: string;
+  /** real product image URL (R2); falls back to `image` when absent/broken */
+  imageUrl?: string;
   veg?: boolean;
   rating?: number;
   ratingCount?: string;

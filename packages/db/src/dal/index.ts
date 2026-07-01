@@ -11,3 +11,4 @@ export * from "./inventory";
 export * from "./orders";
 export * from "./admin";
 export * from "./admin-ops";
+export * from "./images";

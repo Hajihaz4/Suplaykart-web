@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1076.0",
+    "@aws-sdk/s3-request-presigner": "^3.1076.0",
     "@clerk/nextjs": "^6.9.6",
     "@suplaykart/db": "workspace:*",
     "@suplaykart/ui": "workspace:*",
