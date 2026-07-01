@@ -64,6 +64,12 @@ export default async function AdminProducts() {
                   >
                     Edit
                   </Link>
+                  <Link
+                    href={`/admin/products/${p.id}/images`}
+                    className="text-2xs font-bold text-brand"
+                  >
+                    Images
+                  </Link>
                   <AdminToggle
                     id={p.id}
                     active={p.isActive}

@@ -32,6 +32,8 @@ export interface ProductSummary {
   unit: string;
   /** emoji (from product.attributes.emoji) */
   image: string;
+  /** primary product image URL (R2), or null → falls back to emoji */
+  imageUrl: string | null;
   veg: boolean | null;
   rating: number | null;
   ratingCount: string | null;

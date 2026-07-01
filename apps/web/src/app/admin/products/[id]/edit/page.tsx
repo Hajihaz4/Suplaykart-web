@@ -34,6 +34,12 @@ export default async function EditProductPage({
           <ArrowLeft className="size-4 text-ink" />
         </Link>
         <h1 className="text-lg font-extrabold text-ink">Edit {product.name}</h1>
+        <Link
+          href={`/admin/products/${id}/images`}
+          className="ml-auto text-xs font-bold text-brand"
+        >
+          Manage images →
+        </Link>
       </div>
       <AdminProductForm
         mode="edit"

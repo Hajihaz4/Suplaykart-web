@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import type { DB } from "../client";
 import { categories, productImages, productVariants, products } from "../schema";
 import type {
@@ -47,6 +47,13 @@ const summaryCols = {
   vLabel: productVariants.label,
   vPrice: productVariants.price,
   vMrp: productVariants.mrp,
+  imageUrl: sql<string | null>`(
+    select ${productImages.url}
+    from ${productImages}
+    where ${productImages.productId} = ${products.id}
+    order by ${productImages.sortOrder} asc, ${productImages.createdAt} asc
+    limit 1
+  )`,
 };
 
 type SummaryRow = {
@@ -63,6 +70,7 @@ type SummaryRow = {
   vLabel: string;
   vPrice: number;
   vMrp: number;
+  imageUrl: string | null;
 };
 
 function mapSummary(r: SummaryRow): ProductSummary {
@@ -78,6 +86,7 @@ function mapSummary(r: SummaryRow): ProductSummary {
     mrp: r.vMrp > r.vPrice ? r.vMrp : null,
     unit: r.vLabel,
     image: attrs.emoji ?? "📦",
+    imageUrl: r.imageUrl,
     veg: r.isVeg,
     rating: r.ratingAvg != null ? Number(r.ratingAvg) : null,
     ratingCount: formatCount(r.ratingCount),
@@ -294,6 +303,7 @@ export async function getProductDetailBySlug(
     mrp: def && def.mrp != null && def.mrp > def.price ? def.mrp : null,
     unit: def?.label ?? "",
     image: attrs.emoji ?? "📦",
+    imageUrl: imgs[0]?.url ?? null,
     veg: p.isVeg,
     rating: p.ratingAvg != null ? Number(p.ratingAvg) : null,
     ratingCount: formatCount(p.ratingCount),

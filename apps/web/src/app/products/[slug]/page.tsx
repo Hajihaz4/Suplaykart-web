@@ -11,6 +11,7 @@ import {
 } from "@suplaykart/db";
 import { AddToCartBar } from "@/components/add-to-cart-bar";
 import { CartControl } from "@/components/cart-control";
+import { HeroImage } from "@/components/hero-image";
 import { toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -92,8 +93,12 @@ export default async function ProductPage({
       </header>
 
       <main className="mx-auto w-full max-w-3xl">
-        <div className="grid place-items-center bg-surface-alt py-12 text-[120px] leading-none">
-          <span aria-hidden>{product.image}</span>
+        <div className="grid place-items-center bg-surface-alt py-8">
+          <HeroImage
+            src={product.imageUrl}
+            emoji={product.image}
+            alt={product.name}
+          />
         </div>
 
         <div className="p-4">

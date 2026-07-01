@@ -9,18 +9,11 @@ export {
   presignUpload,
   type PresignedUpload,
 } from "./r2";
-
-const ALLOWED = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-]);
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
-
-export function isAllowedImageType(contentType: string): boolean {
-  return ALLOWED.has(contentType);
-}
+export {
+  ALLOWED_IMAGE_TYPES,
+  MAX_IMAGE_BYTES,
+  isAllowedImageType,
+} from "./limits";
 
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",

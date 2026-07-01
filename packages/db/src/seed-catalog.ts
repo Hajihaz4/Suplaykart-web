@@ -1,12 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { DB } from "./client";
-import {
-  categories,
-  inventory,
-  productImages,
-  productVariants,
-  products,
-} from "./schema";
+import { categories, inventory, productVariants, products } from "./schema";
 
 /**
  * Phase-1D catalog seed (idempotent) — realistic storefront content.
@@ -131,12 +125,8 @@ export async function seedCatalog(db: DB, supplierId: string) {
       isActive: true,
     });
 
-    await db.insert(productImages).values({
-      productId,
-      url: `https://cdn.suplaykart.example/products/${p.slug}.png`,
-      alt: p.name,
-      sortOrder: 0,
-    });
+    // Real images are uploaded via the admin media manager (Phase 2b, R2);
+    // no placeholder image rows are seeded (the storefront uses the emoji).
 
     created++;
   }
