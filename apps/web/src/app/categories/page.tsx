@@ -17,6 +17,7 @@ export default async function CategoriesPage() {
   return (
     <StoreShell cartCount={cartCount}>
       <section className="min-h-[60vh] bg-surface pb-6">
+        <h1 className="sr-only">All categories</h1>
         <SectionHeader title="All categories" />
         {cats.length === 0 ? (
           <EmptyState

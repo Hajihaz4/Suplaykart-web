@@ -27,7 +27,8 @@
 
   --color-ink: #1c1c1c;
   --color-muted: #6b6b6b;
-  --color-muted-light: #9ca3af;
+  /* WCAG-AA contrast on white AND surface-alt (was #9ca3af ≈ 2.6:1) */
+  --color-muted-light: #64717e;
   --color-surface: #ffffff;
   --color-surface-alt: #f5f5f5;
   --color-border: #e8e8e8;

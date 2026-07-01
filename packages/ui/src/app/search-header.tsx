@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "../lib/cn";
 import { SearchBar } from "../components/search-bar";

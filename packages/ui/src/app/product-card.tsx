@@ -37,6 +37,7 @@ export function ProductCard({
     >
       <Media
         {...mediaProps}
+        aria-label={href ? product.name : undefined}
         className="relative grid aspect-square place-items-center bg-surface-alt text-5xl"
       >
         {product.badge ? (

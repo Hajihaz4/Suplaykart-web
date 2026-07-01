@@ -35,6 +35,7 @@ export default async function SearchPage({
       header={<SearchBox initialQuery={query} />}
       bottomNav={<AppBottomNav />}
     >
+      <h1 className="sr-only">Search products</h1>
       <div className="px-3 pt-3 text-xs font-semibold text-muted">
         {query
           ? `${results.length} result${results.length === 1 ? "" : "s"} for “${query}”`
@@ -56,6 +57,7 @@ export default async function SearchPage({
               linkComponent={Link}
               cartControl={
                 <CartControl
+                  key={p.variantId}
                   variantId={p.variantId}
                   initialQty={quantities[p.variantId] ?? 0}
                 />

@@ -20,7 +20,7 @@ export const colors = {
 
   ink: "#1C1C1C",
   muted: "#6B6B6B",
-  mutedLight: "#9CA3AF",
+  mutedLight: "#64717E",
   surface: "#FFFFFF",
   surfaceAlt: "#F5F5F5",
   border: "#E8E8E8",

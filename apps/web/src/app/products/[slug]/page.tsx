@@ -91,7 +91,7 @@ export default async function ProductPage({
         </span>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl">
+      <main className="mx-auto w-full max-w-3xl">
         <div className="grid place-items-center bg-surface-alt py-12 text-[120px] leading-none">
           <span aria-hidden>{product.image}</span>
         </div>
@@ -144,6 +144,7 @@ export default async function ProductPage({
                   linkComponent={Link}
                   cartControl={
                     <CartControl
+                      key={p.variantId}
                       variantId={p.variantId}
                       initialQty={quantities[p.variantId] ?? 0}
                     />
@@ -153,7 +154,7 @@ export default async function ProductPage({
             </div>
           </div>
         ) : null}
-      </div>
+      </main>
 
       <AddToCartBar
         variantId={product.variantId}

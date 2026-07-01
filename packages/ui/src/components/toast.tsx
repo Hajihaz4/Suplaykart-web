@@ -9,6 +9,10 @@ const ToastContext = React.createContext<ToastContextValue | null>(null);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = React.useState<ToastItem[]>([]);
+  // Render the portal only after mount so the server and the client's first
+  // (hydration) render both produce nothing — avoids a hydration mismatch.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
 
   const toast = React.useCallback((message: string) => {
     const id = Date.now() + Math.random();
@@ -23,7 +27,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {typeof document !== "undefined"
+      {mounted
         ? createPortal(
             <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[400] flex flex-col items-center gap-2 px-4">
               {items.map((t) => (

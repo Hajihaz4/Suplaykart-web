@@ -63,6 +63,9 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
       />
       <div className="space-y-2">
+        <h1 className="sr-only">
+          Suplaykart — grocery &amp; daily-essentials delivery in Nagore
+        </h1>
         <div className="space-y-3 bg-surface px-4 pb-3 pt-2">
           <Link
             href="/search"
@@ -132,6 +135,7 @@ export default async function HomePage() {
                         linkComponent={Link}
                         cartControl={
                           <CartControl
+                            key={p.variantId}
                             variantId={p.variantId}
                             initialQty={quantities[p.variantId] ?? 0}
                           />
