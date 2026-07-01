@@ -5,8 +5,11 @@ import {
   AddressNotFoundError,
   EmptyCartError,
   OutOfStockError,
+  checkServiceability,
   createOrder,
   db,
+  getAddressById,
+  requireDefaultSupplier,
 } from "@suplaykart/db";
 import { requireCurrentUser } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
@@ -41,6 +44,27 @@ export async function placeOrderAction(
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  // Serviceability gate (server-side; the UI also blocks non-serviceable).
+  const supplier = await requireDefaultSupplier(db);
+  const address = await getAddressById(db, user.id, parsed.data.addressId);
+  if (!address) return { error: "Delivery address not found." };
+  const svc = await checkServiceability(db, supplier.id, {
+    pincode: address.pincode,
+  });
+  if (!svc.serviceable) {
+    logger.warn("order.not_serviceable", {
+      userId: user.id,
+      pincode: address.pincode,
+      reason: svc.reason,
+    });
+    return {
+      error:
+        svc.reason === "coming_soon"
+          ? `We're coming soon to ${address.pincode}${svc.expectedLaunch ? ` (${svc.expectedLaunch})` : ""}.`
+          : `We don't deliver to ${address.pincode} yet.`,
+    };
   }
 
   let orderId: string;

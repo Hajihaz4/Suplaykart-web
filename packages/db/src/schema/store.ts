@@ -6,11 +6,12 @@ import {
   boolean,
   numeric,
   jsonb,
+  doublePrecision,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { timestamps, createdAt } from "./_helpers";
 import { suppliers } from "./tenancy";
-import { serviceStatus } from "./enums";
+import { serviceStatus, serviceabilityMode } from "./enums";
 
 /** §1.8 — per-supplier store config (singleton in Phase-1). */
 export const storeSettings = pgTable("store_settings", {
@@ -28,6 +29,11 @@ export const storeSettings = pgTable("store_settings", {
   freeDeliveryThreshold: integer().notNull().default(0), // paise
   taxInclusive: boolean().notNull().default(true),
   gstRate: numeric(),
+  // Phase 2C — serviceability rules
+  serviceMode: serviceabilityMode().notNull().default("all"),
+  originLat: doublePrecision(),
+  originLng: doublePrecision(),
+  deliveryRadiusKm: integer().notNull().default(0),
   ...timestamps,
 });
 

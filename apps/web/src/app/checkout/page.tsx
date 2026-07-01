@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
-import { db, deliveryFeeFor, getCartView, listAddresses } from "@suplaykart/db";
-import type { Address } from "@suplaykart/db";
+import {
+  checkServiceability,
+  db,
+  deliveryFeeFor,
+  getCartView,
+  listAddresses,
+  requireDefaultSupplier,
+} from "@suplaykart/db";
+import type { Address, ServiceabilityResult } from "@suplaykart/db";
 import { requireCurrentUser } from "@/lib/auth";
 import { AccountHeader } from "@/components/account-header";
 import { CheckoutForm } from "@/components/checkout-form";
@@ -20,13 +27,27 @@ function addressLine(a: Address): string {
     .join(", ");
 }
 
+function serviceNote(r: ServiceabilityResult): string | undefined {
+  if (r.serviceable) return undefined;
+  if (r.reason === "coming_soon")
+    return `Coming soon${r.expectedLaunch ? ` · ${r.expectedLaunch}` : ""}`;
+  return "Outside our delivery zone";
+}
+
 export default async function CheckoutPage() {
   const user = await requireCurrentUser();
-  const [cart, addresses] = await Promise.all([
+  const [cart, addresses, supplier] = await Promise.all([
     getCartView(db, user.id),
     listAddresses(db, user.id),
+    requireDefaultSupplier(db),
   ]);
   if (cart.items.length === 0) redirect("/cart");
+
+  const service = await Promise.all(
+    addresses.map((a) =>
+      checkServiceability(db, supplier.id, { pincode: a.pincode }),
+    ),
+  );
 
   const delivery = deliveryFeeFor(cart.subtotal);
   const bill = {
@@ -36,10 +57,12 @@ export default async function CheckoutPage() {
     total: cart.subtotal + delivery,
     itemCount: cart.itemCount,
   };
-  const addressOptions = addresses.map((a) => ({
+  const addressOptions = addresses.map((a, i) => ({
     id: a.id,
     label: labelText(a),
     line: addressLine(a),
+    serviceable: service[i]!.serviceable,
+    note: serviceNote(service[i]!),
   }));
   const defaultAddressId =
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? null;

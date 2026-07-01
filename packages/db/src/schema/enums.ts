@@ -55,6 +55,13 @@ export const actorType = pgEnum("actor_type", ["system", "customer", "staff"]);
 // §1.8 — serviceability
 export const serviceStatus = pgEnum("service_status", ["live", "coming_soon"]);
 
+// §1.8 / Phase 2C — how the store decides serviceability
+export const serviceabilityMode = pgEnum("serviceability_mode", [
+  "all", // serve everywhere (default; unrestricted)
+  "pincode", // only `live` serviceable-area pincodes
+  "radius", // within delivery radius of the store origin (falls back to pincode without coords)
+]);
+
 // §1.8 — notification category
 export const notificationType = pgEnum("notification_type", [
   "order",

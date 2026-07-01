@@ -9,6 +9,8 @@ export interface AddressOption {
   id: string;
   label: string;
   line: string;
+  serviceable: boolean;
+  note?: string;
 }
 
 export interface CheckoutBill {
@@ -41,6 +43,8 @@ export function CheckoutForm({
   const [payment, setPayment] = React.useState<string>("cod");
 
   const noAddress = addresses.length === 0;
+  const selected = addresses.find((a) => a.id === addressId);
+  const blocked = !!selected && !selected.serviceable;
 
   return (
     <form action={action} className="space-y-3 p-3 pb-28">
@@ -76,11 +80,22 @@ export function CheckoutForm({
                   className="mt-1 accent-brand"
                 />
                 <MapPin className="mt-0.5 size-4 shrink-0 text-brand" />
-                <span className="min-w-0">
-                  <span className="block text-sm font-bold text-ink">
-                    {a.label}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-ink">{a.label}</span>
+                    {a.serviceable ? (
+                      <span className="rounded-full bg-brand-light px-2 py-0.5 text-2xs font-bold text-brand">
+                        Serviceable
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-danger-light px-2 py-0.5 text-2xs font-bold text-danger">
+                        {a.note ?? "Not serviceable"}
+                      </span>
+                    )}
                   </span>
-                  <span className="block text-xs text-muted">{a.line}</span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {a.line}
+                  </span>
                 </span>
               </label>
             ))}
@@ -151,6 +166,13 @@ export function CheckoutForm({
         </div>
       </Card>
 
+      {blocked ? (
+        <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs font-semibold text-danger">
+          {selected?.note ?? "This address is outside our delivery zone."} —
+          choose a serviceable address to continue.
+        </p>
+      ) : null}
+
       {state.error ? (
         <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs font-semibold text-danger">
           {state.error}
@@ -168,10 +190,10 @@ export function CheckoutForm({
           </div>
           <button
             type="submit"
-            disabled={pending || noAddress || !addressId}
+            disabled={pending || noAddress || !addressId || blocked}
             className="flex h-11 items-center justify-center rounded-xl bg-brand px-8 text-sm font-bold text-white disabled:opacity-50"
           >
-            {pending ? "Placing…" : "Place order"}
+            {pending ? "Placing…" : blocked ? "Not serviceable" : "Place order"}
           </button>
         </div>
       </div>

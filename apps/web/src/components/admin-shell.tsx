@@ -7,6 +7,7 @@ import {
   FolderTree,
   LayoutDashboard,
   MapPin,
+  MapPinned,
   Package,
   Settings,
   ShoppingBag,
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/addresses", label: "Addresses", icon: MapPin },
+  { href: "/admin/serviceability", label: "Serviceability", icon: MapPinned },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
