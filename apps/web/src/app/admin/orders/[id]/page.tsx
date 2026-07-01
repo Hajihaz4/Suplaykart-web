@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { adminGetOrderById, db } from "@suplaykart/db";
+import { adminGetOrderById, canTransition, db } from "@suplaykart/db";
 import {
   ORDER_STATUS_META,
   OrderStatusBadge,
@@ -9,6 +9,15 @@ import {
   formatINR,
 } from "@suplaykart/ui";
 import type { OrderStatusKey } from "@suplaykart/ui";
+import { AdminOrderStatus } from "@/components/admin-order-status";
+
+const ALL_STATUSES: OrderStatusKey[] = [
+  "confirmed",
+  "packed",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+];
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +45,7 @@ export default async function AdminOrderDetail({
   if (!order) notFound();
 
   const a = (order.deliveryAddress ?? {}) as AddressSnap;
+  const next = ALL_STATUSES.filter((s) => canTransition(order.status, s));
 
   return (
     <div>
@@ -108,6 +118,8 @@ export default async function AdminOrderDetail({
         </div>
 
         <div className="space-y-4">
+          <AdminOrderStatus orderId={order.id} next={next} />
+
           {/* customer */}
           <div className="rounded-xl border border-border-light bg-surface p-4 text-sm">
             <div className="mb-2 text-2xs font-bold uppercase tracking-wide text-muted">

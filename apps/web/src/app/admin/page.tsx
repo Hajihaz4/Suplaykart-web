@@ -3,6 +3,7 @@ import {
   adminListOrders,
   db,
   getAdminStats,
+  listAuditLog,
   requireDefaultSupplier,
 } from "@suplaykart/db";
 import { OrderStatusBadge, formatDateTime, formatINR } from "@suplaykart/ui";
@@ -12,9 +13,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const supplier = await requireDefaultSupplier(db);
-  const [stats, recent] = await Promise.all([
+  const [stats, recent, activity] = await Promise.all([
     getAdminStats(db, supplier.id),
     adminListOrders(db, supplier.id, 8),
+    listAuditLog(db, 8),
   ]);
 
   return (
@@ -79,6 +81,34 @@ export default async function AdminDashboard() {
             ))}
           </DataTable>
         </div>
+
+        {activity.length > 0 ? (
+          <div>
+            <h2 className="mb-2 text-sm font-extrabold text-ink">
+              Recent activity
+            </h2>
+            <div className="divide-y divide-border-light rounded-xl border border-border-light bg-surface">
+              {activity.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between px-4 py-2.5 text-sm"
+                >
+                  <div className="min-w-0">
+                    <span className="font-semibold text-ink">
+                      {a.summary ?? a.action}
+                    </span>
+                    <span className="ml-2 text-2xs text-muted-light">
+                      {a.actorName ?? "system"}
+                    </span>
+                  </div>
+                  <span className="shrink-0 text-2xs text-muted-light">
+                    {formatDateTime(a.createdAt)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </>
   );

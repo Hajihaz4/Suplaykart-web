@@ -1,6 +1,7 @@
 import { adminListCustomers, db } from "@suplaykart/db";
 import { formatDate } from "@suplaykart/ui";
 import { AdminPageHeader, DataTable, Pill, Td } from "@/components/admin-ui";
+import { AdminBlockCustomer } from "@/components/admin-block-customer";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,10 @@ export default async function AdminCustomers() {
               <Td>{c.orderCount}</Td>
               <Td className="text-muted">{formatDate(c.joinedAt)}</Td>
               <Td>
-                {c.isBlocked ? <Pill tone="danger">Blocked</Pill> : null}
+                <div className="flex items-center gap-2">
+                  {c.isBlocked ? <Pill tone="danger">Blocked</Pill> : null}
+                  <AdminBlockCustomer userId={c.id} blocked={c.isBlocked} />
+                </div>
               </Td>
             </tr>
           ))}

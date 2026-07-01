@@ -1,5 +1,6 @@
 import { adminListInventory, db, requireDefaultSupplier } from "@suplaykart/db";
 import { AdminPageHeader, DataTable, Pill, Td } from "@/components/admin-ui";
+import { AdminInventoryAdjust } from "@/components/admin-inventory-adjust";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,15 @@ export default async function AdminInventory() {
       />
       <div className="p-4 md:p-6">
         <DataTable
-          cols={["Product", "Variant", "On hand", "Reserved", "Available", ""]}
+          cols={[
+            "Product",
+            "Variant",
+            "On hand",
+            "Reserved",
+            "Available",
+            "Status",
+            "Adjust",
+          ]}
           empty={rows.length === 0}
         >
           {rows.map((r) => (
@@ -26,8 +35,9 @@ export default async function AdminInventory() {
               <Td>{r.onHand}</Td>
               <Td className="text-muted">{r.reserved}</Td>
               <Td className="font-bold">{r.available}</Td>
+              <Td>{r.low ? <Pill tone="danger">Low stock</Pill> : null}</Td>
               <Td>
-                {r.low ? <Pill tone="danger">Low stock</Pill> : null}
+                <AdminInventoryAdjust variantId={r.variantId} />
               </Td>
             </tr>
           ))}
