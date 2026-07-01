@@ -11,9 +11,6 @@ import {
 import {
   db,
   getCategoryBySlug,
-  listCategories,
-  listFeaturedProducts,
-  listNewArrivals,
   listProductsByCategory,
   listProductsBySlugs,
   requireDefaultSupplier,
@@ -25,6 +22,11 @@ import { toCategoryCard, toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
 import { currentWishlist } from "@/lib/wishlist";
 import { getRecentSlugs } from "@/lib/recently-viewed";
+import {
+  cachedCategories,
+  cachedFeatured,
+  cachedNewArrivals,
+} from "@/lib/catalog-cache";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -43,9 +45,9 @@ export default async function HomePage() {
   const recentSlugs = await getRecentSlugs();
   const [cats, featured, newArrivals, snackProducts, cart, wishlist, recent] =
     await Promise.all([
-      listCategories(db, supplier.id),
-      listFeaturedProducts(db, supplier.id, 6),
-      listNewArrivals(db, supplier.id, 6),
+      cachedCategories(supplier.id),
+      cachedFeatured(supplier.id, 6),
+      cachedNewArrivals(supplier.id, 6),
       snacks
         ? listProductsByCategory(db, supplier.id, snacks.id, 6)
         : Promise.resolve([]),

@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   InvalidTransitionError,
   adjustInventory,
@@ -91,6 +91,7 @@ export async function adjustInventoryAction(
   const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   await adjustInventory(db, supplier.id, admin.id, variantId, delta, reason);
+  revalidateTag("products");
   revalidatePath("/admin/inventory");
 }
 
@@ -110,6 +111,7 @@ export async function toggleProductActiveAction(
   const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   await setProductActive(db, supplier.id, admin.id, productId, active);
+  revalidateTag("products");
   revalidatePath("/admin/products");
 }
 
@@ -120,5 +122,6 @@ export async function toggleCategoryActiveAction(
   const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   await setCategoryActive(db, supplier.id, admin.id, categoryId, active);
+  revalidateTag("categories");
   revalidatePath("/admin/categories");
 }

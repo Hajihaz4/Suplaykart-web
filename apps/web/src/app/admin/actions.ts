@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
@@ -96,6 +96,7 @@ export async function createProductAction(
   } catch {
     return { error: "Could not create product (is the slug unique?)." };
   }
+  revalidateTag("products");
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }
@@ -124,6 +125,7 @@ export async function updateProductAction(
     mrp: d.mrp != null ? toPaise(d.mrp) : null,
     unit: d.unit,
   });
+  revalidateTag("products");
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }
@@ -166,6 +168,7 @@ export async function createCategoryAction(
   } catch {
     return { error: "Could not create category (is the slug unique?)." };
   }
+  revalidateTag("categories");
   revalidatePath("/admin/categories");
   redirect("/admin/categories");
 }
@@ -187,6 +190,7 @@ export async function updateCategoryAction(
     icon: d.icon ?? null,
     sortOrder: d.sortOrder ?? 0,
   });
+  revalidateTag("categories");
   revalidatePath("/admin/categories");
   redirect("/admin/categories");
 }

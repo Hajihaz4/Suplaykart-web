@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CategoryCard, EmptyState, SectionHeader } from "@suplaykart/ui";
-import { db, listCategories, requireDefaultSupplier } from "@suplaykart/db";
+import { db, requireDefaultSupplier } from "@suplaykart/db";
+import { cachedCategories } from "@/lib/catalog-cache";
 import { StoreShell } from "@/components/store-shell";
 import { toCategoryCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function CategoriesPage() {
   const supplier = await requireDefaultSupplier(db);
   const [cats, { count: cartCount }] = await Promise.all([
-    listCategories(db, supplier.id),
+    cachedCategories(supplier.id),
     currentCart(),
   ]);
 

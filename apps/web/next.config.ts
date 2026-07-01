@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       ? [{ protocol: "https", hostname: r2Host }]
       : [],
   },
+  experimental: {
+    // Tree-shake barrel imports (icons) to shrink route bundles.
+    optimizePackageImports: ["lucide-react"],
+  },
   // Portable build artifact (per ADR 0001), even though Vercel is the default host.
   output: "standalone",
   poweredByHeader: false,
