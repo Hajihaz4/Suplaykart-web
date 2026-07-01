@@ -3,22 +3,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
-  InvalidTransitionError,
-  adjustInventory,
-  adminSetOrderStatus,
   createCategory,
   createProduct,
   db,
   requireDefaultSupplier,
-  setCategoryActive,
-  setCustomerBlocked,
-  setProductActive,
   updateCategory,
   updateProduct,
   upsertStoreSettings,
-  type OrderStatus,
 } from "@suplaykart/db";
 import { requireAdmin } from "@/lib/auth";
+
+/**
+ * Input-validating (zod) admin form actions. This module imports zod, so it is
+ * imported ONLY by client form components (never by a Server Component page) —
+ * see ./mutations.ts for the rationale. Non-validated toggle/status/adjust/
+ * block actions live in ./mutations.ts.
+ */
 
 export interface FormState {
   error?: string | null;
@@ -33,46 +33,6 @@ const slug = z
 /** Rupees entered in the admin UI → integer paise for storage. */
 const rupees = z.coerce.number().min(0).max(200000);
 const toPaise = (r: number) => Math.round(r * 100);
-
-// ── orders ──────────────────────────────────────────────────────────────────
-
-export async function setOrderStatusAction(
-  orderId: string,
-  status: OrderStatus,
-): Promise<void> {
-  const admin = await requireAdmin();
-  try {
-    await adminSetOrderStatus(db, admin.id, orderId, status);
-  } catch (e) {
-    if (!(e instanceof InvalidTransitionError)) throw e;
-  }
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/admin/orders");
-}
-
-// ── inventory ───────────────────────────────────────────────────────────────
-
-export async function adjustInventoryAction(
-  variantId: string,
-  delta: number,
-  reason?: string,
-): Promise<void> {
-  const admin = await requireAdmin();
-  const supplier = await requireDefaultSupplier(db);
-  await adjustInventory(db, supplier.id, admin.id, variantId, delta, reason);
-  revalidatePath("/admin/inventory");
-}
-
-// ── customers ───────────────────────────────────────────────────────────────
-
-export async function toggleCustomerBlockAction(
-  userId: string,
-  blocked: boolean,
-): Promise<void> {
-  const admin = await requireAdmin();
-  await setCustomerBlocked(db, admin.id, userId, blocked);
-  revalidatePath("/admin/customers");
-}
 
 // ── products ────────────────────────────────────────────────────────────────
 
@@ -168,16 +128,6 @@ export async function updateProductAction(
   redirect("/admin/products");
 }
 
-export async function toggleProductActiveAction(
-  productId: string,
-  active: boolean,
-): Promise<void> {
-  const admin = await requireAdmin();
-  const supplier = await requireDefaultSupplier(db);
-  await setProductActive(db, supplier.id, admin.id, productId, active);
-  revalidatePath("/admin/products");
-}
-
 // ── categories ──────────────────────────────────────────────────────────────
 
 const categorySchema = z.object({
@@ -239,16 +189,6 @@ export async function updateCategoryAction(
   });
   revalidatePath("/admin/categories");
   redirect("/admin/categories");
-}
-
-export async function toggleCategoryActiveAction(
-  categoryId: string,
-  active: boolean,
-): Promise<void> {
-  const admin = await requireAdmin();
-  const supplier = await requireDefaultSupplier(db);
-  await setCategoryActive(db, supplier.id, admin.id, categoryId, active);
-  revalidatePath("/admin/categories");
 }
 
 // ── settings ────────────────────────────────────────────────────────────────

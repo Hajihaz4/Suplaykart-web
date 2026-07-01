@@ -8,7 +8,6 @@ import {
   requireDefaultSupplier,
 } from "@suplaykart/db";
 import { AdminProductForm } from "@/components/admin-product-form";
-import { updateProductAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +36,8 @@ export default async function EditProductPage({
         <h1 className="text-lg font-extrabold text-ink">Edit {product.name}</h1>
       </div>
       <AdminProductForm
-        action={updateProductAction.bind(null, id)}
+        mode="edit"
+        productId={id}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         submitLabel="Save changes"
         defaults={{

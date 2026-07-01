@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { adminListCategories, db, requireDefaultSupplier } from "@suplaykart/db";
 import { AdminPageHeader, DataTable, Pill, Td } from "@/components/admin-ui";
 import { AdminToggle } from "@/components/admin-toggle";
-import { toggleCategoryActiveAction } from "@/app/admin/actions";
+import { toggleCategoryActiveAction } from "@/app/admin/mutations";
 
 export const dynamic = "force-dynamic";
 

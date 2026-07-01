@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { adjustInventoryAction } from "@/app/admin/actions";
+import { adjustInventoryAction } from "@/app/admin/mutations";
 
 export function AdminInventoryAdjust({ variantId }: { variantId: string }) {
   const [pending, start] = React.useTransition();

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useActionState } from "react";
 import type { ReactNode } from "react";
-import type { FormState } from "@/app/admin/actions";
+import { createProductAction, updateProductAction } from "@/app/admin/actions";
 
 const inputCls =
   "w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:outline-none";
@@ -26,18 +26,23 @@ export interface ProductDefaults {
 }
 
 export function AdminProductForm({
-  action,
+  mode,
+  productId,
   categories,
   defaults = {},
   submitLabel,
-  showStockSlug = false,
 }: {
-  action: (prev: FormState, fd: FormData) => Promise<FormState>;
+  mode: "create" | "edit";
+  productId?: string;
   categories: Cat[];
   defaults?: ProductDefaults;
   submitLabel: string;
-  showStockSlug?: boolean;
 }) {
+  const action =
+    mode === "edit" && productId
+      ? updateProductAction.bind(null, productId)
+      : createProductAction;
+  const showStockSlug = mode === "create";
   const [state, formAction, pending] = useActionState(action, {});
   const veg =
     defaults.isVeg === true ? "veg" : defaults.isVeg === false ? "nonveg" : "na";

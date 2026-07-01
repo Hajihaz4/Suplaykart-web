@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { adminListCategories, db, requireDefaultSupplier } from "@suplaykart/db";
 import { AdminProductForm } from "@/components/admin-product-form";
-import { createProductAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +21,9 @@ export default async function NewProductPage() {
         <h1 className="text-lg font-extrabold text-ink">New product</h1>
       </div>
       <AdminProductForm
-        action={createProductAction}
+        mode="create"
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         submitLabel="Create product"
-        showStockSlug
       />
     </div>
   );

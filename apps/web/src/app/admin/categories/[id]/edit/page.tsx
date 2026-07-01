@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { db, getCategoryForEdit, requireDefaultSupplier } from "@suplaykart/db";
 import { AdminCategoryForm } from "@/components/admin-category-form";
-import { updateCategoryAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +28,8 @@ export default async function EditCategoryPage({
         <h1 className="text-lg font-extrabold text-ink">Edit {category.name}</h1>
       </div>
       <AdminCategoryForm
-        action={updateCategoryAction.bind(null, id)}
+        mode="edit"
+        categoryId={id}
         submitLabel="Save changes"
         defaults={{
           name: category.name,

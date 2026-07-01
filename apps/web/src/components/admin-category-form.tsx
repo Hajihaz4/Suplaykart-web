@@ -1,7 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import type { ReactNode } from "react";
-import type { FormState } from "@/app/admin/actions";
+import { createCategoryAction, updateCategoryAction } from "@/app/admin/actions";
 
 const inputCls =
   "w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:outline-none";
@@ -14,14 +14,20 @@ export interface CategoryDefaults {
 }
 
 export function AdminCategoryForm({
-  action,
+  mode,
+  categoryId,
   defaults = {},
   submitLabel,
 }: {
-  action: (prev: FormState, fd: FormData) => Promise<FormState>;
+  mode: "create" | "edit";
+  categoryId?: string;
   defaults?: CategoryDefaults;
   submitLabel: string;
 }) {
+  const action =
+    mode === "edit" && categoryId
+      ? updateCategoryAction.bind(null, categoryId)
+      : createCategoryAction;
   const [state, formAction, pending] = useActionState(action, {});
   return (
     <form action={formAction} className="max-w-lg space-y-4 p-4 md:p-6">

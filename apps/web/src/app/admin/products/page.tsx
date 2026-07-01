@@ -4,7 +4,7 @@ import { adminListProducts, db, requireDefaultSupplier } from "@suplaykart/db";
 import { formatINR } from "@suplaykart/ui";
 import { AdminPageHeader, DataTable, Pill, Td } from "@/components/admin-ui";
 import { AdminToggle } from "@/components/admin-toggle";
-import { toggleProductActiveAction } from "@/app/admin/actions";
+import { toggleProductActiveAction } from "@/app/admin/mutations";
 
 export const dynamic = "force-dynamic";
 

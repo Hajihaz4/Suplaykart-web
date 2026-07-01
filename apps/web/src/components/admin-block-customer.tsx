@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { toggleCustomerBlockAction } from "@/app/admin/actions";
+import { toggleCustomerBlockAction } from "@/app/admin/mutations";
 
 export function AdminBlockCustomer({
   userId,

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { ORDER_STATUS_META } from "@suplaykart/ui";
 import type { OrderStatusKey } from "@suplaykart/ui";
-import { setOrderStatusAction } from "@/app/admin/actions";
+import { setOrderStatusAction } from "@/app/admin/mutations";
 
 export function AdminOrderStatus({
   orderId,

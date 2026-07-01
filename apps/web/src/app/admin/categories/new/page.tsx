@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AdminCategoryForm } from "@/components/admin-category-form";
-import { createCategoryAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +16,7 @@ export default function NewCategoryPage() {
         </Link>
         <h1 className="text-lg font-extrabold text-ink">New category</h1>
       </div>
-      <AdminCategoryForm
-        action={createCategoryAction}
-        submitLabel="Create category"
-      />
+      <AdminCategoryForm mode="create" submitLabel="Create category" />
     </div>
   );
 }
