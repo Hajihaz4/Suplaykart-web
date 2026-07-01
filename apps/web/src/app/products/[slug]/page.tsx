@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -12,8 +13,30 @@ import { AddToCartBar } from "@/components/add-to-cart-bar";
 import { CartControl } from "@/components/cart-control";
 import { toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supplier = await requireDefaultSupplier(db);
+  const product = await getProductDetailBySlug(db, supplier.id, slug);
+  if (!product) return { title: "Product not found" };
+  const title = product.brand ? `${product.name} — ${product.brand}` : product.name;
+  const description =
+    product.description ??
+    `Buy ${product.name} (${product.unit}) online at ${SITE_NAME}. Delivered in minutes.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/products/${slug}` },
+    openGraph: { title, description, type: "website", url: `${SITE_URL}/products/${slug}` },
+  };
+}
 
 export default async function ProductPage({
   params,
@@ -32,8 +55,29 @@ export default async function ProductPage({
   ]);
   const similar = similarAll.filter((p) => p.id !== product.id).slice(0, 6);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description ?? undefined,
+    brand: product.brand
+      ? { "@type": "Brand", name: product.brand }
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "INR",
+      price: (product.price / 100).toFixed(2),
+      availability: "https://schema.org/InStock",
+      url: `${SITE_URL}/products/${slug}`,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-surface pb-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border-light bg-surface px-4 py-3">
         <Link
           href="/"

@@ -213,6 +213,19 @@ export async function searchProducts(
   return rows.map(mapSummary);
 }
 
+/** All active product slugs (for the sitemap). */
+export async function listProductSlugs(
+  db: DB,
+  supplierId: string,
+): Promise<{ slug: string; updatedAt: Date }[]> {
+  return db
+    .select({ slug: products.slug, updatedAt: products.updatedAt })
+    .from(products)
+    .where(
+      and(eq(products.supplierId, supplierId), eq(products.isActive, true)),
+    );
+}
+
 // ── Product detail ────────────────────────────────────────────────────────
 
 export async function getProductDetailBySlug(

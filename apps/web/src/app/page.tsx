@@ -21,8 +21,17 @@ import { StoreShell } from "@/components/store-shell";
 import { CartControl } from "@/components/cart-control";
 import { toCategoryCard, toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+};
 
 export default async function HomePage() {
   const supplier = await requireDefaultSupplier(db);
@@ -49,6 +58,10 @@ export default async function HomePage() {
 
   return (
     <StoreShell cartCount={cartCount}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
       <div className="space-y-2">
         <div className="space-y-3 bg-surface px-4 pb-3 pt-2">
           <Link
