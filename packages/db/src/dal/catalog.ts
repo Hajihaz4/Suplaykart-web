@@ -1,4 +1,14 @@
-import { and, asc, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import type { DB } from "../client";
 import { categories, productImages, productVariants, products } from "../schema";
 import type {
@@ -220,6 +230,30 @@ export async function searchProducts(
     .orderBy(asc(products.name))
     .limit(limit);
   return rows.map(mapSummary);
+}
+
+/** Products for a list of slugs, preserving the given order (recently viewed). */
+export async function listProductsBySlugs(
+  db: DB,
+  supplierId: string,
+  slugs: string[],
+): Promise<ProductSummary[]> {
+  if (slugs.length === 0) return [];
+  const rows = await db
+    .select(summaryCols)
+    .from(products)
+    .innerJoin(productVariants, defaultVariantJoin)
+    .where(
+      and(
+        eq(products.supplierId, supplierId),
+        eq(products.isActive, true),
+        inArray(products.slug, slugs),
+      ),
+    );
+  const bySlug = new Map(rows.map((r) => [r.slug, mapSummary(r)]));
+  return slugs
+    .map((s) => bySlug.get(s))
+    .filter((x): x is ProductSummary => Boolean(x));
 }
 
 /** All active product slugs (for the sitemap). */

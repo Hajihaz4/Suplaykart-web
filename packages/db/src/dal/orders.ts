@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray } from "drizzle-orm";
 import type { DB } from "../client";
 import {
   addresses,
@@ -396,10 +396,21 @@ export async function cancelOrder(
 
 // ── reads ───────────────────────────────────────────────────────────────────
 
+export interface OrderFilter {
+  status?: OrderStatus;
+  q?: string;
+}
+
 export async function listOrders(
   db: DB,
   userId: string,
+  filter: OrderFilter = {},
 ): Promise<OrderSummary[]> {
+  const conds = [eq(orders.userId, userId)];
+  if (filter.status) conds.push(eq(orders.status, filter.status));
+  if (filter.q?.trim())
+    conds.push(ilike(orders.orderNumber, `%${filter.q.trim()}%`));
+
   const orderRows = await db
     .select({
       id: orders.id,
@@ -411,7 +422,7 @@ export async function listOrders(
       placedAt: orders.placedAt,
     })
     .from(orders)
-    .where(eq(orders.userId, userId))
+    .where(and(...conds))
     .orderBy(desc(orders.placedAt));
   if (orderRows.length === 0) return [];
 

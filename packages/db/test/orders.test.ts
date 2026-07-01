@@ -138,4 +138,15 @@ describe("order + inventory lifecycle", () => {
     expect((await stock(t.db, V)).reserved).toBe(0);
     expect(await getOrderById(t.db, B, o2.id)).toBeNull();
   });
+
+  it("filters orders by status and searches by number", async () => {
+    const all = await listOrders(t.db, A);
+    expect(all.length).toBeGreaterThanOrEqual(2);
+    const cancelled = await listOrders(t.db, A, { status: "cancelled" });
+    expect(cancelled.length).toBeGreaterThanOrEqual(1);
+    expect(cancelled.every((o) => o.status === "cancelled")).toBe(true);
+    const byNum = await listOrders(t.db, A, { q: all[0]!.orderNumber });
+    expect(byNum).toHaveLength(1);
+    expect(byNum[0]!.orderNumber).toBe(all[0]!.orderNumber);
+  });
 });

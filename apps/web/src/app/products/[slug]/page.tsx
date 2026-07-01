@@ -13,6 +13,7 @@ import { AddToCartBar } from "@/components/add-to-cart-bar";
 import { CartControl } from "@/components/cart-control";
 import { WishlistHeart } from "@/components/wishlist-heart";
 import { HeroImage } from "@/components/hero-image";
+import { RecordView } from "@/components/record-view";
 import { toProductCard } from "@/lib/mappers";
 import { currentCart } from "@/lib/cart";
 import { currentWishlist } from "@/lib/wishlist";
@@ -82,6 +83,7 @@ export default async function ProductPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <RecordView slug={product.slug} />
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border-light bg-surface px-4 py-3">
         <Link
           href="/"

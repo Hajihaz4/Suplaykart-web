@@ -11,6 +11,7 @@ import { db, getOrderById } from "@suplaykart/db";
 import { AccountHeader } from "@/components/account-header";
 import { requireCurrentUser } from "@/lib/auth";
 import { CancelOrderButton } from "@/components/cancel-order-button";
+import { OrderStatusTracker } from "@/components/order-status-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,10 @@ export default async function OrderDetailPage({
               {order.cancelReason}
             </p>
           ) : null}
+
+          <div className="mb-4">
+            <OrderStatusTracker status={order.status} />
+          </div>
 
           <ol className="relative space-y-4 border-l border-border pl-5">
             {order.history.map((ev, i) => {
