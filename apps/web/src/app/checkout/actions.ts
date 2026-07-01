@@ -6,7 +6,6 @@ import {
   EmptyCartError,
   OutOfStockError,
   checkServiceability,
-  createNotification,
   createOrder,
   db,
   getAddressById,
@@ -15,7 +14,7 @@ import {
 import { requireCurrentUser } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
-import { pushToUsers } from "@/lib/push";
+import { notifyOrderEvent } from "@/lib/notify";
 
 const schema = z.object({
   addressId: z.string().uuid("Select a delivery address"),
@@ -86,19 +85,10 @@ export async function placeOrderAction(
       total: order.totalAmount,
       paymentMethod: order.paymentMethod,
     });
-    await createNotification(db, {
-      userId: user.id,
-      type: "order",
-      title: `Order ${order.orderNumber} placed`,
-      body: "We've received your order and will keep you posted.",
-      data: { orderId },
-    });
-    await pushToUsers([user.id], {
-      title: "Order placed 🎉",
-      body: `Order ${order.orderNumber} received.`,
-      url: `/account/orders/${orderId}`,
-      tag: `order-${orderId}`,
-    });
+    await notifyOrderEvent(
+      { id: order.id, userId: user.id, orderNumber: order.orderNumber },
+      "placed",
+    );
   } catch (e) {
     if (e instanceof EmptyCartError) return { error: "Your cart is empty." };
     if (e instanceof AddressNotFoundError)

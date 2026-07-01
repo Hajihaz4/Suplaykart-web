@@ -45,19 +45,25 @@ async function sendOne(
   sub: SubKeys,
   payload: PushPayload,
 ): Promise<{ ok: boolean; gone: boolean }> {
-  try {
-    await webpush.sendNotification(
-      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-      JSON.stringify(payload),
-    );
-    return { ok: true, gone: false };
-  } catch (e: unknown) {
-    const status =
-      typeof e === "object" && e && "statusCode" in e
-        ? (e as { statusCode?: number }).statusCode
-        : undefined;
-    return { ok: false, gone: status === 404 || status === 410 };
+  // Retry once on transient failures (5xx / network); give up immediately on a
+  // dead endpoint (404/410) so it can be pruned.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        JSON.stringify(payload),
+      );
+      return { ok: true, gone: false };
+    } catch (e: unknown) {
+      const status =
+        typeof e === "object" && e && "statusCode" in e
+          ? (e as { statusCode?: number }).statusCode
+          : undefined;
+      if (status === 404 || status === 410) return { ok: false, gone: true };
+      if (attempt === 1) return { ok: false, gone: false };
+    }
   }
+  return { ok: false, gone: false };
 }
 
 /**
