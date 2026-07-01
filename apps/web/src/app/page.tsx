@@ -18,24 +18,25 @@ import {
   requireDefaultSupplier,
 } from "@suplaykart/db";
 import { StoreShell } from "@/components/store-shell";
+import { CartControl } from "@/components/cart-control";
 import { toCategoryCard, toProductCard } from "@/lib/mappers";
-import { CART_LINES } from "@/lib/mock-data";
+import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
-
-const cartCount = CART_LINES.reduce((n, l) => n + l.qty, 0);
 
 export default async function HomePage() {
   const supplier = await requireDefaultSupplier(db);
   const snacks = await getCategoryBySlug(db, supplier.id, "chips-namkeen");
-  const [cats, featured, newArrivals, snackProducts] = await Promise.all([
+  const [cats, featured, newArrivals, snackProducts, cart] = await Promise.all([
     listCategories(db, supplier.id),
     listFeaturedProducts(db, supplier.id, 6),
     listNewArrivals(db, supplier.id, 6),
     snacks
       ? listProductsByCategory(db, supplier.id, snacks.id, 6)
       : Promise.resolve([]),
+    currentCart(),
   ]);
+  const { count: cartCount, quantities } = cart;
 
   const sections = [
     { title: "Featured products", items: featured },
@@ -116,6 +117,12 @@ export default async function HomePage() {
                         product={toProductCard(p)}
                         href={`/products/${p.slug}`}
                         linkComponent={Link}
+                        cartControl={
+                          <CartControl
+                            variantId={p.variantId}
+                            initialQty={quantities[p.variantId] ?? 0}
+                          />
+                        }
                       />
                     ))}
                   </div>

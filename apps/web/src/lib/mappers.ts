@@ -8,6 +8,7 @@ export function toProductCard(s: ProductSummary): ProductCardData {
     slug: s.slug,
     name: s.name,
     brand: s.brand ?? undefined,
+    variantId: s.variantId,
     price: s.price,
     mrp: s.mrp ?? undefined,
     unit: s.unit,

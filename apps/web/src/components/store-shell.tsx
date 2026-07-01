@@ -16,7 +16,7 @@ const DEFAULT_LOCATION = {
   address: "Main Road, Nagore, Nagapattinam — 611002",
 };
 
-/** Storefront chrome: header + content + bottom nav (mock-data driven). */
+/** Storefront chrome: header + content + bottom nav. */
 export function StoreShell({
   children,
   cartCount = 0,

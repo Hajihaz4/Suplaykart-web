@@ -5,6 +5,8 @@ export interface ProductCardData {
   slug: string;
   name: string;
   brand?: string;
+  /** default variant id (for add-to-cart) */
+  variantId?: string;
   /** price in paise */
   price: number;
   /** MRP in paise */

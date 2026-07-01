@@ -8,8 +8,10 @@ import {
   searchProducts,
 } from "@suplaykart/db";
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { CartControl } from "@/components/cart-control";
 import { SearchBox } from "@/components/search-box";
 import { toProductCard } from "@/lib/mappers";
+import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,12 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = (q ?? "").trim();
   const supplier = await requireDefaultSupplier(db);
-  const results = query
-    ? await searchProducts(db, supplier.id, query, 30)
-    : await listFeaturedProducts(db, supplier.id, 12);
+  const [results, { quantities }] = await Promise.all([
+    query
+      ? searchProducts(db, supplier.id, query, 30)
+      : listFeaturedProducts(db, supplier.id, 12),
+    currentCart(),
+  ]);
 
   return (
     <AppShell
@@ -49,6 +54,12 @@ export default async function SearchPage({
               product={toProductCard(p)}
               href={`/products/${p.slug}`}
               linkComponent={Link}
+              cartControl={
+                <CartControl
+                  variantId={p.variantId}
+                  initialQty={quantities[p.variantId] ?? 0}
+                />
+              }
             />
           ))}
         </div>

@@ -13,15 +13,16 @@ import { Card, cn } from "@suplaykart/ui";
 import { db, listAddresses } from "@suplaykart/db";
 import { StoreShell } from "@/components/store-shell";
 import { requireCurrentUser } from "@/lib/auth";
-import { CART_LINES } from "@/lib/mock-data";
+import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
 
-const cartCount = CART_LINES.reduce((n, l) => n + l.qty, 0);
-
 export default async function AccountPage() {
   const user = await requireCurrentUser();
-  const addresses = await listAddresses(db, user.id);
+  const [addresses, { count: cartCount }] = await Promise.all([
+    listAddresses(db, user.id),
+    currentCart(),
+  ]);
 
   const initial = (
     user.name?.trim()?.[0] ??

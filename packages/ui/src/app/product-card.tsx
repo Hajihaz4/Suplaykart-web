@@ -12,6 +12,8 @@ export interface ProductCardProps {
   href?: string;
   linkComponent?: React.ElementType;
   className?: string;
+  /** Live cart control (ADD / stepper). Falls back to a local demo stepper. */
+  cartControl?: React.ReactNode;
 }
 
 export function ProductCard({
@@ -19,6 +21,7 @@ export function ProductCard({
   href,
   linkComponent: Link = "a",
   className,
+  cartControl,
 }: ProductCardProps) {
   const [qty, setQty] = React.useState(0);
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
@@ -79,18 +82,19 @@ export function ProductCard({
               </div>
             ) : null}
           </div>
-          {qty === 0 ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 px-3"
-              onClick={() => setQty(1)}
-            >
-              ADD
-            </Button>
-          ) : (
-            <QuantityStepper value={qty} onChange={setQty} size="sm" />
-          )}
+          {cartControl ??
+            (qty === 0 ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => setQty(1)}
+              >
+                ADD
+              </Button>
+            ) : (
+              <QuantityStepper value={qty} onChange={setQty} size="sm" />
+            ))}
         </div>
       </div>
     </div>

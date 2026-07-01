@@ -9,7 +9,9 @@ import {
   requireDefaultSupplier,
 } from "@suplaykart/db";
 import { AddToCartBar } from "@/components/add-to-cart-bar";
+import { CartControl } from "@/components/cart-control";
 import { toProductCard } from "@/lib/mappers";
+import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +26,11 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const off = product.mrp ? discountPct(product.mrp, product.price) : null;
-  const similar = (await listFeaturedProducts(db, supplier.id, 8))
-    .filter((p) => p.id !== product.id)
-    .slice(0, 6);
+  const [similarAll, { quantities }] = await Promise.all([
+    listFeaturedProducts(db, supplier.id, 8),
+    currentCart(),
+  ]);
+  const similar = similarAll.filter((p) => p.id !== product.id).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-surface pb-24">
@@ -94,6 +98,12 @@ export default async function ProductPage({
                   product={toProductCard(p)}
                   href={`/products/${p.slug}`}
                   linkComponent={Link}
+                  cartControl={
+                    <CartControl
+                      variantId={p.variantId}
+                      initialQty={quantities[p.variantId] ?? 0}
+                    />
+                  }
                 />
               ))}
             </div>
@@ -101,7 +111,11 @@ export default async function ProductPage({
         ) : null}
       </div>
 
-      <AddToCartBar price={product.price} />
+      <AddToCartBar
+        variantId={product.variantId}
+        price={product.price}
+        initialQty={quantities[product.variantId] ?? 0}
+      />
     </div>
   );
 }

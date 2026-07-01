@@ -43,6 +43,7 @@ const summaryCols = {
   isVeg: products.isVeg,
   ratingAvg: products.ratingAvg,
   ratingCount: products.ratingCount,
+  vId: productVariants.id,
   vLabel: productVariants.label,
   vPrice: productVariants.price,
   vMrp: productVariants.mrp,
@@ -58,6 +59,7 @@ type SummaryRow = {
   isVeg: boolean | null;
   ratingAvg: string | null;
   ratingCount: number;
+  vId: string;
   vLabel: string;
   vPrice: number;
   vMrp: number;
@@ -71,6 +73,7 @@ function mapSummary(r: SummaryRow): ProductSummary {
     slug: r.slug,
     name: r.name,
     brand: r.brand,
+    variantId: r.vId,
     price: r.vPrice,
     mrp: r.vMrp > r.vPrice ? r.vMrp : null,
     unit: r.vLabel,
@@ -272,6 +275,7 @@ export async function getProductDetailBySlug(
     slug: p.slug,
     name: p.name,
     brand: p.brand,
+    variantId: def?.id ?? "",
     description: p.description,
     price: def?.price ?? 0,
     mrp: def && def.mrp != null && def.mrp > def.price ? def.mrp : null,

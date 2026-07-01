@@ -23,7 +23,9 @@ export interface ProductSummary {
   slug: string;
   name: string;
   brand: string | null;
-  /** price in paise (from the default variant) */
+  /** default variant id (for add-to-cart) */
+  variantId: string;
+  /** price in paise (default variant) */
   price: number;
   /** MRP in paise, or null when there is no discount */
   mrp: number | null;
@@ -49,4 +51,25 @@ export interface ProductDetail extends ProductSummary {
   categoryName: string | null;
   variants: ProductVariantSummary[];
   images: { url: string; alt: string | null }[];
+}
+
+export interface CartItemView {
+  variantId: string;
+  productId: string;
+  slug: string;
+  name: string;
+  unit: string;
+  image: string;
+  price: number;
+  mrp: number | null;
+  veg: boolean | null;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface CartView {
+  items: CartItemView[];
+  subtotal: number;
+  itemCount: number;
+  savings: number;
 }

@@ -3,15 +3,16 @@ import { CategoryCard, EmptyState, SectionHeader } from "@suplaykart/ui";
 import { db, listCategories, requireDefaultSupplier } from "@suplaykart/db";
 import { StoreShell } from "@/components/store-shell";
 import { toCategoryCard } from "@/lib/mappers";
-import { CART_LINES } from "@/lib/mock-data";
+import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
 
-const cartCount = CART_LINES.reduce((n, l) => n + l.qty, 0);
-
 export default async function CategoriesPage() {
   const supplier = await requireDefaultSupplier(db);
-  const cats = await listCategories(db, supplier.id);
+  const [cats, { count: cartCount }] = await Promise.all([
+    listCategories(db, supplier.id),
+    currentCart(),
+  ]);
 
   return (
     <StoreShell cartCount={cartCount}>

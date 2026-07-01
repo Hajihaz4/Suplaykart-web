@@ -18,6 +18,7 @@
     "seed": "tsx src/seed.ts",
     "verify:db": "tsx scripts/verify-connectivity.ts",
     "verify:addresses": "tsx scripts/verify-addresses.ts",
+    "verify:cart": "tsx scripts/verify-cart.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
