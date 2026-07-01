@@ -8,6 +8,7 @@ import {
   listProductImages,
   reorderProductImages,
   requireDefaultSupplier,
+  writeAudit,
 } from "@suplaykart/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -63,7 +64,7 @@ export async function confirmProductImageUpload(
   publicUrl: string,
   alt?: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   const row = await addProductImage(db, supplier.id, {
     productId,
@@ -71,6 +72,13 @@ export async function confirmProductImageUpload(
     alt: alt ?? null,
   });
   if (!row) return { ok: false, error: "Could not save the image." };
+  await writeAudit(db, {
+    actorUserId: admin.id,
+    action: "product.image.add",
+    entity: "product",
+    entityId: productId,
+    summary: "Added a product image",
+  });
   revalidateProduct(productId);
   return { ok: true };
 }
@@ -79,7 +87,7 @@ export async function deleteProductImageAction(
   productId: string,
   imageId: string,
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   const removed = await deleteProductImage(db, supplier.id, imageId);
   if (removed) {
@@ -91,6 +99,13 @@ export async function deleteProductImageAction(
         // best-effort object cleanup; the DB row is already gone
       }
     }
+    await writeAudit(db, {
+      actorUserId: admin.id,
+      action: "product.image.delete",
+      entity: "product",
+      entityId: productId,
+      summary: "Removed a product image",
+    });
   }
   revalidateProduct(productId);
 }
@@ -109,7 +124,7 @@ export async function setPrimaryProductImageAction(
   productId: string,
   imageId: string,
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supplier = await requireDefaultSupplier(db);
   const imgs = await listProductImages(db, productId);
   const ordered = [
@@ -117,5 +132,12 @@ export async function setPrimaryProductImageAction(
     ...imgs.map((i) => i.id).filter((id) => id !== imageId),
   ];
   await reorderProductImages(db, supplier.id, productId, ordered);
+  await writeAudit(db, {
+    actorUserId: admin.id,
+    action: "product.image.set_primary",
+    entity: "product",
+    entityId: productId,
+    summary: "Changed the primary product image",
+  });
   revalidateProduct(productId);
 }

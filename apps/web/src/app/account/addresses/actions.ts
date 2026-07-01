@@ -12,14 +12,17 @@ import {
 } from "@suplaykart/db";
 import type { AddressFormState } from "@suplaykart/ui";
 import { requireCurrentUser } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import { reverseGeocode, type ReverseGeoResult } from "@/lib/maps";
 
 export async function reverseGeocodeAction(
   lat: number,
   lng: number,
 ): Promise<ReverseGeoResult | null> {
-  await requireCurrentUser();
+  const user = await requireCurrentUser();
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  // Proxies a paid external geocoder — cap per user to bound cost/abuse.
+  if (!rateLimit(`geocode:${user.id}`, 30, 60_000).ok) return null;
   return reverseGeocode(lat, lng);
 }
 

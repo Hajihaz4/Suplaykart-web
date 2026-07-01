@@ -9,6 +9,7 @@ import {
   updateNotificationPreferences,
 } from "@suplaykart/db";
 import { requireCurrentUser } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 export interface WebPushJSON {
   endpoint: string;
@@ -20,6 +21,7 @@ export async function subscribePushAction(
   userAgent?: string,
 ): Promise<{ ok: boolean }> {
   const user = await requireCurrentUser();
+  if (!rateLimit(`push-sub:${user.id}`, 20, 60_000).ok) return { ok: false };
   if (!sub?.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) {
     return { ok: false };
   }

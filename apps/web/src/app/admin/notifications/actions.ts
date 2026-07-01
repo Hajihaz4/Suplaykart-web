@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { broadcastNotification, db, writeAudit } from "@suplaykart/db";
 import type { NotificationType } from "@suplaykart/db";
 import { requireAdmin } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import { pushToUsers } from "@/lib/push";
 
 export interface BroadcastResult {
@@ -21,6 +22,9 @@ export async function sendBroadcastAction(input: {
   url?: string;
 }): Promise<BroadcastResult> {
   const admin = await requireAdmin();
+  // Expensive fan-out (a notification row + push to every customer) — cap per admin.
+  if (!rateLimit(`broadcast:${admin.id}`, 6, 60_000).ok)
+    return { ok: false, error: "Too many broadcasts. Please wait a minute." };
   const title = input.title.trim();
   const body = input.body.trim();
   if (!title || !body)
