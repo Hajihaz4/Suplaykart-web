@@ -12,6 +12,7 @@ import {
   products,
 } from "../schema";
 import { commitSale, releaseStock, reserveStock } from "./inventory";
+import { createPaymentRecord, setPaymentStatus } from "./payments";
 
 // ── domain types ────────────────────────────────────────────────────────────
 
@@ -266,6 +267,14 @@ export async function createOrder(
       note: "Order placed",
     });
 
+    // payment record (pending; collected on delivery for COD/UPI-on-delivery)
+    await createPaymentRecord(tx, {
+      orderId: order!.id,
+      provider: input.paymentMethod,
+      amount: totalAmount,
+      status: "pending",
+    });
+
     // empty the cart
     const [cart] = await tx
       .select({ id: carts.id })
@@ -325,6 +334,8 @@ async function applyStatusTx(
         await releaseStock(tx, order.supplierId, it.variantId, it.quantity, order.id);
       }
     }
+    // payment lifecycle mirrors the order outcome
+    await setPaymentStatus(tx, order.id, to === "delivered" ? "collected" : "failed");
   }
 
   await tx.insert(orderStatusHistory).values({

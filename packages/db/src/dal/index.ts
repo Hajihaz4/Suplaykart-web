@@ -15,3 +15,4 @@ export * from "./images";
 export * from "./serviceability";
 export * from "./notifications";
 export * from "./wishlist";
+export * from "./payments";

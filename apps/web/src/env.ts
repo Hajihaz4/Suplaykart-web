@@ -20,6 +20,10 @@ export const env = createEnv({
     // Web Push VAPID (Phase 2A). Optional — push gracefully disables when unset.
     VAPID_PRIVATE_KEY: z.string().optional(),
     VAPID_SUBJECT: z.string().optional(),
+    // Razorpay (Phase 2I). Optional — online payments disable gracefully; the
+    // store operates on COD / UPI-on-delivery without these.
+    RAZORPAY_KEY_ID: z.string().optional(),
+    RAZORPAY_KEY_SECRET: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),

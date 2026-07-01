@@ -4,6 +4,7 @@ import { inventory } from "../src/schema";
 import { createAddress } from "../src/dal/addresses";
 import { addToCart } from "../src/dal/cart";
 import { OutOfStockError } from "../src/dal/inventory";
+import { getPaymentByOrder } from "../src/dal/payments";
 import {
   InvalidTransitionError,
   cancelOrder,
@@ -137,6 +138,16 @@ describe("order + inventory lifecycle", () => {
     expect(ok.ok).toBe(true);
     expect((await stock(t.db, V)).reserved).toBe(0);
     expect(await getOrderById(t.db, B, o2.id)).toBeNull();
+  });
+
+  it("records the payment lifecycle (pending → collected/failed)", async () => {
+    for (const o of await listOrders(t.db, A)) {
+      const pay = await getPaymentByOrder(t.db, o.id);
+      expect(pay).not.toBeNull();
+      expect(pay!.amount).toBe(o.totalAmount);
+      if (o.status === "delivered") expect(pay!.status).toBe("collected");
+      if (o.status === "cancelled") expect(pay!.status).toBe("failed");
+    }
   });
 
   it("filters orders by status and searches by number", async () => {

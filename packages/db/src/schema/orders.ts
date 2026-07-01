@@ -19,6 +19,7 @@ import { coupons } from "./coupons";
 import {
   orderStatus,
   paymentMethod,
+  paymentProvider,
   paymentStatus,
   actorType,
 } from "./enums";
@@ -109,6 +110,25 @@ export const orderStatusHistory = pgTable(
     ...createdAt,
   },
   (t) => [index("order_status_history_order_idx").on(t.orderId, t.createdAt)],
+);
+
+/** Phase 2I — payment records (one per order; gateway-ready, refund-ready). */
+export const payments = pgTable(
+  "payments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    orderId: uuid()
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    provider: paymentProvider().notNull(),
+    status: paymentStatus().notNull().default("pending"),
+    amount: integer().notNull(), // paise
+    providerOrderId: text(),
+    providerPaymentId: text(),
+    meta: jsonb(),
+    ...timestamps,
+  },
+  (t) => [index("payments_order_idx").on(t.orderId)],
 );
 
 /** §1.7 — post-delivery rating (product reviews are Phase-2). */

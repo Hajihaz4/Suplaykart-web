@@ -41,6 +41,13 @@ export const paymentMethod = pgEnum("payment_method", [
   "upi_on_delivery",
 ]);
 
+// Phase 2I — payment provider for the payment record (gateway-ready)
+export const paymentProvider = pgEnum("payment_provider", [
+  "cod",
+  "upi_on_delivery",
+  "razorpay",
+]);
+
 // §1.7 — payment status (refunded/failed reserved for Phase-2)
 export const paymentStatus = pgEnum("payment_status", [
   "pending",
