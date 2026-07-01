@@ -12,7 +12,34 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!userId) return null;
 
   const existing = await getUserByClerkId(db, userId);
-  if (existing) return existing;
+  if (existing) {
+    // Self-heal a placeholder phone written by an earlier lazy sync (when
+    // Clerk hadn't surfaced the number yet). Only runs while the placeholder
+    // is present; the upsert preserves role/isBlocked (never overwritten).
+    if (existing.phone.startsWith("clerk-")) {
+      const cu = await currentUser();
+      const realPhone =
+        cu?.primaryPhoneNumber?.phoneNumber ??
+        cu?.phoneNumbers[0]?.phoneNumber ??
+        null;
+      if (realPhone) {
+        const name =
+          [cu?.firstName, cu?.lastName].filter(Boolean).join(" ") ||
+          existing.name;
+        const email =
+          cu?.primaryEmailAddress?.emailAddress ??
+          cu?.emailAddresses[0]?.emailAddress ??
+          existing.email;
+        return upsertUserFromClerk(db, {
+          clerkUserId: userId,
+          phone: realPhone,
+          name,
+          email,
+        });
+      }
+    }
+    return existing;
+  }
 
   const cu = await currentUser();
   const phone =
