@@ -17,6 +17,7 @@
     "studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts",
     "verify:db": "tsx scripts/verify-connectivity.ts",
+    "verify:addresses": "tsx scripts/verify-addresses.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
