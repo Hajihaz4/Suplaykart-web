@@ -23,7 +23,8 @@
     "verify:admin": "tsx scripts/verify-admin.ts",
     "promote": "tsx scripts/promote-admin.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "wp:migrate": "tsx scripts/wp-migrate.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.3",
