@@ -2,6 +2,7 @@ import {
   db,
   getConversionMetrics,
   getCustomerAnalytics,
+  getLegacyMigrationStats,
   getOperationalMetrics,
   getOrderStatusBreakdown,
   getRevenueByDay,
@@ -16,14 +17,16 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAnalytics() {
   const supplier = await requireDefaultSupplier(db);
-  const [revenue, status, top, customers, ops, conv] = await Promise.all([
-    getRevenueByDay(db, supplier.id, 14),
-    getOrderStatusBreakdown(db, supplier.id),
-    getTopProducts(db, supplier.id, 8),
-    getCustomerAnalytics(db),
-    getOperationalMetrics(db, supplier.id),
-    getConversionMetrics(db, supplier.id),
-  ]);
+  const [revenue, status, top, customers, ops, conv, migration] =
+    await Promise.all([
+      getRevenueByDay(db, supplier.id, 14),
+      getOrderStatusBreakdown(db, supplier.id),
+      getTopProducts(db, supplier.id, 8),
+      getCustomerAnalytics(db),
+      getOperationalMetrics(db, supplier.id),
+      getConversionMetrics(db, supplier.id),
+      getLegacyMigrationStats(db),
+    ]);
   const maxRev = Math.max(1, ...revenue.map((r) => r.revenue));
 
   return (
@@ -140,6 +143,42 @@ export default async function AdminAnalytics() {
             )}
           </div>
         </div>
+
+        {migration.staging && migration.staging.customersTotal > 0 ? (
+          // full-width section (outside the 2-col grid — no layout holes);
+          // hidden while the staging schema is empty/absent (ETL not yet run)
+          <div className="rounded-xl border border-border-light bg-surface p-4">
+            <h2 className="mb-2 text-sm font-extrabold text-ink">
+              Legacy store migration
+            </h2>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <StatCard
+                label="Customers linked"
+                value={`${migration.staging.customersLinked} / ${migration.staging.customersTotal}`}
+                tone="brand"
+              />
+              <StatCard
+                label="Orders attributed"
+                value={`${migration.staging.ordersAttributable} / ${migration.staging.ordersTotal}`}
+              />
+              <StatCard
+                label="Legacy revenue"
+                value={formatINR(migration.staging.deliveredRevenue)}
+              />
+              <StatCard
+                label="Link attempts"
+                value={String(
+                  Object.values(migration.attempts).reduce((a, b) => a + b, 0),
+                )}
+                hint={
+                  Object.entries(migration.attempts)
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(" · ") || "none yet"
+                }
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
     </>
   );

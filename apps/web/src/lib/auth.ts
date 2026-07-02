@@ -1,7 +1,35 @@
 import "server-only";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { db, getUserByClerkId, upsertUserFromClerk, type User } from "@suplaykart/db";
+import {
+  attemptLegacyLink,
+  db,
+  getUserByClerkId,
+  upsertUserFromClerk,
+  type User,
+} from "@suplaykart/db";
+
+/**
+ * Sync the Clerk user into `users`, then attempt the one-time legacy-customer
+ * link (WP migration) by phone. The attempt is idempotent, records terminal
+ * outcomes once, and must never block sign-in — failures are swallowed.
+ */
+async function syncAndLink(input: {
+  clerkUserId: string;
+  phone: string;
+  name: string | null;
+  email: string | null;
+}): Promise<User> {
+  const user = await upsertUserFromClerk(db, input);
+  if (user.role === "customer" && !user.phone.startsWith("clerk-")) {
+    try {
+      await attemptLegacyLink(db, { id: user.id, phone: user.phone });
+    } catch {
+      // linking is best-effort; the account page retries lazily
+    }
+  }
+  return user;
+}
 
 /**
  * The signed-in local user (Clerk session → local DB row). Lazily syncs the
@@ -30,7 +58,9 @@ export async function getCurrentUser(): Promise<User | null> {
           cu?.primaryEmailAddress?.emailAddress ??
           cu?.emailAddresses[0]?.emailAddress ??
           existing.email;
-        return upsertUserFromClerk(db, {
+        // the real phone just became known — this is the first moment the
+        // legacy link can actually match, so route through syncAndLink
+        return syncAndLink({
           clerkUserId: userId,
           phone: realPhone,
           name,
@@ -52,7 +82,7 @@ export async function getCurrentUser(): Promise<User | null> {
     cu?.emailAddresses[0]?.emailAddress ??
     null;
 
-  return upsertUserFromClerk(db, { clerkUserId: userId, phone, name, email });
+  return syncAndLink({ clerkUserId: userId, phone, name, email });
 }
 
 /** Like getCurrentUser but never null — redirects home if unauthenticated. */

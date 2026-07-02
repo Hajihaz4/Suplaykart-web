@@ -17,3 +17,4 @@ export * from "./notifications";
 export * from "./wishlist";
 export * from "./payments";
 export * from "./analytics";
+export * from "./legacy";

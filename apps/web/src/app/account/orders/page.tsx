@@ -7,7 +7,7 @@ import {
   formatDateTime,
   formatINR,
 } from "@suplaykart/ui";
-import { db, listOrders } from "@suplaykart/db";
+import { db, listLegacyOrdersForUser, listOrders } from "@suplaykart/db";
 import type { OrderStatus } from "@suplaykart/db";
 import { AccountHeader } from "@/components/account-header";
 import { requireCurrentUser } from "@/lib/auth";
@@ -30,10 +30,13 @@ export default async function OrdersPage({
   const { status, q } = await searchParams;
   const user = await requireCurrentUser();
   const active = FILTERS.find((f) => f.key === status) ?? FILTERS[0]!;
-  const orders = await listOrders(db, user.id, {
-    status: active.status,
-    q: q ?? undefined,
-  });
+  const [orders, legacyOrders] = await Promise.all([
+    listOrders(db, user.id, {
+      status: active.status,
+      q: q ?? undefined,
+    }),
+    listLegacyOrdersForUser(db, user.id),
+  ]);
   const filtering = Boolean(active.status || q?.trim());
   const qs = (key: string) =>
     `/account/orders?status=${key}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
@@ -130,6 +133,52 @@ export default async function OrdersPage({
           ))}
         </div>
       )}
+
+      {legacyOrders.length > 0 ? (
+        <div id="legacy" className="space-y-2.5 p-3 pt-1">
+          <div className="flex items-baseline justify-between px-1">
+            <h2 className="text-sm font-extrabold text-ink">
+              From our previous store
+            </h2>
+            <span className="text-2xs text-muted-light">
+              read-only history
+            </span>
+          </div>
+          {legacyOrders.map((o) => (
+            <Card key={o.wpOrderId} className="flex items-center gap-3 p-3.5">
+              <div className="grid size-11 shrink-0 place-items-center rounded-lg bg-surface-alt text-muted">
+                <Package className="size-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-ink">
+                    {o.orderNumber}
+                  </span>
+                  {o.status === "delivered" || o.status === "cancelled" ? (
+                    <OrderStatusBadge status={o.status} />
+                  ) : (
+                    // staging status is unconstrained text — never crash on it
+                    <span className="rounded-full bg-surface-alt px-2 py-0.5 text-2xs font-bold text-muted">
+                      {o.status}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 text-xs text-muted">
+                  {o.itemCount} item{o.itemCount === 1 ? "" : "s"}
+                </div>
+                {o.placedAt ? (
+                  <div className="mt-0.5 text-2xs text-muted-light">
+                    {formatDateTime(o.placedAt)}
+                  </div>
+                ) : null}
+              </div>
+              <div className="text-sm font-extrabold text-ink">
+                {formatINR(o.total)}
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

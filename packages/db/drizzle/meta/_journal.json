@@ -43,6 +43,13 @@
       "when": 1782905754529,
       "tag": "0005_demonic_maginty",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782973842509,
+      "tag": "0006_magenta_hellfire_club",
+      "breakpoints": true
     }
   ]
 }

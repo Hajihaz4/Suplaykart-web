@@ -52,10 +52,37 @@ no line items in any surviving source; 14 products uncategorized; 2 variants
 priceless (imported inactive); 1 product image + 12 category thumbnails
 missing from disk.
 
+## Legacy-customer linking (the lazy-link feature)
+
+Built on top of the staging schema (`packages/db/src/dal/legacy.ts` +
+migration 0006 `legacy_customer_links`):
+
+- **Trigger**: first OTP sign-in (`syncAndLink` in `apps/web/src/lib/auth.ts`)
+  and lazily on the `/account` page for users created via the Clerk webhook.
+  Zero queries added to the returning-user hot path; never blocks sign-in.
+- **Once per user**: `legacy_customer_links.userId` PK — terminal outcomes
+  (`linked` / `ambiguous_linked_latest` / `no_match` / `already_claimed`) are
+  recorded exactly once. Transient states (placeholder phone, staging schema
+  absent) are not recorded, so linking still happens once the data arrives.
+- **Never overwrites**: `linked_user_id` is only set while NULL, inside a
+  transaction with a post-update verify; ledger + claim commit atomically.
+- **Ambiguity policy — newest-or-nothing**: only the most recently registered
+  phone match may be claimed; if it's already claimed, the outcome is
+  `already_claimed` and older duplicates stay unlinked for manual review.
+  Deterministic under races (loser records the same outcome a later arrival
+  would).
+- **Guest orders** (`wp_customer_id NULL`) are never linked or listed.
+- **Surfaces**: `/account` status card, read-only "From our previous store"
+  section on `/account/orders#legacy` (badge crash-proofed against unknown
+  staging statuses), and a "Legacy store migration" panel on
+  `/admin/analytics` (customers linked, orders attributed, legacy revenue,
+  attempts breakdown — hidden until staging has data).
+- **Tests**: 10 PGlite cases in `packages/db/test/legacy-link.test.ts`
+  (exact match, duplicate phone, newest-claimed policy, no match, already
+  linked, guest orders, transient outcomes, idempotency, stats, no-schema
+  grace).
+
 ## Not done yet (by design)
 
 - Live import awaits the fresh Neon branch + owner go-ahead.
 - Phase B uploads await R2 credentials.
-- The lazy-link app feature (match `legacy_customers.phone` on first OTP
-  sign-in, set `linked_user_id`, surface legacy order history) is follow-up
-  app work, not part of the ETL.

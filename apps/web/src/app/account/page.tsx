@@ -13,9 +13,14 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { Card, cn } from "@suplaykart/ui";
-import { db, listAddresses } from "@suplaykart/db";
+import {
+  attemptLegacyLink,
+  db,
+  listAddresses,
+  type LegacyLinkResult,
+} from "@suplaykart/db";
 import { StoreShell } from "@/components/store-shell";
-import { requireCurrentUser } from "@/lib/auth";
+import { isStaff, requireCurrentUser } from "@/lib/auth";
 import { currentCart } from "@/lib/cart";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +31,21 @@ export default async function AccountPage() {
     listAddresses(db, user.id),
     currentCart(),
   ]);
+
+  // WP-migration status — idempotent: returns the recorded outcome, or makes
+  // the one-time attempt for users created before the linker shipped (e.g.
+  // via the Clerk webhook). Never blocks the page.
+  let legacy: LegacyLinkResult | null = null;
+  if (!isStaff(user)) {
+    try {
+      legacy = await attemptLegacyLink(db, { id: user.id, phone: user.phone });
+    } catch {
+      legacy = null;
+    }
+  }
+  const legacyLinked =
+    legacy &&
+    (legacy.outcome === "linked" || legacy.outcome === "ambiguous_linked_latest");
 
   const initial = (
     user.name?.trim()?.[0] ??
@@ -74,6 +94,34 @@ export default async function AccountPage() {
             Edit
           </Link>
         </Card>
+
+        {legacyLinked ? (
+          <Card className="flex items-center gap-3 border border-brand/30 bg-brand-bg p-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-light text-brand">
+              <Package className="size-[18px]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold text-ink">
+                Order history imported
+              </div>
+              <div className="text-xs text-muted">
+                {legacy!.legacyOrders} order
+                {legacy!.legacyOrders === 1 ? "" : "s"} from our previous store
+                {legacy!.matchedCount > 1 ? " (matched by phone)" : ""}
+              </div>
+            </div>
+            <Link
+              href="/account/orders#legacy"
+              className="shrink-0 text-xs font-bold text-brand"
+            >
+              View
+            </Link>
+          </Card>
+        ) : legacy && legacy.outcome === "no_match" ? (
+          <p className="px-1 text-2xs text-muted-light">
+            No order history from our previous store was found for this number.
+          </p>
+        ) : null}
 
         <Card className="overflow-hidden p-0">
           {menu.map((m, i) => (
